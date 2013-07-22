@@ -1,0 +1,97 @@
+<section class="attachments-files clearfix">
+	
+	<txp:hide><!-- FORMULAIRE D'ENVOI --></txp:hide>
+
+	<form method="post" action="<txp:site_url />?rah_external_output=upload-files" enctype="multipart/form-data" id="attach-file-form">
+		<fieldset>
+			<legend>Envoyer un fichier</legend>
+		
+			<input type="hidden" name="file_id-projet" id="file_id-projet" value="<txp:article_id />" />
+		
+			<div class="form-12-12">     
+				<label for="fichier">Fichier <span class="small">(max. 5 Mo)</span>&nbsp;:</label>
+				<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
+				<input type="file" name="file-fichier" id="file-fichier" required="required"/>
+			</div>
+
+			<div class="form-12-12">     
+			    <label for="titre">Titre du fichier&nbsp;:</label>
+			    <input type="text" name="file-titre" placeholder="Titre du fichier" value="" id="file-titre" /><br />
+			</div>     
+
+			<div class="form-12-12">     
+			    <label for="description">Description&nbsp;:</label>
+			    <textarea name="file-description" id="file-description"></textarea>
+			</div>
+
+			<input type="submit" name="submit" value="Envoyer" />
+			
+			<div class="form-12-12 file-form-info">
+				<progress class="progressBar" value="0" max="100"></progress>
+			</div>
+		
+		</fieldset>
+	</form>
+	
+	<div class="attachments-content attachments-files-content">
+		<h1 class="block-title" data-this="Fichiers">Fichiers</h1>
+		
+		<txp:hide><!-- Liste ID des fichiers attachés au projet --></txp:hide>
+		<txp:variable name="attached-files-id">
+			<txp:smd_query 
+				column="id" 
+				table="txp_file" 
+				where='filename LIKE "<txp:article_id />\_%"' break=","
+			>{id}</txp:smd_query>
+		</txp:variable>
+		
+		<txp:variable name="attached-files-id" />
+		<txp:hide><!-- Liste Fichiers --></txp:hide>
+		
+		<txp:variable name="live_file_download_list"><txp:file_download_list status="live" id='<txp:variable name="attached-files-id" />' wraptag="ul" class="nude">
+			<li class="clearfix">
+				<h2 class="h3"><txp:smd_file_download_link show_suffix="1"><txp:file_download_name title="1"/> <span title="Download" class="picto" data-picto="&#x1f4e5;"><strong>Télécharger</strong></span></txp:smd_file_download_link></h2>
+				<txp:file_download_description wraptag="p" class="file_download_description"/>
+				<p class="file-metas small">
+					Posté le <em><txp:file_download_created /></em> par <em><txp:file_download_author title="1" /></em>. <strong><txp:file_download_size /></strong> 
+				</p>			
+			</li>
+		</txp:file_download_list></txp:variable>
+		
+		<txp:if_variable name="pending_file_download_list" value="">
+		<txp:else />
+			<section class="pending_file_download_list">
+				<txp:variable name="live_file_download_list" />		
+			</section>
+		</txp:if_variable>
+		
+		<txp:hide><!-- Fichiers en attente de validation --></txp:hide>
+		
+		<txp:variable name="pending_file_download_list"><txp:file_download_list status="pending" id='<txp:variable name="attached-files-id" />' wraptag="ul" break="li">
+			<txp:file_download_name />
+		</txp:file_download_list></txp:variable>
+		
+		<txp:if_variable name="pending_file_download_list" value="">
+		<txp:else />
+			<section class="pending_file_download_list notice small">
+				<h1 class="h4">fichiers en attente de validation</h1>
+				<txp:variable name="pending_file_download_list" />		
+			</section>
+		</txp:if_variable>
+		
+		
+		
+		
+	
+	
+		
+		
+		
+	</div>
+</section>
+
+<section class="attachments-links clearfix">
+	<h1 class="block-title" data-this="Liens">Liens</h1>
+	
+</section>
+

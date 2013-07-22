@@ -1,0 +1,72 @@
+<txp:hide>
+============
+Module MISC tab-archives-projet appelé depuis le module section-home.txp
+============
+Affiche tous les projets filtrage par Etat
+============
+</txp:hide>
+
+<h1 class="block-title" data-this="Archives projets">Archives projets</h1>
+
+<txp:article_custom 
+	sort="title" 
+	section="projet" 
+	wraptag="ul" 
+	class="nude" 
+	time="any"
+	author='<txp:variable name="article-filter" />'
+	limit='999'
+>
+
+	<txp:variable name="statut-class"><txp:smd_wrap transform="sanitize|url_title"><txp:custom_field name='Etat' /></txp:smd_wrap></txp:variable>
+	<li class='li-archive row <txp:variable name="statut-class" />'>
+		
+		<!-- Title -->
+		<h2 class="h3">
+			<txp:permlink>
+				<txp:title />
+			</txp:permlink>
+		</h2>
+		<!-- Tabs Nav -->
+		<nav>
+			<ul class="ul-nav_archive">
+				<li class="li-nav_archive">
+					<a href="<txp:permlink />#todolist" title="Todolist" class="picto btn" data-picto="&#9776;"><strong>Todolist</strong></a>
+				</li>
+				<li class="li-nav_archive">
+					<a href="<txp:permlink />#commentaires" class="picto btn" data-picto="&#59392;"><strong>Commentaires</strong></a>
+				</li>
+				<li class="li-nav_archive">
+					<a href="<txp:permlink />#attachments" class="picto btn" data-picto="&#x1F4CE"><strong>Pièces jointes</strong></a>
+				</li>
+				<li class="li-nav_archive">
+					<a href="<txp:permlink />#adresses" class="picto btn" data-picto="&#59170;"><strong>Carnet d'adresses</strong></a>
+				</li>
+				<txp:hide><!-- finance BUTTON ADMIN ONLY --></txp:hide>
+				<txp:cbe_frontauth_if_connected level="1">
+					<txp:if_custom_field name="Taux_horaire" value="">
+					<txp:else />
+						<li class="li-nav_archive">
+							<a href="<txp:permlink />#finance" class="picto btn" data-picto="&#x1f4b0"><strong>Finance</strong></a>
+						</li>
+					</txp:if_custom_field>
+				</txp:cbe_frontauth_if_connected>
+			</ul>
+		</nav>
+		<!-- projet metas : Etat + deadline + Edit -->
+		<p class="archive-projet-meta">
+			|
+			<txp:custom_field name="Etat" />
+			|
+			<txp:if_expires>
+				End&nbsp;: <txp:expires />
+				|
+			</txp:if_expires>
+			<txp:hide><!-- Edit Project BUTTON ADMIN only --></txp:hide>
+			<txp:cbe_frontauth_if_connected level="1">
+				<a class="btn picto edit-projet" target="_blank" href="<txp:site_url />textpattern/index.php?event=article&amp;step=edit&amp;ID=<txp:article_id />" title="Editer le Projet" data-picto="&#9998"><strong>Editer le Projet</strong></a>
+			</txp:cbe_frontauth_if_connected>			
+		</p>
+	</li>
+	
+</txp:article_custom>

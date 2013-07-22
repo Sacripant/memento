@@ -1,0 +1,32 @@
+<txp:output_form form="start"/>
+<body id="error-page">
+	
+	<div class="site_wrapper">
+		<txp:output_form form="header" />
+		
+		
+		<section>
+			
+			<txp:cbe_frontauth_if_logged>
+
+				<h1 class="error"><txp:error_status /></h1>
+				<p class="error-msg"><txp:error_message /></p>
+				
+			<txp:else />
+				<txp:cbe_frontauth_box login_invite="Connexion" />
+			</txp:cbe_frontauth_if_logged>	
+
+		</section>
+	</div>
+	
+	<txp:output_form form="footer"/>
+	
+	<txp:cbe_frontauth_if_logged>
+		<txp:output_form form="js_bottom"/>
+	</txp:cbe_frontauth_if_logged>	
+	
+</body>
+
+
+</html>
+		

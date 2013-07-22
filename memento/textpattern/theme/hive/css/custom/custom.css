@@ -1,0 +1,60 @@
+/* Write - Display none */
+#textile_group,
+#advanced_group,
+#image_group,
+#recent_group,
+.category-2,
+#write-status,
+.publish-now,
+.publish-at,
+#article-tabs,
+#article-col-1
+{display:none !important;}
+
+#article-main #body { height: 50px; }
+
+/*alignement date + heure*/
+#more .date,
+#more .time {
+	display: inline-block;
+	margin-right: 1em;
+} 
+
+#keywords {
+	width: 100%;
+	height: 50px;
+}
+
+#custom_field .glz_custom_field,
+#custom_field .glz_custom_select_field,
+#custom_field .glz_custom_radio_field {
+	-webkit-box-sizing: border-box; 
+	   -moz-box-sizing: border-box; 
+	        box-sizing: border-box;
+	width: 33%;
+	float: left;
+	padding: 0 1.5%;
+}
+
+#custom_field .etat {
+	width: 100%;
+}
+#custom_field .taxe br:nth-child(5)  {
+	display: none;
+}
+
+#custom_field 
+.url-title,
+.repartition  {
+	clear: both;
+}
+#more_group .custom-statut { padding-bottom: 10px; }
+
+
+/* -- STYLES FOR VARIOUS PLUGINS (delete if you do not use) -- */
+
+
+/* glz_custom_fields */
+.glz_text_area_field textarea{
+	width:100% !important;
+}

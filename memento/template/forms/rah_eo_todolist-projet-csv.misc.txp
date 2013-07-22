@@ -1,0 +1,6 @@
+<txp:adi_gps /><txp:php>
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename="project.csv"');
+</txp:php>"id";"Titre";"Cat";Start;End;"Statut";Temps;
+<txp:article_custom projet='<txp:variable name="id" />' section="todo" break="" sort="posted asc" limit="999" time="any">
+"<txp:custom_field name='parent' />-<txp:article_id />";"<txp:custom_field name="title" escape="" />";<txp:category1 title="1"/>;<txp:posted format='%F'/>;<txp:expires format='%F'/>;<txp:custom_field name="etat" />;<txp:smd_wrap delim="@" transform="replace||.|,"><txp:custom_field name="Temps_reel" /></txp:smd_wrap></txp:article_custom>;

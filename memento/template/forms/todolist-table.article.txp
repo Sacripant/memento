@@ -1,0 +1,74 @@
+<txp:hide>
+============
+Module todolist appelé depuis le module tab-todolist.misc
+============
+Affiche la liste des articles de la section "todo" liés à l'article "projet" selectionné
+============
+Necessite plugins "smd_wrap"
+============
+</txp:hide>
+
+<txp:hide><!-- VARIABLES --></txp:hide>
+<txp:variable name="statut-class"><txp:smd_wrap transform="sanitize|url_title"><txp:custom_field name='etat' /></txp:smd_wrap></txp:variable>
+<txp:output_form form="odd_even" />
+
+<tr data-id="<txp:article_id />" class="todo <txp:variable name="statut-class" /><txp:variable name='odd-even' />">
+
+	<!-- ID -->
+	<td class="id todo-id">
+		<txp:if_custom_field name="parent">
+			<span 
+				class="parent-id" 
+				title="<txp:article_custom id='<txp:custom_field name=''parent'' />'><txp:title /></txp:article_custom>"
+			>
+				<txp:custom_field name="parent" />
+				↳			
+			</span>
+		</txp:if_custom_field>
+		<txp:article_id />
+	</td>
+	
+	<!-- TITLE -->
+	<td class="todo-title"><txp:custom_field name="title" escape="" /></td>
+	
+	<!-- CAT -->
+	<td class="todo-cat"><txp:category1 title="1"/></td>
+	
+	<!-- START -->
+	<td class="todo-start" data-order-by="<txp:posted format='iso8601'/>"><txp:posted format="%d.%m.%y"/></td>
+	
+	<!-- STOP -->
+	<td class="todo-end" data-order-by="<txp:expires format='iso8601'/>"><txp:expires /></td>
+	
+	<!-- STATUT -->
+	<td class="todo-statut"><txp:custom_field name="etat" /></td>
+	
+	<txp:cbe_frontauth_if_connected level="1">
+	
+	<!-- TEMPS admin ONLY -->
+		<td class="todo-temps"><span class="temps-prevu"><txp:custom_field name="Temps_prevu" /></span> / <span class="temps-reel"><txp:custom_field name="Temps_reel" /></span></td>
+		
+	<!-- BTN ACTION admin only -->
+		<td class="action">
+			<txp:if_custom_field name='etat' value="Terminé,Rejeté" separator="," match="any">
+			<txp:else />
+				<button class="btn picto action-editer" type="button" data-picto="&#9998"><strong>Edit</strong></button>
+			</txp:if_custom_field>
+		</td>
+		
+	</txp:cbe_frontauth_if_connected>
+	
+</tr>
+
+
+
+<txp:hide><!-- HAS CHILD ? -->
+	<txp:variable name="child-todo"><txp:smd_wrap>
+		<txp:article_custom parent='<txp:article_id />' section="todo" form="todolist-bis" break="" sort="posted asc" limit="999" time="any" />
+	</txp:smd_wrap></txp:variable>
+	
+	<txp:if_variable name="child-todo" value=""><txp:else />
+		<!-- Liste des taches enfants -->	
+			<txp:variable name="child-todo" />		
+	</txp:if_variable>
+</txp:hide>

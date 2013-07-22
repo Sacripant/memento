@@ -1,0 +1,40 @@
+<txp:hide>
+============
+Module comment_form.comment appelé depuis le module default.txp
+============
+</txp:hide>
+
+<txp:comments_error wraptag="ul" break="li" />
+
+<fieldset>
+	<legend>Ajouter un commentaire</legend>
+
+
+	<div class="hide">
+		<txp:comment_name_input />
+	</div>
+	<div class="hide">
+		<txp:comment_email_input />
+	</div>
+
+	<div class="form-item titre-comment input-title">
+		<input type="text" name="title-comment" value="" placeholder="Titre du commentaire" />
+	</div>
+	
+	<div class="form-item">
+		<txp:comment_message_input />
+	</div>
+	
+	<div class="notice small">
+		<p>
+			Vous pouvez enrichir votre message à l'aide de la Syntaxe Textile. <a href="<txp:site_url />template/textile-reference/fr/index.html" 
+			   onclick="window.open(this.href,'textile_reference','height=400,width=600,scrollbars=1'); return false;">Aide Textile</a>.
+		</p>
+		<p>Vous devez prévisualiser votre message avant de pouvoir l'envoyer.</p>
+	</div>
+	
+	<div class="btn-wrap">
+		<txp:comment_preview />
+		<txp:comment_submit />
+	</div>
+</fieldset>

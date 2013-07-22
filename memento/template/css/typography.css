@@ -1,0 +1,127 @@
+/* -------------------------------------------------------------- 
+  
+
+	COULEURS
+	
+	vert : h 190
+		header hsl(190 100 25)
+		body	hsl(190 100 10)
+		id
+	
+	orange-rouge : h 20	
+	orange : h 25
+	jaune : h 40
+-------------------------------------------------------------- */
+
+/* -------------------------------------------------------------- 
+
+	TYPO
+	
+	body font size : 14px
+	body line height : 1.5
+	Scale factor : 1.368
+	
+-------------------------------------------------------------- */
+
+
+/* Default font settings. 
+   The font-size percentage is of 16px. (0.875 * 16px = 14px) */
+body { 
+  font-size: 87.5%; 
+  color: hsl(190,100%,10%); 
+  background: hsl(40, 10%, 90%);
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+
+/* Headings
+-------------------------------------------------------------- */
+
+h1,h2,h3,h4,h5,h6,
+.h1,.h2,.h3,.h4,.h5,.h6,
+th,label,legend 
+	{ font-weight: 200; font-family: Exo, Arial, Helvetica, sans-serif; }
+
+h1, .h1 { font-size: 3.5em; line-height: 1.28571em; margin-top: 0.4286em; margin-bottom: 0.8571em; position: relative; text-transform: uppercase; }
+h2, .h2 { font-size: 1.86em; line-height: 1.6em; margin-top: 1.6em; margin-bottom: 0.8em; }
+h3, .h3 { font-size: 1.35714em; line-height: 1.10526em; margin-top: 1.1053em; margin-bottom: 0em; }
+h4, .h4 { font-size: 1em; line-height: 1.5em; }
+h5 { font-size: 1em; font-weight: bold; margin-bottom: 1.5em; }
+h6 { font-size: 1em; font-weight: bold; }
+
+/* avoid collapsing margins on headings */
+h1:first-child, h2:first-child,
+h3:first-child, h4:first-child,
+h5:first-child, h6:first-child {
+	margin-top: 0;
+}
+
+h1 img, h2 img, h3 img, 
+h4 img, h5 img, h6 img {
+  margin: 0;
+}
+
+
+/* Text elements
+-------------------------------------------------------------- */
+
+p, .p       { font-size: 1em; margin: 0 0 1.5em; }
+p img.left  { float: left; margin: 1.5em 1.5em 1.5em 0; padding: 0; }
+p img.right { float: right; margin: 1.5em 0 1.5em 1.5em; }
+
+a:focus, 
+a:hover     { color: hsl(25,100%,50%); border-bottom-style: solid; }
+a           { color: inherit; text-decoration: none; border-bottom: 1px dashed;}
+
+blockquote  { margin: 1.5em; color: #666; font-style: italic; }
+strong      { font-weight: bolder; }
+em,dfn      { font-style: italic; }
+dfn         { font-weight: bold; }
+sup, sub    { line-height: 0; }
+
+abbr, 
+acronym     { border-bottom: 1px dotted #666; }
+address     { margin: 0 0 1.5em; font-style: italic; }
+del         { color:#666; }
+
+pre 			{ margin: 1.5em 0; white-space: pre; }
+pre,code,tt { font: 1em 'andale mono', 'lucida console', monospace; line-height: 1.5; }
+
+
+/* Lists
+-------------------------------------------------------------- */
+
+li ul, 
+li ol       { margin:0 1.5em; }
+ul, ol      { margin: 0 1.5em 1.5em 1.5em; }
+
+ul          { list-style-type: disc; }
+ol          { list-style-type: decimal; }
+
+dl          { margin: 0 0 1.5em 0; }
+dl dt       { font-weight: bold; }
+dd          { margin-left: 1.5em;}
+
+
+/* Tables
+-------------------------------------------------------------- */
+
+table       			{ width:100%; table-layout: fixed; }
+/*col:nth-child(odd)	{ background-color: #ddd; }*/
+tbody tr:hover,
+.row:hover				{ background-color: hsla(40, 0%, 100%, 0.4); }
+th          			{ text-transform: uppercase; font-weight: 400; font-size: 0.9em; }
+th,td,caption 			{ padding: 5px; vertical-align: top; }
+td 						{ overflow: hidden; text-overflow: ellipsis; }
+
+/*tr.even td  { background: #e5ecf9; }*/
+tfoot       { font-style: italic; }
+caption     { text-transform: uppercase; color: #666; }
+
+
+/* Typo Misc classes
+-------------------------------------------------------------- */
+
+.small      { font-size: 0.71429em; }
+.small p 	{ margin: 0.5em 0 }
+.large      { font-size: 1.2em; line-height: 2.5em; margin-bottom: 1.25em; }

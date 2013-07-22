@@ -1,0 +1,76 @@
+; Content-type: text/html
+<txp:cbe_frontauth_if_logged>
+	<txp:adi_gps />
+	
+	<txp:variable name="import" value="0" />
+	
+	<txp:php>	
+		variable(array(
+			'name' => 'filesize',
+			'value' => $_FILES['file-fichier']['size']
+		));
+		variable(array(
+			'name' => 'timestamp',
+			'value' => time()
+		));
+		$infosfichier = pathinfo($_FILES['file-fichier']['name']); 
+		variable(array(
+			'name' => 'extension',
+			'value' => $infosfichier['extension']
+		));	
+		variable(array(
+			'name' => 'filename',
+			'value' => $infosfichier['filename']
+		));
+	</txp:php>
+	
+	<txp:variable name="newFileName"><txp:variable name="file_id-projet" />_<txp:smd_wrap item='<txp:variable name="filename" />' transform="sanitize|url" />_<txp:variable name="timestamp" />.<txp:variable name="extension" /></txp:variable>
+	
+	<txp:php>
+		$newfile = 'files/'.variable(array('name' => 'newFileName'));
+		if(!empty($_FILES['file-fichier']['tmp_name']) AND is_uploaded_file($_FILES['file-fichier']['tmp_name']))
+		{
+			if(filesize($_FILES['file-fichier']['tmp_name'])<5000000)
+			{
+				//Copie le fichier dans le répertoire de destination
+				if(move_uploaded_file($_FILES['file-fichier']['tmp_name'], $newfile))
+				{
+					variable(array(
+						'name' => 'import',
+						'value' => '1'
+					));
+				}
+			}		
+		}
+	</txp:php>
+	
+	<txp:hide>Gestion des valeurs pour Insert sql </txp:hide>
+	<txp:hide><!-- title --></txp:hide>
+	<txp:if_variable name="file-titre" value="">
+		<txp:variable name="file-titre">NULL</txp:variable>	
+	<txp:else />
+		<txp:variable name="file-titre">'<txp:smd_wrap item='<txp:variable name="file-titre" />' transform="fordb" />'</txp:variable>
+	</txp:if_variable>
+	<txp:hide><!-- description --></txp:hide>
+	<txp:variable name="file-description">'<txp:smd_wrap item='<txp:variable name="file-description" />' transform="fordb" />'</txp:variable>
+
+	<txp:hide><!-- If Upload OK --></txp:hide>
+	<txp:if_variable name="import" value="1">
+		<txp:smd_query query='INSERT INTO txp_file 
+		 	(filename, title, description, status, modified, created, size, author) 
+		VALUES
+			 (''<txp:variable name="newFileName" />'', <txp:variable name="file-titre" />, <txp:variable name="file-description" />, 3, NOW(), NOW(), <txp:variable name="filesize" />, ''<txp:cbe_frontauth_whois type="name" />'');' 
+		/>
+		<p class="success">Fichier bien reçu sur le serveur. En attente de vérification…</p>
+		
+	</txp:if_variable>
+	
+	<txp:if_variable name="import" value="0">
+		<p class="error">Erreur lors de l'importation du fichier. Vérifiez que votre fichier ne dépasse pas les 5Mo.</p>
+	</txp:if_variable>
+
+<txp:else />
+
+	<txp:txp_die status="401" />
+	
+</txp:cbe_frontauth_if_logged>

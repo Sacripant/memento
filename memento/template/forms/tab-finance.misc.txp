@@ -1,0 +1,146 @@
+<txp:hide>
+============
+Module Finance appelé depuis la page default.txp
+============
+Affiche la liste des article de la section "todo" liés à l'article selectionné
+============
+</txp:hide>
+
+
+<!-- #Finance -->
+<h1 class="block-title" data-this="Finance">Finance</h1>
+
+<h2 class="h3">
+	<span class="finance-block-title">Devis</span>
+	<span class="no-devis">N° <txp:article_id />-<txp:variable name="project-modified" /></span>
+</h2>
+
+<!-- bouton preview print -->
+<a href='<txp:site_url />printFacture?projetID=<txp:article_id />&amp;devisID=<txp:article_id />-<txp:variable name="project-modified" />' 
+	class="btn picto" 
+	data-picto="&#59146 &#59158" 
+	id="print-preview" 
+	title="Imprimer le devis et les factures"
+	target="_blank"
+>
+	<strong>Preview for print</strong>
+</a>
+
+<form  id="calcul" method="post" action="<txp:site_url />?rah_external_output=query-finance" autocomplete="off">
+
+	<!-- METAS TAUX HORAIRE ET DEVISE -->
+	<div class="metas-devis">
+		<ul>
+			<li>
+				<strong>taux horaire&nbsp;:</strong> 
+				<input type="number" class="taux-horaire inputnum" name='th_<txp:article_id />' value='<txp:custom_field name="Taux_horaire" />' />
+				<span class="devise"><txp:custom_field name="Devise" /></span>
+			</li>
+			<li>
+				<strong>taxe&nbsp;:</strong> 
+				<span class="taxe"><txp:custom_field name="taxe" /></span>
+			</li>
+		</ul>
+	</div>
+	
+	<div id="devis">
+		
+	<!-- Start catégories liste -->
+	<txp:category_list break="" categories="conception,crea-graphique,webdesign,dev-back,formation,reunion">
+	
+		<!-- VARIABLE : Liste des todos par catégorie -->
+		<txp:variable name="todos_this_cat"><txp:smd_wrap>
+			<txp:article_custom projet='<txp:article_id />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
+				<li class="item-devis item-<txp:category />">
+					<strong class="item-devis-title"><txp:title /></strong>
+					<span class="montant montant-item">
+						<span class="total-item"></span>
+						<span class="temps-prevu"> 
+							<input type="number" class="inputnum" name="tp_<txp:article_id />" value='<txp:custom_field name="Temps_prevu" />' />
+						</span>
+					</span>
+				</li>
+			</txp:article_custom>
+		</txp:smd_wrap></txp:variable>
+		
+		<!-- Display Cat + todos -->
+		<txp:if_variable name="todos_this_cat" value="">
+		<txp:else />
+			<div class="devis-section clearfix">
+				<h3 class="devis-cat-title"><txp:category title="1"/></h3>
+			
+				<!-- Liste des taches -->
+				<txp:variable name="todos_this_cat" />
+			
+				<!-- Sous totale d'une cat -->
+				<h4 class="item-devis sous-total">
+					<strong class="item-devis-title">Sous Total <txp:category title="1"/></strong><span class="montant montant-sous-total"></span>
+				</h4>	
+			</div>
+		</txp:if_variable>
+	
+		<!-- Total Devis -->
+		<txp:if_last_category>
+			<div class="total-groupe-devis">
+			<!-- TOTAL TTC + 5% + TOTAL HT -->
+				<h3 class="item-devis total-ttc">
+					<strong class="item-devis-title"><txp:if_custom_field name="taxe" value="on">Total TTC<txp:else />Total HT</txp:if_custom_field></strong>
+					<span class="montant">
+						<span class="montant-total-ttc"></span>
+						<span class="devise"><txp:custom_field name="Devise" /></span>
+					</span>
+				</h3>
+				
+				<txp:if_custom_field name="taxe" value="on">
+				<h3 class="item-devis taxe">
+					<strong class="item-devis-title">5% retenus</strong><span class="montant">
+						<span class="montant-taxe"></span>
+						<span class="devise"><txp:custom_field name="Devise" /></span>
+					</span>
+				</h3>	
+				<h3 class="item-devis total-ht">
+					<strong class="item-devis-title">Total HT</strong><span class="montant">
+						<span class="montant-total-ht"></span>
+						<span class="devise"><txp:custom_field name="Devise" /></span>
+					</span>
+				</h3>
+				</txp:if_custom_field>
+			</div> <!-- .total-goupe -->
+
+			<!-- Répartition des payements -->
+			<txp:rah_repeat value='<txp:custom_field name="repartition" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
+				<txp:hide><txp:smd_wrap transform="date|%A %e %b %Y" item="2012/11/09" /></txp:hide>
+				<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+				
+			<!-- FACTURE <txp:variable name="index" /> -->
+				<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+		
+				<!-- IF var quand = DATE YYYY/MM/DD -->
+					<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+						<strong class='item-devis-title'>
+							<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+							<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+						</strong>
+					<txp:else />
+				<!-- ELSE -->
+						<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
+					</txp:cbe_if_variable>
+						
+					<span class="montant">
+						<span class='somme-a-payer'></span>
+						<span class="devise"><txp:custom_field name="Devise" /></span>
+					</span>
+				</li>
+			</txp:rah_repeat>
+		</txp:if_last_category>
+	</txp:category_list>
+	</div><!-- #devis -->
+<!-- <button type="submit">Sauver</button> -->
+<input type="submit" id="submit-finance" name="submit" value="Sauver" />
+</form> <!-- end form calcul -->
+
+
+
+

@@ -1,0 +1,12 @@
+; Content-type: text/html
+<txp:cbe_frontauth_if_logged level="1">
+	<txp:adi_gps />
+	
+	<txp:smd_query query='UPDATE textpattern 
+		SET custom_4 =''<txp:variable name="time" />''
+   	WHERE ID=''<txp:variable name="id" />'';' 
+   />
+<txp:else />
+	<txp:txp_die status="401" />		  
+</txp:cbe_frontauth_if_logged>
+

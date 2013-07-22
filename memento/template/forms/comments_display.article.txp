@@ -1,0 +1,26 @@
+<txp:if_comments_allowed>
+	<button id="add-comment" class="btn" type="button"><span class="picto" data-picto="&#43;&#59160;"><strong>Ajouter une tache</strong></span></button>
+	<div id="comment-form" class="clearfix">
+		<txp:if_comments_preview>
+			<txp:variable name="comment-preview" value="yes" />
+			<div id="cpreview">
+				<txp:comments_preview wraptag="div" class="comment-preview comment" />
+			</div>	
+		</txp:if_comments_preview>
+		
+		<txp:comments_form /> 		
+	</div>
+</txp:if_comments_allowed>
+
+<txp:if_comments>	
+	<h2><txp:comments_count /> commentaire(s)</h2>
+	<txp:variable name="comment-preview" value="no" />
+	<txp:comments class="comments-list" breakclass="comment"/>
+	
+<txp:else />
+	<h2>Il n'y a encore aucun commentaire</h2>
+</txp:if_comments>
+
+
+
+

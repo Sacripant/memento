@@ -1,0 +1,51 @@
+; Content-type: text/html
+<txp:cbe_frontauth_if_logged level="1">
+	<txp:adi_gps />
+	<td colspan="8" class="inline-form-wrapper">
+	
+		<h2 class="h3">Ajouter une tache au projet <em><txp:smd_query column="Title" table="textpattern" where='ID=<txp:variable name="idProjet" />' >{Title}</txp:smd_query></em></h2>
+
+		<txp:variable name="statut"><txp:smd_query column="value" table="custom_fields" where="name='custom_2_set' ORDER BY value" break=",">{value}</txp:smd_query></txp:variable>
+		
+		<txp:mem_simple_form table="textpattern" id_field="ID">
+			<table>
+				<colgroup>
+					<col class="edit-new-title" />
+					<col class="edit-new-cat" />
+					<col class="edit-new-temps" />
+					<col class="edit-new-statut" />
+					<col class="edit-new-action save" />					
+				</colgroup>
+				<tr>						
+					<txp:mem_form_secret name="string_Section" value='todo' />
+					<txp:mem_form_secret name="now_Posted" value='' />
+					<txp:mem_form_secret name="now_LastMod" value='' />
+					<txp:mem_form_secret name="now_feed_time" value='' />
+					<txp:mem_form_secret name="string_AuthorID" value='<txp:cbe_frontauth_whois />' />
+					<txp:mem_form_secret name="string_LastModID" value='<txp:cbe_frontauth_whois />' />
+					<txp:mem_form_secret name="randuid_uid" value='' />
+					<txp:mem_form_secret name="string_custom_1" value='<txp:variable name="idProjet" />' />				
+
+					<td class="edit-new-title"> <txp:mem_form_textarea rows="2" cols="30" name="string_Title" label="Titre" break="" default='' /> </td>
+					<td class="edit-new-cat"> 
+						<txp:mem_form_select_category name="string_category1" label="Categorie" break="" />
+						<txp:mem_form_text name="string_custom_9" label="Parent" break="" size="4" required="0" /> 
+					</td>
+					<td class="edit-new-temps"> <txp:mem_form_text name="string_custom_3" label="Tps prévu" break="" size="4" default="0" /> </td>
+					<td class="edit-new-statut"> <txp:mem_form_select name="string_custom_2" items='<txp:variable name="statut" />' values='<txp:variable name="statut" />' label="Statut" break="" /> </td>
+					<td class="action save"><txp:mem_form_submit class="btn" button="1" label="ok" /></td>
+				</tr>
+			</table>
+		</txp:mem_simple_form>
+	
+	</td>
+	
+	<txp:mem_simple_if_ps name="string_Title">
+		<txp:variable name="titleUrl"><txp:smd_wrap transform="sanitize|url_title" item='<txp:mem_simple_ps name="string_Title" />' /></txp:variable>
+		<txp:smd_query query='UPDATE textpattern 
+			SET url_title =''<txp:variable name="titleUrl" />''
+	   	WHERE uid=''<txp:mem_simple_ps name="randuid_uid" />'';' 
+	   />
+	</txp:mem_simple_if_ps>
+	
+</txp:cbe_frontauth_if_logged>		

@@ -1,0 +1,48 @@
+<txp:output_form form="start"/>
+
+<txp:hide><!-- hack for use cbe_frontauth_whois in body class --></txp:hide>
+<txp:cbe_frontauth_if_logged></txp:cbe_frontauth_if_logged>
+<body <txp:if_section name="">id="home"<txp:else />id="<txp:section />"</txp:if_section> class='user-level<txp:cbe_frontauth_whois type="privs" />'>
+	
+	<div class="site_wrapper">
+		
+		<txp:output_form form="header" />
+			
+		<section> 
+									
+			<txp:cbe_frontauth_if_logged>
+				<txp:if_section name="">
+					<txp:output_form form="section-home" />					
+				<txp:else />
+					<txp:if_section name="projet">
+						<txp:article form="section-projet" limit="1" />					
+					</txp:if_section>
+				</txp:if_section>
+				
+			<txp:else />
+				<txp:cbe_frontauth_login invite="" wraptag="div" class="login-form">
+					<fieldset>
+						<legend>Connexion</legend>
+						<txp:cbe_frontauth_logname label="Name" wraptag="div" class="form-12-12" />
+						<txp:cbe_frontauth_password label="Pass" wraptag="div" class="form-12-12" />
+						<div class="form-12-12">
+							<txp:cbe_frontauth_submit label="Go" class="btn" />
+							<txp:hide><txp:cbe_frontauth_reset label="Password forgotten ?" /></txp:hide>
+						</div>	
+					</fieldset>
+				</txp:cbe_frontauth_login>
+			</txp:cbe_frontauth_if_logged>	
+
+		</section>
+	</div>
+	
+	<txp:output_form form="footer"/>
+	
+	<txp:cbe_frontauth_if_logged>
+		<txp:output_form form="js_bottom"/>
+	</txp:cbe_frontauth_if_logged>	
+	
+</body>
+
+
+</html>

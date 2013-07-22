@@ -1,4 +1,6 @@
 memento
 =======
 
-Gestionnaire de projet web perso, réalisé avec Textpattern
+Memento est _Gestionnaire de projet_ réalisé avec Textpattern pour gérer mes projets web, mes projets graphiques et perso.
+
+

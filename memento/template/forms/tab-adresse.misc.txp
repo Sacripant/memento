@@ -1,0 +1,25 @@
+<txp:hide>
+============
+Module pour TAB Adresses appelé depuis le module sectio-projet.misc.txp et section-home
+============
+Affiche la liste des utilisateurs qui ont accès au projet
+ou liste complète des utilisateurs
+============
+</txp:hide>
+
+<!-- Adresses -->
+<txp:if_section name="">
+	<h1 class="block-title" data-this="Adresses">Adresses</h1>
+	
+	<txp:smd_bio_author author="SMD_ALL" wraptag="ul" class="vcards-list nude" sort="societe asc">
+		<txp:output_form form="user-info-vcard" />	
+	</txp:smd_bio_author>
+<txp:else />
+	<h1 class="block-title" data-this="Membres et coordonnées">Membres et coordonnées</h1>
+	
+	<ul class="vcards-list nude">
+		<txp:output_form form="user-info-vcard" />		
+	</ul>
+	
+</txp:if_section>
+

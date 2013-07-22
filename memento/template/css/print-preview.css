@@ -1,0 +1,165 @@
+/* ================================= */
+/* = Print-preview & print finance = */
+/* ================================= */
+
+body 	{ 
+	font-family: "PT Sans", Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	line-height: 1.2em;
+	margin: 10mm 23.8% 30mm 7.15%;
+	color: #000;
+	background-color: transparent; 
+}
+
+/*Misc*/
+.nude { list-style-type: none; margin: 0; }
+
+
+#print			{ position: fixed; top 10px; right: 10px;}
+.metas-devis 	{ display: none; }
+
+/*Headers*/
+header, h1, h2, h3, h4 {
+	font-family: "PT Serif", serif;
+	font-weight: normal;
+	
+}
+h1	{ }
+h2	{ font-size: 12pt; font-style: italic; line-height: 1.2em; font-weight: bold; margin-bottom: 6pt; }
+h3	{ font-size: 10pt; line-height: 15pt; font-weight: bold; }
+h4 { font-size: 10pt; }
+
+ul {
+	list-style-position: inside;
+}
+
+/*Containers*/
+.site_wrapper {
+	width: 100%;
+	max-width: none;
+	argin: 0;
+}
+
+section {
+	border-bottom: 1px solid;
+	padding: 1em 0;
+}
+	
+/*Adresse Commanditaire*/
+.commanditaire-wrapper	{
+	float: right;
+	position: relative;
+}
+.commanditaire-wrapper h2 {
+	font-size: inherit;
+}
+.commanditaire-content {
+	border: 0.5pt dashed #000;
+	padding: 1em;
+	font-family: "PT Sans Caption", serif;
+}
+
+/*Titre document (devis,facture)*/
+h1	{
+	clear: both;
+	position: relative;
+	top: -40pt;
+	z-index: 100;
+}
+.finance-block-title {
+	font-size: 36pt;
+	font-weight: bold;
+	color: #fff;
+	-webkit-text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;
+	   -moz-text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;
+	        text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;	
+}
+.no-devis {
+	display: block;
+	font-family: "PT Mono", serif;
+	font-size: 9pt;
+}
+
+/*Nature du Travail = Projet Header*/
+
+article {
+	margin-left: 24mm;
+}
+.devis header {
+	margin-top: -20pt;
+}
+article header {}
+article header h2 {}
+.projet-title, .projet-description p {
+	display: inline;
+	font-size: 9pt;
+	line-height: 1.2em;
+}
+.projet-title {
+	font-weight: bold;
+	font-style: italic;
+	text-transform: uppercase;
+}
+
+
+/*détail du Devis 	*/
+.details-prestation {
+	margin-top: 1em;
+}
+.devis-section		{
+	margin-left: 1cm;
+}
+.item-devis			{ clear: both; height: 1em; border-bottom: 1px dotted; margin-bottom: 0.3em; }
+
+.item-devis-title	{ float: left; padding-right: .4em; background-color: #fff; font-weight: normal; }
+.item-devis-title:first-letter	{ 
+	text-transform: uppercase;
+}
+.item-devis-liste	{ margin-left: 1em; }
+.montant				{ float: right; text-align: right; padding-left: 0.4em; background-color: #fff; }
+.sous-total			{ font-style: italic; margin-top: 0.4em; }
+.sous-total > *	{ position: relative; top: 1.5pt; }
+
+/*total Devis*/
+.total-groupe		{ font-size: 12pt; margin: 1em 0; }
+.total-groupe .montant { font-weight: bold; }
+.total-groupe h4 	{ height: 0.85em; margin-bottom: 0.5em;}
+.total-groupe .note	{ font-size: 8pt; margin-top: 12pt; }
+
+/*Répartiion Factures*/
+.repartition h3 { font-style: italic; }
+.devis-liste-factures {
+	border: 1px solid #999;
+	padding: 0.4em;
+}
+
+/*Specifique au PRINT*/
+@media print {
+	body {
+		margin: 0;
+	}
+	
+	@page {
+		size: 210mm 297mm;
+		margin: 10mm 50mm 30mm 15mm ;
+		padding: 0;
+/*		margin: 15mm 45mm 45mm 45mm;*/
+		@bottom {
+/*			background-color: yellow;*/
+			content:url(../img/background-entete.svg);
+			text-align: left;
+/*			background-size:  cover;*/
+/*			width: 100%;*/
+		}
+	}
+	
+	#print {
+		display: none;
+	}
+	
+	section {
+		page-break-after: always;
+		border-bottom: 0 none;
+	}
+}
+

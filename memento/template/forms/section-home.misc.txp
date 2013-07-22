@@ -1,0 +1,50 @@
+<nav class="sidenav nav_projet h1">
+	<ul>
+		<txp:hide><!-- "Global todolist BUTTON" for ADMIN ONLY --></txp:hide>
+		<txp:cbe_frontauth_if_connected level="1">						
+			<li class="li-sidenav li-nav_projet">
+				<a class="a-sidenav picto" href="#todolist" title="Todolist" data-picto="&#9776;"><strong>Todolists</strong></a>
+			</li>
+		</txp:cbe_frontauth_if_connected>
+		<txp:hide><!-- "Archive list of project BUTTON" for all users --></txp:hide>
+		<li class="li-sidenav li-nav_projet">
+			<a class="a-sidenav picto" href="#archives" title="Archives projets" data-picto="&#59399;"><strong>Archives projets</strong></a>
+		</li>
+		<txp:hide><!-- "Directory User list BUTTON" for ADMIN only--></txp:hide>
+		<txp:cbe_frontauth_if_connected level="1">			
+			<li class="li-sidenav li-nav_projet">
+				<a class="a-sidenav picto" href="#annuaire" title="Annuaire" data-picto="&#59170;"><strong>Adresses</strong></a>
+			</li>
+		</txp:cbe_frontauth_if_connected>
+	</ul>
+</nav>
+
+	
+<div class="main-content">
+	
+	<txp:hide><!-- "Global todolist tab" for ADMIN ONLY --></txp:hide>
+	<txp:cbe_frontauth_if_connected level="1">						
+		<!-- todolistes -->
+		<section id="todolist" class="todolist-globale">
+			<txp:output_form form="tab-todolist-globale" />
+		</section>
+	</txp:cbe_frontauth_if_connected>
+	
+	<txp:hide><!-- "Liste projects tab" for all users --></txp:hide>
+	<!-- Archives -->
+	<section id="archives">
+		<txp:output_form form="tab-archives-projets" />
+	</section>
+	
+	<txp:hide><!-- "Directory Users list BUTTON" for ADMIN only--></txp:hide>
+	<txp:cbe_frontauth_if_connected level="1">			
+		<!-- Adresses -->
+		<section id="adresses">
+			<txp:output_form form="tab-adresse" />
+		</section>
+	</txp:cbe_frontauth_if_connected>
+		
+</div>
+
+
+

@@ -1,0 +1,85 @@
+<txp:hide>
+============
+Module todolist appelé depuis la page default.txp
+============
+Affiche la liste des article de la section "todo" liés aux articles "projet" "en cours" ou "programmé" 
+============
+Necessite plugins "smd_query"
+============
+</txp:hide>
+
+
+<!-- TODO Liste -->
+<h1 class="block-title" data-this="Todoliste globale">Todoliste globale</h1>
+
+<!-- filtrage des todos par catégories -->
+<form class="filtrage">
+	<fieldset>
+		<legend>filtrage des taches par catégories</legend>
+		
+		<ul class="form-12-12 inline form-list-chk">
+			<li><input type="checkbox" data-target=".programme,.en-cours" id="filtre-programme" checked="checked"> <label for="filtre-programme">Programmé</label></li>
+			<li><input type="checkbox" data-target=".non-programme,.en-pause" id="filtre-non-programme"> <label for="filtre-non-programme">Non programmé / En pause</label></li>
+		</ul>
+	</fieldset>
+</form>
+
+<!-- Tableaux des todos -->
+<table class="todolist-table">
+	<colgroup>
+		<col class="todo-globale-projet">
+		<col class="todo-globale-title">
+		<col class="todo-globale-start">
+		<col class="todo-globale-end">
+		<col class="todo-globale-temps">
+		<col class="todo-globale-statut">
+		<col class="todo-globale-action">
+	</colgroup>
+	<thead>
+		<tr>
+			<th scope="col" class="type-string">Projet</th>
+			<th scope="col" class="type-string">Titre</th>
+			<th scope="col" class="type-string asc">Start</th>
+			<th scope="col" class="type-string">End</th>
+			<th scope="col">Temps</th>
+			<th scope="col" class="type-string">Statut</th>
+			<th scope="col">Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		<!-- filtrer les projets programmé, en cours -->
+		<txp:variable name="projet-liste">
+			<txp:smd_query column="ID" table="textpattern" where="Section = 'projet' AND custom_2 in ('Programmé','En cours')" break=",">{ID}</txp:smd_query>
+		</txp:variable>
+		<!-- filtrer les todos non terminé, non rejetés AND appartenant à la var projet-liste-->
+		<txp:variable name="todo-liste">
+			<txp:smd_query column="ID" table="textpattern" where='custom_1 in (<txp:variable name="projet-liste" />) AND custom_2 in ("Non programmé","Programmé","En cours","En pause")' break=",">{ID}</txp:smd_query>
+		</txp:variable>
+		<txp:article_custom section="todo" id='<txp:variable name="todo-liste" />' break="" sort="posted asc" limit="999" time="any">
+			<txp:output_form form="odd_even" />
+			<txp:variable name="statut-class"><txp:smd_wrap transform="sanitize|url_title"><txp:custom_field name='etat' /></txp:smd_wrap></txp:variable>
+			<tr data-id="<txp:article_id />" class="todo <txp:variable name="statut-class" /><txp:variable name='odd-even' />">
+				<td class="todo-projet">
+					<txp:smd_query column="Title,ID" table="textpattern" where='ID=<txp:custom_field name="Projet" />'>
+						<txp:permlink id="{ID}">{Title}</txp:permlink>
+					</txp:smd_query></td>
+				<td class="todo-title"><txp:custom_field name="title" escape=""/></td>
+				<td class="todo-start" data-order-by="<txp:posted format='iso8601'/>"><txp:posted format="%d.%m.%y"/></td>
+				<td class="todo-end"><txp:expires /></td>
+				<td class="todo-temps">
+					<span class="temps-prevu"><txp:custom_field name="Temps_prevu" /></span>
+					/ 
+					<span class="temps-reel"><txp:if_custom_field name="Temps_reel" value="">0<txp:else /><txp:custom_field name="Temps_reel" /></txp:if_custom_field></span>
+				</td>
+				<td class="todo-statut"><txp:custom_field name="etat" /></td>
+				<td class="action">
+						<button class="btn picto action-editer" type="button" data-picto="&#9998"><strong>Edit</strong></button>
+					<txp:if_custom_field name='etat' value="Non programmé,En pause" match="any" separator=",">
+					<txp:else />
+						<button class="btn picto action-start" type="button" data-picto="&#9654"><strong>Edit</strong></button>
+					</txp:if_custom_field>
+				</td>
+			</tr>	
+		</txp:article_custom>
+	</tbody>
+</table>

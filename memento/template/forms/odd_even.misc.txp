@@ -1,0 +1,12 @@
+<txp:hide>
+=======================
+bascule d'une variable odd / even
+à utiliser pour les liste, les tableaux
+=======================
+</txp:hide>
+
+<txp:if_variable name="odd-even" value=" even">
+    <txp:variable name="odd-even" value=" odd" />
+<txp:else />
+    <txp:variable name="odd-even" value=" even" />
+</txp:if_variable>

@@ -1,0 +1,42 @@
+<txp:smd_bio_info
+	fields="name,RealName,email,tel_mobile,skype,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville,tel_fixe"
+	wraptag=""
+	class="" 
+	show_empty="1"
+>
+	<li class='vcard' />
+	<txp:hide><txp:if_article_author name="{smd_bio_name}"> vcard-facturation</txp:if_author></txp:hide>
+		<div class="societe_meta">
+			<txp:smd_bio_data field="societe" wraptag="h2" class="h3 org" />
+			<p class="adr">
+				<span class="street-address">
+					<txp:smd_bio_data field="adresse_rue" wraptag="span" class="block"/>
+					<txp:smd_bio_data field="adresse_quartier" wraptag="span" class="block" />
+				</span>
+				
+				<txp:smd_bio_data field="adresse_cp" wraptag="span" class="postal-code" />
+				<txp:smd_bio_data field="adresse_ville" wraptag="span" class="locality" />
+			</p>				
+		</div>
+		<div class="user-meta">
+			<h2 class="h3 fn"><span class="picto" data-picto="&#59394;"><strong>Contact&nbsp;:</strong> </span>{smd_bio_RealName}</h2>
+			<p>
+				<span class="block">
+					<span class="picto" data-picto="@"><strong>Email :</strong></span>
+					<span class="email"><a href="mailto:{smd_bio_email}">{smd_bio_email}</a></span>				
+				</span>
+				
+				<span class="tel block">
+					<span class="type">mobile&nbsp;:</span>
+					<span class="value">{smd_bio_tel_mobile}</span>
+				</span>
+					
+				<span class="tel block">
+					<span class="picto" data-picto="&#xf303;"><strong>Skype :</strong></span>
+					<txp:smd_bio_data field="skype" wraptag="span" />
+				</span>
+			</p>
+<txp:hide>			<a href="#" class="download-vcard picto btn" data-picto="&#x1f4e5;"><strong>Télécharger Vcard</strong></a>			</txp:hide>
+		</div>
+	</li> <!-- .vcard -->
+</txp:smd_bio_info>

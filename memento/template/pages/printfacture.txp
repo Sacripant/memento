@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="copyright" content="©sacripant.fr" />
+	<meta name="description" content="Memento, gestionnaire de projet sous Textpattern" />
+	
+	<title>Impression factures - Memento</title>
+	
+<!-- affichage favicon -->
+	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+<!-- CSS FOR PRINT -->
+	<link rel="stylesheet" href="<txp:site_url />template/css/reset.css" media="all" />
+	<link rel="stylesheet" href="<txp:site_url />template/css/print-preview.css" type="text/css" media="all" />
+	
+</head>
+
+
+<body <txp:if_section name="">id="heim"<txp:else />id="<txp:section />"</txp:if_section> >
+	
+	<!-- VARIABLES -->
+	<txp:adi_gps />
+	<txp:hide>	
+		<!-- ID projet -->
+		<txp:variable name="projetID"/><br />
+		<!-- N0 Devis -->
+		<txp:variable name="devisID"/><br />
+		<!-- Nb de tranches -->
+		<txp:variable name="nbTranches" /><
+	</txp:hide>
+	
+	
+	<txp:article_custom id='<txp:variable name="projetID"/>' time="any">
+	
+	<!-- Tranches de paiement -->
+	<txp:variable name="tranches" value='<txp:custom_field name="repartition" />' />
+	
+	
+	<!-- COMMANDITAIRE -->
+	<txp:variable name="commanditaire">
+		<div id="" class="commanditaire-wrapper">
+			<h2>Commanditaire :</h2>
+			<div class="commanditaire-content">
+				<txp:smd_bio_info
+					fields="name,RealName,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville"
+					show_empty="1"
+				>
+					<strong class="org">{smd_bio_societe}</strong><br />
+					<span class="street-address">{smd_bio_adresse_rue}<br/>{smd_bio_adresse_quartier}</span><br/>
+					<span class="locality">{smd_bio_adresse_ville}</span>
+				</txp:smd_bio_info>											
+			</div>
+		</div>			
+	</txp:variable>
+	
+	<!-- TAUX HORAIRE ET DEVISE -->
+	<div class="metas-devis">
+		<span class="taux-horaire"><txp:custom_field name="Taux_horaire" /></span> 
+		<span class="devise"><txp:custom_field name="Devise" /></span>
+	</div>
+	
+	<!-- NATURE DU TRAVAIL -->
+	<txp:variable name="chose_facturee">
+		<header>
+			<h2>Nature du travail :</h2>
+			<div>
+				<h3 class="projet-title"><txp:title />.</h3>
+				<span class="projet-description"><txp:body /></span>
+			</div>	
+		</header>
+	</txp:variable>
+	
+	<!-- Détail de la prestation -->
+	<txp:variable name="detail_prestation">
+		<txp:category_list break="" wraptag="div" class="details-prestation"
+			categories="conception,crea-graphique,maquettage,webdesign,dev-back,reunion,formation"
+		>
+			<txp:variable name="todos_this_cat"><txp:smd_wrap>
+				<txp:article_custom projet='<txp:variable name="projetID" />' section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
+					<li class="item-devis item-<txp:category />">
+						<strong class="item-devis-title"><txp:title /></strong>
+						<span class="montant montant-item" data-temps='<txp:if_custom_field name="Temps_prevu" value="">0<txp:else /><txp:custom_field name="Temps_prevu" /></txp:if_custom_field>'>
+							<span class="total-item"></span>
+						</span>
+					</li>
+				</txp:article_custom>
+			</txp:smd_wrap></txp:variable>
+
+			<txp:if_variable name="todos_this_cat" value="">
+			<txp:else />
+				<div class="devis-section clearfix">
+					<h3 class="devis-cat-title"><txp:category title="1"/></h3>
+
+					<!-- Liste des taches -->
+					<txp:variable name="todos_this_cat" />
+
+					<!-- Sous totale d'une cat -->
+					<h4 class="item-devis sous-total">
+						<strong class="item-devis-title">Sous Total <txp:category title="1"/></strong><span class="montant montant-sous-total"></span>
+					</h4>	
+				</div>
+			</txp:if_variable>
+
+		</txp:category_list>	
+	</txp:variable>
+	
+	
+		<!-- PAGE -->
+		<div class="site_wrapper">
+			<!-- Print button -->
+			<txp:hide>			
+				<button type="button" id="print" title="Imprimer le devis et les factures">Print</button>
+			</txp:hide>
+			
+		
+			<!-- DEVIS -->
+			<section id="devis">
+			
+				<header>
+					<p class="date-courier">
+						À Dakar, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
+						<!-- À Dakar, le Vendredi 27 juillet 2012 -->
+					</p>
+					<txp:variable name="commanditaire" />
+					<h1>
+						<txp:variable name="devis" value="1" />
+						<txp:output_form form="titre-print-svg" />
+						
+						<span class="no-devis">N<sup>o</sup> <txp:variable name="devisID" /></span>
+					</h1>
+				</header>
+		
+				<article class="devis">
+					<txp:variable name="chose_facturee" />
+					<txp:variable name="detail_prestation" />
+
+
+
+					<!-- Total Devis et modalité de règlement -->
+					<footer>
+						<div class="total-groupe total-groupe-devis">
+						<!-- TOTAL TTC OU TOTAL HT -->							
+							<h3 class="item-devis total-ttc">
+								<strong class="item-devis-title"><txp:if_custom_field name="taxe" value="on">Total TTC<txp:else />Total HT</txp:if_custom_field></strong>
+								<span class="montant">
+									<span class="montant-total-ttc"></span>
+									<span class="devise"><txp:custom_field name="Devise" /></span>
+								</span>
+							</h3>
+
+							<txp:if_custom_field name="taxe" value="on">
+							<h3 class="item-devis taxe">
+								<strong class="item-devis-title">5% retenus</strong><span class="montant">
+									<span class="montant-taxe"></span>
+									<span class="devise"><txp:custom_field name="Devise" /></span>
+								</span>
+							</h3>	
+							<h3 class="item-devis total-ht">
+								<strong class="item-devis-title">Total HT</strong><span class="montant">
+									<span class="montant-total-ht"></span>
+									<span class="devise"><txp:custom_field name="Devise" /></span>
+								</span>
+							</h3>
+							</txp:if_custom_field>
+						</div> <!-- .total-goupe -->
+						
+						<!-- Tableau de Tranches de paiement -->
+						<div class="repartition">
+							<h2>Modalités de règlement</h2>
+							
+							<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
+								<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+								<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+								<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+								<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+								
+								
+								<!-- IF var quand = DATE YYYY/MM/DD -->
+									<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+										<strong class='item-devis-title'>
+											<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+											<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+										</strong>
+									<txp:else />
+								<!-- ELSE -->
+										<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
+									</txp:cbe_if_variable>
+							
+								<!-- Montant + devise -->
+									<span class="montant">
+										<span class='somme-a-payer'></span>
+										<span class="devise"><txp:custom_field name="Devise" /> TTC</span>
+									</span>
+								</li>
+							</txp:rah_repeat>
+						</div>
+					</footer>
+				</article>
+				
+			</section> <!-- END DEVIS -->
+			
+			
+			<!-- FACTURES -->
+			<!-- phrase de référence au devis -->
+			<txp:variable name="ref_devis">
+				<p class="note ref_devis">
+					Se référer au devis N<sup>o</sup> <txp:variable name="devisID" /> pour les détails de la prestation.
+				</p>
+			</txp:variable>
+
+			
+			
+			
+			<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1">
+			
+				<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:variable name='date-facture'><txp:smd_wrap transform="split|-||4" item='<txp:rah_repeat_value />' /></txp:variable>
+			
+				<!-- FACTURE 0<txp:variable name="index" /> -->	
+				<section id='facture<txp:variable name="index" />' class="facture">
+				
+					<header>
+						<p class="date-courier">
+							<!-- IF var date-facture = DATE YYYY/MM/DD -->
+								<txp:cbe_if_variable name="date-facture" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+									À Dakar, le <txp:smd_wrap transform="date|%A %e %B %Y" item='<txp:variable name="date-facture" />' />
+								<txp:else />
+							<!-- ELSE date-facture = NOW-->
+									À Dakar, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
+								</txp:cbe_if_variable>	
+						</p>
+						<txp:variable name="commanditaire" />
+					
+						<h1>
+							<txp:output_form form="titre-print-svg" />
+							<span class="no-devis">N<sup>o</sup> <txp:variable name="devisID" /> <txp:variable name="index" />-<txp:variable name="nbTranches" /></span>
+						</h1>
+					</header>
+				
+					<article class="facture">
+					
+						<txp:variable name="chose_facturee" />
+						<div class="add_totaux"></div>
+						<txp:variable name="ref_devis" />
+				
+						<hr />
+					
+						<h2>Somme à payer :</h2>
+
+						<h3 class="clearfix">	
+							<!-- IF var quand = DATE YYYY/MM/DD -->
+								<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+									<strong class='item-devis-title'>
+										<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+										<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+									</strong>
+								<txp:else />
+							<!-- ELSE -->
+									<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
+								</txp:cbe_if_variable>
+						</h3>				
+							
+									
+						<div class="total-groupe total-groupe-facture clearfix">
+						<!-- TOTAL TTC + 5% + TOTAL HT -->
+							<h4 class="item-devis total-ttc">
+								<strong class="item-devis-title">
+									<txp:if_custom_field name="taxe" value="on">
+										Total TTC
+									<txp:else />
+										Total HT
+									</txp:if_custom_field>
+								</strong>
+								<span class="montant">
+									<span class="montant-total-ttc"></span>
+									<span class="devise"><txp:custom_field name="Devise" /></span>
+								</span>
+							</h4>
+							<txp:if_custom_field name="taxe" value="on">
+								<h4 class="item-devis taxe">
+									<strong class="item-devis-title">5% retenus</strong><span class="montant">
+										<span class="montant-taxe"></span>
+										<span class="devise"><txp:custom_field name="Devise" /></span>
+									</span>
+								</h4>	
+								<h4 class="item-devis total-ht">
+									<strong class="item-devis-title">Total HT</strong><span class="montant">
+										<span class="montant-total-ht"></span>
+										<span class="devise"><txp:custom_field name="Devise" /></span>
+									</span>
+								</h4>	
+							</txp:if_custom_field>
+
+							<!-- Phrase de modalité de paiement -->
+							<p class="note ref_devis">
+								Merci de régler le montant de <em><span class='montant-total-ht'></span> <span class="devise"><txp:custom_field name="Devise" /></span></em> par chèque à l'attention de Mr <em>Thomas JUND</em>.
+							</p>
+
+						</div> <!-- .total-goupe -->
+					
+	
+					
+					</article>
+				</section>	
+			</txp:rah_repeat>		<!-- End boucle factures	 -->
+			
+		</div> <!-- .site-wrapper -->
+		
+		
+		<script>
+
+		var pageDatas = {
+			site : {
+				siteUrl : '<txp:site_url />'
+			},
+			projet : {
+				id	: <txp:article_id />,
+				finance : 1,
+				tauxHoraire : <txp:custom_field name="Taux_horaire" />,
+				devise : '<txp:custom_field name="Devise" />',
+				taxe : <txp:if_custom_field name="taxe" value="on">1<txp:else />0</txp:if_custom_field>
+			}
+		};
+
+		</script>
+		</txp:article_custom> <!-- END PARENT ARTICLE FORM -->
+		
+	
+	<!-- Javascript bottom -->
+	<!-- chercher Jquery sur le CDN google -->
+	<!-- // <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script> -->
+	<!-- Si le CDN google n'est pas dispo, utilise Jquery locale -->
+	<!-- // <script>window.jQuery || document.write('<script src="<txp:site_url />template/js/jquery-1.7.2.min.js"><\/script>')</script> -->
+
+	<script src="<txp:site_url />template/js/jquery-1.7.2.min.js"></script>
+
+	<script src="<txp:site_url />template/js/finance.js" async></script>
+
+	
+</body>
+
+
+</html>

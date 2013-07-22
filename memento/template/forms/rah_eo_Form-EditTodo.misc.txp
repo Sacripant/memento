@@ -1,0 +1,51 @@
+; Content-type: text/html
+<txp:cbe_frontauth_if_logged level="1">
+	<txp:adi_gps />
+
+	<txp:variable name="statut"><txp:smd_query column="value" table="custom_fields" where="name='custom_2_set'" break=",">{value}</txp:smd_query></txp:variable>
+
+
+	<txp:smd_query column="*" table="textpattern" where='ID=<txp:variable name="ID"/>' escape="Title">
+
+	<txp:variable name="idProjet" value="{custom_1}" />
+	<txp:variable name="end" value="{Expires}" />
+	<txp:if_variable name="end" value="0000-00-00 00:00:00">
+		<txp:variable name="end" value="" />
+	</txp:if_variable>
+
+	<td colspan="8" class="inline-form-wrapper">
+		<txp:mem_simple_form table="textpattern" id_field="ID" id_insert="0" redirect_url='<txp:permlink id="4" />'>
+			<table>
+				<colgroup>
+					<col class="edit-todo-id" />
+					<col class="edit-todo-title" />
+					<col class="edit-todo-cat" />
+					<col class="edit-todo-date" />
+					<col class="edit-todo-temps" />
+					<col class="edit-todo-statut" />
+					<col class="edit-todo-action save" />					
+				</colgroup>
+				<tr>
+				
+					<txp:mem_form_secret name="int_ID" value='{ID}' />
+					<txp:mem_form_secret name="now_LastMod" value='' />
+					<txp:mem_form_secret name="string_LastModID" value='<txp:cbe_frontauth_whois />' />				
+				
+					<td class="id edit-todo-id">{ID}</td>
+					<td class="edit-todo-title"><txp:mem_form_textarea rows="2" cols="30" name="string_Title" label="" break="" escape_value="0" default="{Title}" /></td>
+					<td class="edit-todo-cat"><txp:category name='{Category1}' title="1" /></td>
+					<td class="edit-todo-date inline">
+						<txp:mem_form_text name="string_Posted" label="Start" break="" class="date-input" default='{Posted}' />
+						<txp:mem_form_text name="string_expires" label="End" break="" class="date-input" default='<txp:variable name="end" />' />
+					</td>
+					<td class="edit-todo-temps"><span class="temps-prevu">{custom_3}</span>/<span class="temps-reel inline"><txp:mem_form_text name="string_custom_4" label="" break="" size="4" default='{custom_4}' required="0"/></span></td>
+					<td class="edit-todo-statut"><txp:mem_form_select name="string_custom_2" items='<txp:variable name="statut" />' values='<txp:variable name="statut" />' label="" break="" selected='{custom_2}' /></td>
+					<td class="action save"><txp:mem_form_submit class="btn" button="1" label="ok" /></td>
+				</tr>
+			</table>
+		</txp:mem_simple_form>	
+	</td>
+
+				
+	</txp:smd_query>
+</txp:cbe_frontauth_if_logged>		

@@ -1,0 +1,103 @@
+<txp:hide>
+============
+Module ARTICLE section-projet appelé depuis la page default.txp
+============
+Affiche le Header + la structure ( sidebar + main-content) d'un projet
+============
+</txp:hide>
+
+<txp:hide><!-- Authorisation d'accéder à ce projet --></txp:hide>
+<txp:cbe_frontauth_if_connected name='admin,<txp:author title="0" />'>
+<txp:else />
+	<txp:txp_die status="401" />
+</txp:cbe_frontauth_if_connected>
+
+<txp:hide><!-- var project-modified = date de modification de la dernière todo rattachée au projet --></txp:hide>
+<txp:variable name="project-modified"><txp:article_custom projet='<txp:article_id />' section="todo" sort="LastMod desc" limit="1" time="any"><txp:modified format="%g%m%d%H%M"/></txp:article_custom></txp:variable>
+
+<article>
+	<header class="project-header">
+		<h1 class="projet-title"><span class="id idProjet small"><txp:article_id /></span><txp:title /></h1>
+		<p class="projet-meta h3">
+			|
+			<txp:custom_field name="Etat" />
+			|
+			<txp:if_expires>
+				End&nbsp;: <txp:expires />
+				|
+			</txp:if_expires>			
+			<txp:hide><!-- Edition du projet dans le back-office (admin only) --></txp:hide>
+			<txp:cbe_frontauth_if_connected level="1">	
+				<a class="btn picto edit-projet" target="_blank" href="<txp:site_url />textpattern/index.php?event=article&amp;step=edit&amp;ID=<txp:article_id />" title="Editer le Projet" data-picto="&#9998"><strong>Editer le Projet</strong></a>
+			</txp:cbe_frontauth_if_connected>	
+		</p>
+		<div class="projet-description">
+			<txp:body />
+		</div>
+	</header>
+	
+	
+	<txp:hide>	
+		<!-- Tabs Navigation -->
+	</txp:hide>
+	<nav class="sidenav nav_projet h1">
+		<ul>
+			<li class="li-sidenav li-nav_projet">
+				<a href="#todolist" title="Todolist" class="a-sidenav picto" data-picto="&#9776;"><strong>Todolist</strong></a>
+			</li>
+			<li class="li-sidenav li-nav_projet">
+				<a href="#commentaires" class="a-sidenav picto" data-picto="&#59392;"><strong>Commentaires</strong></a>
+			</li>
+			<li class="li-sidenav li-nav_projet">
+				<a href="#attachments" class="a-sidenav picto" data-picto="&#x1F4CE"><strong>Pièces jointes</strong></a>
+			</li>
+			<li class="li-sidenav li-nav_projet">
+				<a href="#adresses" class="a-sidenav picto" data-picto="&#59170;"><strong>Carnet d'adresses</strong></a>
+			</li>
+			<txp:hide>
+				<!-- finance BUTTON (ADMIN ONLY) -->
+			</txp:hide>
+			<txp:cbe_frontauth_if_connected level="1">				
+				<txp:if_custom_field name="Taux_horaire" value="">
+				<txp:else />
+					<li class="li-sidenav li-nav_projet">
+						<a href="#finance" class="a-sidenav picto" data-picto="&#x1f4b0"><strong>Finance</strong></a>
+					</li>
+				</txp:if_custom_field>
+			</txp:cbe_frontauth_if_connected>	
+		</ul>
+	</nav>
+	
+	
+	
+	<txp:hide>	
+		<!-- Content Tabs for a project -->
+	</txp:hide>
+	<div class="main-content project-content">
+		<section id="todolist">
+			<txp:output_form form="tab-todolist-projet" />	
+		</section>
+		<section id="commentaires">
+			<h1 class="block-title" data-this="Commentaires">commentaires</h1>
+			<txp:article form="comments_display" />
+		</section>
+		<section id="attachments">
+				<txp:output_form form="tab-attachments" />				
+		</section>
+		<section id="adresses">
+			<txp:output_form form="tab-adresse" />	
+		</section>
+		<txp:hide>
+			<!-- finance (ADMIN ONLY) -->
+		</txp:hide>
+		<txp:cbe_frontauth_if_connected level="1">					
+			<txp:if_custom_field name="Taux_horaire" value="">
+			<txp:else />
+				<section id="finance">
+					<txp:output_form form="tab-finance" />				
+				</section>		
+			</txp:if_custom_field>
+		</txp:cbe_frontauth_if_connected>				
+	</div>
+	
+</article>

@@ -1,0 +1,35 @@
+<script>
+
+var pageDatas = {
+	site : {
+		siteUrl : '<txp:site_url />'
+	},
+	user : {
+		realName		: '<txp:cbe_frontauth_whois type="RealName" />',
+		name			: '<txp:cbe_frontauth_whois type="name" />',
+		email			: '<txp:cbe_frontauth_whois type="email" />',
+		level			: <txp:cbe_frontauth_whois type="privs" />
+	},
+	projet : {
+		<txp:if_section name="projet">
+			<txp:if_individual_article>
+				id	: <txp:article_id />
+				<txp:if_custom_field name="Taux_horaire" value="">
+					,
+					finance : 0
+				<txp:else />
+					,
+					finance : 1,
+					tauxHoraire : <txp:custom_field name="Taux_horaire" />,
+					devise : '<txp:custom_field name="Devise" />',
+					taxe : <txp:if_custom_field name="taxe" value="on">1<txp:else />0</txp:if_custom_field>
+				</txp:if_custom_field>
+			</txp:if_individual_article>
+		<txp:else />
+		finance : 0
+		</txp:if_section>
+	}
+	
+};
+	
+</script>

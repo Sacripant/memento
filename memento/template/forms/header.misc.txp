@@ -1,0 +1,48 @@
+<header class="site-header">
+	
+	<div id="" class="brand">
+		<h1 class="site-name" data-site-name="<txp:site_name />">
+			<txp:link_to_home><txp:site_name /></txp:link_to_home>
+			<a href="#" class="picto infos-memento" data-picto="&#8505;"><strong>Information</strong></a>	
+		</h1>
+	</div>
+	
+	<txp:cbe_frontauth_if_logged>
+		
+		<txp:variable name="article-filter" value='<txp:cbe_frontauth_whois type="name" />' />
+		
+		<txp:cbe_frontauth_if_logged level="1">
+			<txp:variable name="article-filter" value='' />			
+		</txp:cbe_frontauth_if_logged>
+		
+		<div id="" class="bascule-projet">
+			<label>Changer de projet&nbsp;:</label>
+			<txp:article_custom 
+				sort="title" 
+				section="projet" 
+				wraptag="select" 
+				break="" 
+				limit="999" 
+				time="any"
+				author='<txp:variable name="article-filter" />'
+			>
+				<txp:if_first_article>
+					<option value="">Projets</option>
+					<option value="">----------</option>
+				</txp:if_first_article>
+				<option <txp:if_article_id>selected="selected"</txp:if_article_id> value="<txp:permlink />"><txp:title /></option>
+			</txp:article_custom>
+		
+			
+		</div>
+		
+		<div class="whois-connected">
+			<h2 class="h3 user-connected">
+				<span class="picto" data-picto="&#59394;"><strong>Utilisateur Connecté :</strong></span> 
+				<txp:cbe_frontauth_whois type="RealName" wraptag="" class=""/>
+				<a title="Se déconnecter" class="picto"  data-picto="&#10006" href="?logout=1"><strong>Se déconnecter</strong></a>			
+			</h2>
+		</div>
+		
+	</txp:cbe_frontauth_if_logged>
+</header>

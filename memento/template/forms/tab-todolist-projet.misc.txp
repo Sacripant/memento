@@ -1,0 +1,66 @@
+<txp:hide>
+============
+Module tab-todolist-projet appelé depuis le module section-projet.article
+============
+Prépare la structure, les colonnes et le header du tableau des taches du projet
+============
+</txp:hide>
+
+
+<!-- TODO Liste -->
+<h1 class="block-title" data-this="Todoliste">Todoliste</h1>
+
+<!-- filtrage des todos par catégories -->
+<form class="filtrage">
+	<fieldset>
+		<legend>filtrage des taches par catégories</legend>
+		
+		<ul class="form-12-12 inline form-list-chk">
+			<li><input type="checkbox" data-target=".programme,.en-cours" id="filtre-programme" checked="checked"> <label for="filtre-programme">Programmé</label></li>
+			<li><input type="checkbox" data-target=".non-programme,.en-pause" id="filtre-non-programme" checked="checked"> <label for="filtre-non-programme">Non programmé / En pause</label></li>
+			<li><input type="checkbox" data-target=".termine,.rejete" id="filtre-termine"> <label for="filtre-termine">Terminé / Rejeté</label></li>
+		</ul>
+	</fieldset>
+</form>
+
+<!-- Tableaux des todos -->
+<table class="todolist-table">
+	<colgroup>
+		<col class="todo-projet-id">
+		<col class="todo-projet-title">
+		<col class="todo-projet-cat">
+		<col class="todo-projet-start">
+		<col class="todo-projet-end">
+		<col class="todo-projet-statut">
+		<txp:cbe_frontauth_if_connected level="1">			
+			<col class="todo-projet-temps">
+			<col class="action edit">
+		</txp:cbe_frontauth_if_connected>	
+	</colgroup>
+	<thead>
+		<tr>
+			<th scope="col" class="type-int">ID</th>
+			<th scope="col" class="type-string">Titre</th>
+			<th scope="col" class="type-string">Catégorie</th>
+			<th scope="col" class="type-string asc">Start</th>
+			<th scope="col" class="type-string">End</th>
+			<th scope="col" class="type-string">Statut</th>
+			<txp:cbe_frontauth_if_connected level="1">				
+				<th scope="col">Temps</th>
+				<th scope="col">Action</th>
+			</txp:cbe_frontauth_if_connected>	
+		</tr>
+		<!-- ADD TODO BUTTON -->
+		<tr class="add-todo-line">
+			<td colspan="8"><button id="add-todo" class="btn" type="button"><span class="picto" data-picto="&#43;&#9776;"><strong>Ajouter une tache</strong></span></button></td>
+		</tr>
+	</thead>
+	<tbody>
+		
+	<!-- Liste des taches du projet -->
+		<txp:article_custom projet='<txp:article_id />' section="todo" form="todolist-table" break="" sort="posted asc" limit="999" time="any" />
+	</tbody>
+</table>
+
+<!-- Bouton d'export du tableau au format CSV -->
+<a id="csv_export" class="btn" href="<txp:site_url />?rah_external_output=todolist-projet-csv&id=<txp:article_id />">CSV</a>

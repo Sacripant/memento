@@ -1,0 +1,144 @@
+# ----------------------------------------------------------------------
+# Txp htaccess
+# ----------------------------------------------------------------------
+
+
+#DirectoryIndex index.php index.html
+
+#Options +FollowSymLinks
+#Options -Indexes
+#ErrorDocument 403 default
+
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	#RewriteBase /relative/web/path/
+
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^(.+) - [PT,L]
+
+	RewriteCond %{REQUEST_URI} !=/favicon.ico
+	RewriteRule ^(.*) index.php
+
+	RewriteCond %{HTTP:Authorization}  !^$
+	RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
+</IfModule>
+
+#php_value register_globals 0
+
+# SVG
+AddType image/svg+xml  svg svgz
+AddEncoding gzip       svgz
+
+# ----------------------------------------------------------------------
+# UTF-8 encoding
+# ----------------------------------------------------------------------
+
+# Use UTF-8 encoding for anything served text/plain or text/html
+AddDefaultCharset utf-8
+
+# ----------------------------------------------------------------------
+# Webfont access
+# ----------------------------------------------------------------------
+
+# Allow access from all domains for webfonts.
+# Alternatively you could only whitelist your
+# subdomains like "subdomain.example.com".
+
+<FilesMatch "\.(ttf|ttc|otf|eot|woff|font.css)$">
+  <IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>
+
+
+# ----------------------------------------------------------------------
+# Gzip compression
+# ----------------------------------------------------------------------
+
+<IfModule mod_deflate.c>
+
+# Force deflate for mangled headers developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
+<IfModule mod_setenvif.c>
+  <IfModule mod_headers.c>
+    SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+    RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+  </IfModule>
+</IfModule>
+
+# HTML, TXT, CSS, JavaScript, JSON, XML, HTC:
+<IfModule filter_module>
+  FilterDeclare   COMPRESS
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/html
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/css
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/plain
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $text/x-component
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/javascript
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/json
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/xhtml+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/rss+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/atom+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/vnd.ms-fontobject
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $image/svg+xml
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $application/x-font-ttf
+  FilterProvider  COMPRESS  DEFLATE resp=Content-Type $font/opentype
+  FilterChain     COMPRESS
+  FilterProtocol  COMPRESS  DEFLATE change=yes;byteranges=no
+</IfModule>
+
+<IfModule !mod_filter.c>
+  # Legacy versions of Apache
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
+  AddOutputFilterByType DEFLATE application/xhtml+xml application/rss+xml application/atom+xml
+  AddOutputFilterByType DEFLATE image/svg+xml application/vnd.ms-fontobject application/x-font-ttf font/opentype
+</IfModule>
+</IfModule>
+
+
+
+
+# ----------------------------------------------------------------------
+# Suppress or force the "www." at the beginning of URLs
+# ----------------------------------------------------------------------
+
+# The same content should never be available under two different URLs - especially not with and
+# without "www." at the beginning, since this can cause SEO problems (duplicate content).
+# That's why you should choose one of the alternatives and redirect the other one.
+
+# By default option 1 (no "www.") is activated. Remember: Shorter URLs are sexier.
+# no-www.org/faq.php?q=class_b
+
+# If you rather want to use option 2, just comment out all option 1 lines
+# and uncomment option 2.
+# IMPORTANT: NEVER USE BOTH RULES AT THE SAME TIME!
+
+# ----------------------------------------------------------------------
+
+# Option 1:
+# Rewrite "www.example.com -> example.com" 
+
+# <IfModule mod_rewrite.c>
+#   RewriteCond %{HTTPS} !=on
+#   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+#   RewriteRule ^ http://%1%{REQUEST_URI} [R=301,L]
+# </IfModule>
+
+# ----------------------------------------------------------------------
+
+# Option 2:
+# To rewrite "example.com -> www.example.com" uncomment the following lines.
+# Be aware that the following rule might not be a good idea if you
+# use "real" subdomains for certain parts of your website.
+
+# <IfModule mod_rewrite.c>
+#   RewriteCond %{HTTPS} !=on
+#   RewriteCond %{HTTP_HOST} !^www\..+$ [NC]
+#   RewriteRule ^ http://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+# </IfModule>
+
+
