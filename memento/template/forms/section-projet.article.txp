@@ -13,7 +13,7 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 </txp:cbe_frontauth_if_connected>
 
 <txp:hide><!-- var project-modified = date de modification de la dernière todo rattachée au projet --></txp:hide>
-<txp:variable name="project-modified"><txp:article_custom projet='<txp:article_id />' section="todo" sort="LastMod desc" limit="1" time="any"><txp:modified format="%g%m%d%H%M"/></txp:article_custom></txp:variable>
+<txp:variable name="project-modified"><txp:article_custom projet='<txp:article_id />' parent="" section="todo" sort="LastMod desc" limit="1" time="any"><txp:modified format="%g%m%d%H%M"/></txp:article_custom></txp:variable>
 
 <article>
 	<header class="project-header">

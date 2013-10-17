@@ -46,7 +46,7 @@ Affiche la liste des article de la section "todo" liés à l'article selectionn�
 	<div id="devis">
 		
 	<!-- Start catégories liste -->
-	<txp:category_list break="" categories="conception,crea-graphique,webdesign,dev-back,formation,reunion">
+	<txp:category_list break="" categories="conception,crea-graphique,webdesign,dev-back,documentation,formation,reunion">
 	
 		<!-- VARIABLE : Liste des todos par catégorie -->
 		<txp:variable name="todos_this_cat"><txp:smd_wrap>
