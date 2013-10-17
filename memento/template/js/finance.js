@@ -48,6 +48,8 @@ function calcul_taxe(totalTTC, target){
 		target.find('.montant-taxe').text( formatage_montant(taxe5) );
 	} 		
 	target.find('.montant-total-ht').text( formatage_montant(totalHT) );
+	
+	return totalHT;
 }
 
 function calcul()
@@ -82,7 +84,9 @@ function calcul()
 	,	 totalTTC = calcul_total(sousTotaux, devisTotalTTCWrap);
 	
 	
-	calcul_taxe( totalTTC, $('#devis') );
+	totalHT = calcul_taxe( totalTTC, $('#devis') );
+	
+	console.log(totalHT);
 
 	// Répartition des factures / modalités de paiement
 	$('.devis-liste-factures li').each(function(index) {
@@ -90,9 +94,10 @@ function calcul()
 		,	 coef = pourcent.replace('%', '');
 		coef /= 100;
 		
-		var montant = totalTTC*coef;
-		tranches.push(montant);
-		$('.somme-a-payer', this).text(formatage_montant(montant));		
+		var montantTTC = totalTTC*coef;
+		var montantHT = totalHT*coef;
+		tranches.push(montantTTC);
+		$('.somme-a-payer', this).text(formatage_montant(montantHT));		
 	});
 
 }
