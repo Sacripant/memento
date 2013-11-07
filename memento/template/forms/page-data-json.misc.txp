@@ -22,7 +22,7 @@ var pageDatas = {
 					finance : 1,
 					tauxHoraire : <txp:custom_field name="Taux_horaire" />,
 					devise : '<txp:custom_field name="Devise" />',
-					taxe : <txp:if_custom_field name="taxe" value="on">1<txp:else />0</txp:if_custom_field>
+					taxe : <txp:if_custom_field name="taxe" value="off">0<txp:else /><txp:custom_field name="taxe" /></txp:if_custom_field>
 				</txp:if_custom_field>
 			</txp:if_individual_article>
 		<txp:else />

@@ -82,28 +82,32 @@ Affiche la liste des article de la section "todo" liés à l'article selectionn�
 		<!-- Total Devis -->
 		<txp:if_last_category>
 			<div class="total-groupe-devis">
-			<!-- TOTAL TTC + 5% + TOTAL HT -->
-				<h3 class="item-devis total-ttc">
-					<strong class="item-devis-title"><txp:if_custom_field name="taxe" value="on">Total TTC<txp:else />Total HT</txp:if_custom_field></strong>
-					<span class="montant">
-						<span class="montant-total-ttc"></span>
-						<span class="devise"><txp:custom_field name="Devise" /></span>
-					</span>
-				</h3>
+				<!-- TOTAL HT + taxe = TOTAL TTC -->
+					<!-- Total HT -->
+					<h3 class="item-devis total-ht">
+						<strong class="item-devis-title">Total HT</strong><span class="montant">
+							<span class="montant-total-ht"></span>
+							<span class="devise"><txp:custom_field name="Devise" /></span>
+						</span>
+					</h3>
 				
-				<txp:if_custom_field name="taxe" value="on">
-				<h3 class="item-devis taxe">
-					<strong class="item-devis-title">5% retenus</strong><span class="montant">
-						<span class="montant-taxe"></span>
-						<span class="devise"><txp:custom_field name="Devise" /></span>
-					</span>
-				</h3>	
-				<h3 class="item-devis total-ht">
-					<strong class="item-devis-title">Total HT</strong><span class="montant">
-						<span class="montant-total-ht"></span>
-						<span class="devise"><txp:custom_field name="Devise" /></span>
-					</span>
-				</h3>
+				<txp:if_custom_field name="taxe" value="off">
+				<txp:else />
+					<!-- Taxe -->
+					<h3 class="item-devis taxe">
+						<strong class="item-devis-title">5% retenus</strong><span class="montant">
+							<span class="montant-taxe"></span>
+							<span class="devise"><txp:custom_field name="Devise" /></span>
+						</span>
+					</h3>	
+					<!-- Total TTC -->
+					<h3 class="item-devis total-ttc">
+						<strong class="item-devis-title">Total TTC</strong>
+						<span class="montant">
+							<span class="montant-total-ttc"></span>
+							<span class="devise"><txp:custom_field name="Devise" /></span>
+						</span>
+					</h3>
 				</txp:if_custom_field>
 			</div> <!-- .total-goupe -->
 
@@ -130,7 +134,7 @@ Affiche la liste des article de la section "todo" liés à l'article selectionn�
 						
 					<span class="montant">
 						<span class='somme-a-payer'></span>
-						<span class="devise"><txp:custom_field name="Devise" /></span>
+						<txp:hide><span class="devise"><txp:custom_field name="Devise" /></span></txp:hide>
 					</span>
 				</li>
 			</txp:rah_repeat>

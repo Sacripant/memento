@@ -4,7 +4,8 @@ $(function() {
 
 // si la tab finance existe ou si on est sur la page printfacture
 console.log(pageDatas);
-if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') ) {
+if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') ) 
+{
 
 /* Finance 
 ==========================*/
@@ -15,14 +16,15 @@ var devis = $('#devis, #finance')
 ,	 itemsDevis = $('.item-devis .montant-item')
 ,	 totalTTCWrap = $('.montant-total-ttc')
 , 	 taxeWrap = $('.montant-taxe')
-, 	 totalHTWrap = $('.montant-total-ht');
+, 	 totalHTWrap = $('.montant-total-ht')
 // ,	 taxe = $('.total-groupe-devis h3:first .item-devis-title').text();
+;
 
 function formatage_montant(nbr)
 {
 	if (pageDatas.projet.devise === "Fcfa") { var nbr = nbr*1000 };
 	var nbr = Math.round(nbr);
-	var nombre = ''+nbr;
+	var nombre = ''+nbr; // become string
 	var retour = nombre.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
 	return retour;
 }
@@ -40,16 +42,23 @@ function calcul_total(arrayValues, cible)
 	return total;
 }
 
-function calcul_taxe(totalTTC, target){
-	var taxe5	= totalTTC*0.05;
-	if (pageDatas.projet.taxe === 0) {totalHT = totalTTC;}
-	if (pageDatas.projet.taxe === 1) {
-		totalHT = totalTTC-taxe5;
-		target.find('.montant-taxe').text( formatage_montant(taxe5) );
+function calcul_taxe(totalHT, target){
+	var taxe	= pageDatas.projet.taxe
+	,	 taxe = 1+(taxe/100)
+	;
+
+	console.log(taxe);
+	if (pageDatas.projet.taxe === 0) {totalTTC = totalHT;}
+	if (pageDatas.projet.taxe !== 0) 
+	{
+		totalTTC = totalHT*taxe;
+		
+		totalTaxe = totalTTC-totalHT;
+		target.find('.montant-taxe').text( formatage_montant(totalTaxe) );
 	} 		
-	target.find('.montant-total-ht').text( formatage_montant(totalHT) );
+	target.find('.montant-total-ttc').text( formatage_montant(totalTTC) );
 	
-	return totalHT;
+	return totalTTC;
 }
 
 function calcul()
@@ -80,11 +89,12 @@ function calcul()
 	});
 
 	// Affichage des totaux du Devis et mise en memoire
-	var devisTotalTTCWrap = $('#devis').find('.montant-total-ttc')
-	,	 totalTTC = calcul_total(sousTotaux, devisTotalTTCWrap);
+	var devisTotalHTWrap = $('#devis').find('.montant-total-ht')
+	,	 totalHT = calcul_total(sousTotaux, devisTotalHTWrap)
+	;
 	
 	
-	totalHT = calcul_taxe( totalTTC, $('#devis') );
+	totalTTC = calcul_taxe( totalHT, $('#devis') );
 	
 	console.log(totalHT);
 
@@ -96,8 +106,13 @@ function calcul()
 		
 		var montantTTC = totalTTC*coef;
 		var montantHT = totalHT*coef;
-		tranches.push(montantTTC);
-		$('.somme-a-payer', this).text(formatage_montant(montantHT));		
+		// Répartition HT
+		$('.somme-a-payer', this).text(formatage_montant(montantHT) +" "+pageDatas.projet.devise+ " HT" );
+		// Répartition TTC
+		// $('.somme-a-payer', this).text(formatage_montant(montantTTC) +" "+pageDatas.projet.devise+ " TTC" );
+
+		// Push each tranches de paiement
+		tranches.push(montantHT);
 	});
 
 }
@@ -105,26 +120,29 @@ function calcul()
 calcul();
 
 // Specifique à la section printfacture
-if ($('body').is('#printfacture')) {
+if ($('body').is('#printfacture')) 
+{
 	var detailPresta = $('#devis .details-prestation').clone()
 	,	 totalGroupe = $('#devis .total-groupe-devis').clone();
 	
 	detailPresta.prependTo('.add_details-presta');
 	totalGroupe.prependTo('.add_totaux');
 	
-	// Total à payer pour chaque facture	
+	// Total à payer pour chaque facture
+	console.log(tranches);	
 	$.each(tranches, function(i, value){
 		++i;
 		var facture = $('#facture'+i);
 		var totalFacture = facture.find('.total-groupe-facture');
 				
-		totalFacture.find('.montant-total-ttc').text(formatage_montant(value));
+		totalFacture.find('.montant-total-ht').text(formatage_montant(value));
 		calcul_taxe( value, totalFacture );	
 	});
 
-}else {
-
+}
 // Specifique à la section projet (tab finance)
+else
+{
 	$(".inputnum").keypress(function(event) {
 		var touche = event.keyCode;
 		var value = $(this).val();
