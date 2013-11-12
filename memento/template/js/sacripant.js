@@ -52,9 +52,11 @@ $(function(){
 		// var idProjet = $('.idProjet').text();
 		var btn = $('.todolist-table .action button');
 		
-		$('#todolist tr').each(function(index) {
+		$('#todolist tr').each(function(index) 
+		{
 			var line	=	$(this)
-			,		id	=	line.attr('data-id');
+			,		id	=	line.attr('data-id')
+			;
 		
 			/* Edit Todo (Load external output form)
 			========================================== */	
@@ -103,50 +105,63 @@ $(function(){
 			======================= */
 		
 			if ($('body').is('#home')) {
-				var timeWrapper = $('.temps-reel', line);
-				var timeValue = parseFloat(timeWrapper.text());
+				
+				
 			
-				$(".action-start", this).not(':disabled').toggle(
+				$(".action-start", this).not(':disabled').click(
+				// $(".action-start", this).not(':disabled').toggle(
 					function() {
-						// rafraichissement de la liste des boutons
-						var btn = $('.todolist-table .action button');
-						// Switch du picto & css compteur-on
-						this.attributes[0].nodeValue = '\u2389';
-						line.addClass('compteur-on');
-						// désactivation des autres btn
-						btn.not($(this)).attr('disabled', 'disabled');
-						// incrémentation du temps
-						var incrementCompteur = function(){
-					 		timeValue += 0.1;
-							timeValue = parseFloat(timeValue.toFixed(1));
-							timeWrapper.text(timeValue);
-						};
-						startcompteur = setInterval(incrementCompteur, 360000); // = 6 min
-					
-						// prevent close page variable
-						dontQuit = true;
-				}, function() {
-						// rafraichissement de la liste des boutons
-						var btn = $('.todolist-table .action button');
-						// Switch du picto & css compteur-on
-						this.attributes[0].nodeValue = '\u25B6';
-						line.removeClass('compteur-on');
-						// stop incrémentation du temps
-						clearInterval(startcompteur);
-						// ajax sql update 
-						$.ajax({
-							type:"post",
-						 	url: pageDatas.site.siteUrl+'?rah_external_output=compteur',
-							data: { 
-								id : id,
-								time : timeValue
+						
+						var btn = $('.todolist-table .action button') // rafraichissement de la liste des boutons
+						// récupérer la valeur du timer
+						,	 timeWrapper = $('.temps-reel', line)
+						,	 timeValue = parseFloat(timeWrapper.text())
+						
+						// Incrémentation compteur
+						,	incrementCompteur = function(){
+					 			timeValue += 0.1;
+								timeValue = parseFloat(timeValue.toFixed(1));
+								timeWrapper.text(timeValue);
 							}
-						});
-						// activation des btn
-						btn.removeAttr('disabled');
-						dontQuit = false;
-				}); // end toggle
-			} // end if	body is #heim
+						;
+						
+						// STOP COMPTEUR						
+						if ( line.is('.compteur-on') )
+						{
+							// Switch du picto & css compteur-on
+							this.attributes[0].nodeValue = '\u25B6';
+							line.removeClass('compteur-on');
+							// stop incrémentation du temps et ajoute +0.1
+							clearInterval(startcompteur);
+							incrementCompteur();
+							// ajax sql update 
+							$.ajax({
+								type:"post",
+							 	url: pageDatas.site.siteUrl+'?rah_external_output=compteur',
+								data: { 
+									id : id,
+									time : timeValue
+								}
+							});
+							// activation des btn
+							btn.removeAttr('disabled');
+							dontQuit = false;							
+						}
+						// START COMPTEUR
+						else
+						{
+							// Switch du picto & css compteur-on
+							this.attributes[0].nodeValue = '\u2389';
+							line.addClass('compteur-on');
+							// désactivation des autres btn
+							btn.not($(this)).attr('disabled', 'disabled');
+							// incrémentation du temps
+							startcompteur = setInterval(incrementCompteur, 1000); // = 6 min					
+							// prevent close page variable
+							dontQuit = true;							
+						}
+				}); // end click
+			} // end if	body is #home
 			
 		}); // end .each() todos
 
@@ -154,7 +169,8 @@ $(function(){
 		==========================*/
 		$('#add-todo').click(function() {
 			var line = $('.add-todo-line')
-			,	 button = line.children().clone(true);
+			,	 button = line.children().clone(true)
+			;
 		
 			line.load(pageDatas.site.siteUrl+"?rah_external_output=From-newTodo&idProjet="+pageDatas.projet.id,
 				function(){
