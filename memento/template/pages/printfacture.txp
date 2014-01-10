@@ -25,8 +25,6 @@
 	<txp:hide>	
 		<!-- ID projet -->
 		<txp:variable name="projetID"/><br />
-		<!-- N0 Devis -->
-		<txp:variable name="devisID"/><br />
 		<!-- Nb de tranches -->
 		<txp:variable name="nbTranches" /><
 	</txp:hide>
@@ -36,7 +34,8 @@
 	
 	<!-- Tranches de paiement -->
 	<txp:variable name="tranches" value='<txp:custom_field name="repartition" />' />
-	
+	<!-- N0 Devis -->
+	<txp:variable name="devisID"><txp:variable name="projetID"/>-<txp:smd_wrap transform="date|%g%m%d%H%M"><txp:custom_field name="num-date_Devis" /></txp:smd_wrap></txp:variable>	
 	
 	<!-- COMMANDITAIRE -->
 	<txp:variable name="commanditaire">
@@ -120,7 +119,8 @@
 			
 				<header>
 					<p class="date-courier">
-						À Dakar, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
+						À Dakar, le 
+						<txp:smd_wrap transform="date|%A %e %B %Y"><txp:custom_field name="num-date_Devis" /></txp:smd_wrap>
 						<!-- À Dakar, le Vendredi 27 juillet 2012 -->
 					</p>
 					<txp:variable name="commanditaire" />

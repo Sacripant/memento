@@ -1,8 +1,9 @@
 <txp:hide>
 ============
-Module Finance appelé depuis la page default.txp
+Module Finance appelé depuis la page section-projet.article.txp
 ============
-Affiche la liste des article de la section "todo" liés à l'article selectionné
+Affiche la liste des todos parents liés à l'article selectionné, classés par catégories.
+Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo pour générer devis et factures
 ============
 </txp:hide>
 
@@ -12,11 +13,11 @@ Affiche la liste des article de la section "todo" liés à l'article selectionn�
 
 <h2 class="h3">
 	<span class="finance-block-title">Devis</span>
-	<span class="no-devis">N° <txp:article_id />-<txp:variable name="project-modified" /></span>
+	<span class="no-devis">N° <txp:article_id />-<txp:variable name="num_Devis" /></span> 
 </h2>
 
 <!-- bouton preview print -->
-<a href='<txp:site_url />printFacture?projetID=<txp:article_id />&amp;devisID=<txp:article_id />-<txp:variable name="project-modified" />' 
+<a href='<txp:site_url />printFacture?projetID=<txp:article_id />' 
 	class="btn picto" 
 	data-picto="&#59146 &#59158" 
 	id="print-preview" 

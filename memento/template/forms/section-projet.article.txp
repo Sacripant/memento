@@ -6,14 +6,25 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 ============
 </txp:hide>
 
-<txp:hide><!-- Authorisation d'accéder à ce projet --></txp:hide>
+<txp:hide>
+				Authorisation d'accéder à ce projet
+</txp:hide>
 <txp:cbe_frontauth_if_connected name='admin,<txp:author title="0" />'>
 <txp:else />
 	<txp:txp_die status="401" />
 </txp:cbe_frontauth_if_connected>
 
-<txp:hide><!-- var project-modified = date de modification de la dernière todo rattachée au projet --></txp:hide>
-<txp:variable name="project-modified"><txp:article_custom projet='<txp:article_id />' parent="" section="todo" sort="LastMod desc" limit="1" time="any"><txp:modified format="%g%m%d%H%M"/></txp:article_custom></txp:variable>
+<txp:hide>
+				var num_Devis =
+				Valeur CF num-date_Devis
+				||
+				date de modification de la dernière todo rattachée au projet
+</txp:hide>
+<txp:if_custom_field name="num-date_Devis">
+	<txp:variable name="num_Devis"><txp:smd_wrap transform="date|%g%m%d%H%M"><txp:custom_field name="num-date_Devis" /></txp:smd_wrap></txp:variable>
+<txp:else />
+	<txp:variable name="num_Devis"><txp:article_custom projet='<txp:article_id />' parent="" section="todo" sort="LastMod desc" limit="1" time="any"><txp:modified format="%g%m%d%H%M"/></txp:article_custom></txp:variable>
+</txp:if_custom_field>
 
 <article>
 	<header class="project-header">

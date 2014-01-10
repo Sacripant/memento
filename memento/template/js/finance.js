@@ -178,7 +178,11 @@ else
 			type:"post",
 		 	url: pageDatas.site.siteUrl+'?rah_external_output=query-finance',
 			data: { query : queryString() },
-			dataType: "text"
+			dataType: "text",
+			success : 	function(data, statut)
+							{ // code_html contient le HTML renvoyé
+								location.reload(); 
+			       		}
 		});
 		return false;
 	});

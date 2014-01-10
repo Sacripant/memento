@@ -2,6 +2,8 @@
 
 <txp:cbe_frontauth_if_logged level="1">
 	<txp:adi_gps type="post" />
+	<txp:variable name="now"><txp:smd_wrap transform="fordb"><txp:php>echo strftime("%F %R");</txp:php></txp:smd_wrap></txp:variable>
+	
 	<txp:rah_repeat value='<txp:variable name="query" />' delimiter="&amp;" wraptag="" break="">
 		<txp:variable name="id_todo"><txp:smd_wrap transform="replace||tp_||,replace||th_||,split|=||1" item='<txp:rah_repeat_value />' /></txp:variable>
 		<txp:variable name="tps"><txp:smd_wrap transform="split|=||2" item='<txp:rah_repeat_value />' /></txp:variable>
@@ -10,17 +12,23 @@
 		<txp:variable name="tps" /> && taux_horaire
 		
 		
-				<!-- Taux horaire -->
 		<txp:rah_repeat_if_first>
+			<!-- Update Project Taux horaire -->
 			<txp:smd_query query='UPDATE textpattern 
 				SET custom_5 =''<txp:variable name="tps" />''
-		   	WHERE ID= <txp:variable name="id_todo" />;' 
-		   />
+		   		WHERE ID= <txp:variable name="id_todo" />;' 
+			/>
+			<!-- Update Devis ID -->
+			<txp:smd_query query='UPDATE textpattern 
+				SET custom_10 =''<txp:variable name="now" />''
+		   		WHERE ID= <txp:variable name="id_todo" />;' 
+			/>
 		<txp:else />
+			<!-- Update todo Temps prevu -->
 			<txp:smd_query query='UPDATE textpattern 
 				SET custom_3 =''<txp:variable name="tps" />''
-		   	WHERE ID= <txp:variable name="id_todo" />;' 
-		   />		
+		   		WHERE ID= <txp:variable name="id_todo" />;' 
+			/>		
 		</txp:rah_repeat_if_first>
 	</txp:rah_repeat>
 </txp:cbe_frontauth_if_logged>
