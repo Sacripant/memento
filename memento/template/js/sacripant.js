@@ -27,7 +27,9 @@ $(function(){
 	Content Tabs 
 	==========================*/
 	var tabsnav = $('.sidenav ul')
-	,	 tabsPanes = $('.main-content > section');
+	,	 tabsPanes = $('.main-content > section')
+	;
+	
 	function startTabs(){
 		tabsnav.tabs(tabsPanes, {
 			current: "fii",
@@ -156,7 +158,7 @@ $(function(){
 							// désactivation des autres btn
 							btn.not($(this)).attr('disabled', 'disabled');
 							// incrémentation du temps
-							startcompteur = setInterval(incrementCompteur, 1000); // = 6 min					
+							startcompteur = setInterval(incrementCompteur, 360000); // = 6 min					
 							// prevent close page variable
 							dontQuit = true;							
 						}
