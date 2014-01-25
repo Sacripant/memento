@@ -15,11 +15,18 @@
 			<txp:variable name="article-filter" value='' />			
 		</txp:cbe_frontauth_if_logged>
 		
+		
+		<!-- BASCULE PROJETS -->
+		<!-- filtrer les projets none programmés, programmés, en cours, en pause -->
+		<txp:variable name="projet-liste">
+			<txp:smd_query column="ID" table="textpattern" where="Section = 'projet' AND custom_2 in ('Non programmé','Programmé','En cours','En pause')" break=",">{ID}</txp:smd_query>
+		</txp:variable>
+
 		<div id="" class="bascule-projet">
 			<label>Changer de projet&nbsp;:</label>
 			<txp:article_custom 
-				sort="title" 
-				section="projet" 
+				sort="title"
+				id='<txp:variable name="projet-liste" />' 
 				wraptag="select" 
 				break="" 
 				limit="999" 
