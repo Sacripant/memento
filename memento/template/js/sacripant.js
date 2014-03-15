@@ -81,11 +81,22 @@ $(function(){
 							,   endVal = end.val()
 							,	 endDateVal = end.data("dateinput").getValue('yyyy-mm-dd 23:59:59')
 							,	 start = $('#string_Posted', editForm)
-							, 	 startDateVal = start.data("dateinput").getValue('yyyy-mm-dd 00:00:01');	
+							, 	 startDateVal = start.data("dateinput").getValue('yyyy-mm-dd 00:00:01')
+							, 	 status = $('#string_custom_2 option:selected', editForm).val()
+							,	 now = new Date().toISOString().substr(0, 10);
+							;
+								
 							start.val(startDateVal);
-						
+													
 							if (endVal === "") {
-								$('#string_expires').val('0000-00-00 00:00:00');
+								if ( status === "Terminé")
+								{
+									$('#string_expires').val( now +' 23:59:59');
+								}
+								else 
+								{
+									$('#string_expires').val('0000-00-00 00:00:00');	
+								}
 							} else {
 								end.val(endDateVal);
 							}

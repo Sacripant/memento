@@ -14,7 +14,7 @@
 	</txp:if_variable>
 
 	<td colspan="8" class="inline-form-wrapper">
-		<txp:mem_simple_form table="textpattern" id_field="ID" id_insert="0" redirect_url='<txp:permlink id="4" />'>
+		<txp:mem_simple_form table="textpattern" id_field="ID" id_insert="0">
 			<table>
 				<colgroup>
 					<col class="edit-todo-id" />
