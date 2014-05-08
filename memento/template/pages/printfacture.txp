@@ -43,12 +43,27 @@
 			<h2>Commanditaire :</h2>
 			<div class="commanditaire-content">
 				<txp:smd_bio_info
-					fields="name,RealName,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville"
+					fields="name,RealName,type,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville"
 					show_empty="1"
 				>
-					<strong class="org">{smd_bio_societe}</strong><br />
-					<span class="street-address">{smd_bio_adresse_rue}<br/>{smd_bio_adresse_quartier}</span><br/>
-					<span class="locality">{smd_bio_adresse_ville}</span>
+					<txp:smd_if_bio field="type" value="entreprise">
+						<strong class="org">{smd_bio_societe}</strong><br />
+					<txp:else />
+						<strong class="org">{smd_bio_RealName}</strong><br />
+					</txp:smd_if_bio>
+					<span class="street-address">
+						{smd_bio_adresse_rue}<br/>
+						<txp:smd_if_bio field="adresse_quartier">
+							{smd_bio_adresse_quartier}<br/>
+						</txp:smd_if_bio>
+					</span>
+					<span class="locality">
+						<txp:smd_if_bio field="adresse_cp">
+							{smd_bio_adresse_cp}
+						</txp:smd_if_bio>
+
+						{smd_bio_adresse_ville}
+					</span>
 				</txp:smd_bio_info>											
 			</div>
 		</div>			
