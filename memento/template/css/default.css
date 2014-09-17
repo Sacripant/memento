@@ -49,6 +49,10 @@ body:before {
 .site-header	{ padding-top: 10px; }
 .site_footer	{ }
 
+
+
+
+
 /*Site header
 -------------------------------*/
 .site-header			{ color: hsl(40, 10%, 90%); text-align: justify; }
@@ -97,7 +101,7 @@ body:before {
 .sidenav 		{ float: left; width: 5%; margin: 0; }
 .main-content 	{ float: left; width: 90%; margin: 0 0 3em 5%; min-height: 330px; }
 
-/*SideNav*/
+/*SideNav / TABS*/
 .li-sidenav		{ line-height: 1em; margin-bottom: 0.2em; }
 .li-sidenav:first-child { margin-top: -0.2em; }
 .a-sidenav		{ color: #fff; border: 0 none;}
@@ -115,9 +119,25 @@ body:before {
 	line-height: 1em;
 }
 
-.main-content section {
+/* PANES main-section section*/
+.pane {
 	clear: both;
+	/*display: none;*/
+	opacity: 0;
+	transform: translateY(-25px);
+	/*transform-origin: left top;*/
+	transition: all 600ms;
+/*	-webkit-transition: transform 400ms;
+		    transition: transform 400ms;*/
 }
+
+.pane-show {
+	/*display: block;*/
+	transform: translateY(0);
+	opacity: 1;
+}
+
+
 
 .id	{ font-style: italic; color: hsl(190, 20%, 55%); font-weight: 300;}
 
@@ -125,6 +145,11 @@ body:before {
 -------------------------------*/
 /*Archives projet*/
 /*.li-archive h2		{ width: 40px; }*/
+
+.ul-nav_archive
+, .archive-projet-meta
+{ white-space: nowrap; }
+
 .li-nav_archive	{ display: inline; }
 
 
@@ -400,13 +425,13 @@ col.edit-new-action  { width:  6%; }
 /*
 ** Icones
 -------------------------------
-info 					: &#x2139	&#8505;			Printer		: &#59158;
-user 					: &#59394;						Crayon		: &#9998;
+info 				: &#x2139	&#8505;			Printer		: &#59158;
+user 				: &#59394;					Crayon		: &#9998;
 disconnect/close	: &#10006
 liste 				: &#9776;
 commentaires		: &#59392;
 fichiers liés 		: &#x1F4CE
-bourse dollars 	: &#x1f4b0
+bourse dollars 		: &#x1f4b0
 vcard 				: &#59170;
 -------------------------------*/
 [data-picto]:before {
@@ -478,7 +503,7 @@ vcard 				: &#59170;
 }
 #calhead a	{ border-bottom: 0 none; }
 
-#calhead				{ text-transform: uppercase; }
+#calhead			{ text-transform: uppercase; }
 #caltitle 			{
     float:left;
     text-align:center;
@@ -494,7 +519,7 @@ vcard 				: &#59170;
 }
 #calprev:before	{ content:"◤"; } 
 #calnext:before	{ content:"◥"; } 
-#calnext 			{ float:right; text-align: right;}
+#calnext 		{ float:right; text-align: right;}
 
 #calprev.caldisabled, #calnext.caldisabled {}
 

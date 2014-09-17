@@ -13,38 +13,46 @@
 		<txp:hide><!-- "Directory User list BUTTON" for ADMIN only--></txp:hide>
 		<txp:cbe_frontauth_if_connected level="1">			
 			<li class="li-sidenav li-nav_projet">
-				<a class="a-sidenav picto" href="#annuaire" title="Annuaire" data-picto="&#59170;"><strong>Adresses</strong></a>
+				<a class="a-sidenav picto" href="#adresses" title="Annuaire" data-picto="&#59170;"><strong>Adresses</strong></a>
 			</li>
 		</txp:cbe_frontauth_if_connected>
 	</ul>
 </nav>
 
 	
-<div class="main-content">
+<main role="main" class="main-content">
 	
-	<txp:hide><!-- "Global todolist tab" for ADMIN ONLY --></txp:hide>
+	<txp:hide>
+			<!-- "Global todolist tab" for ADMIN ONLY -->
+	</txp:hide>
 	<txp:cbe_frontauth_if_connected level="1">						
 		<!-- todolistes -->
-		<section id="todolist" class="todolist-globale">
+		<section id="todolist" class="todolist-globale pane">
 			<txp:output_form form="tab-todolist-globale" />
 		</section>
 	</txp:cbe_frontauth_if_connected>
+
 	
-	<txp:hide><!-- "Liste projects tab" for all users --></txp:hide>
+	<txp:hide>
+			<!-- "Liste projects tab" for all users -->
+	</txp:hide>
+
 	<!-- Archives -->
-	<section id="archives">
+	<section id="archives" class="pane">
 		<txp:output_form form="tab-archives-projets" />
 	</section>
 	
-	<txp:hide><!-- "Directory Users list BUTTON" for ADMIN only--></txp:hide>
+	<txp:hide>
+			<!-- "Directory Users list BUTTON" for ADMIN only-->
+	</txp:hide>
 	<txp:cbe_frontauth_if_connected level="1">			
 		<!-- Adresses -->
-		<section id="adresses">
+		<section id="adresses" class="pane">
 			<txp:output_form form="tab-adresse" />
 		</section>
 	</txp:cbe_frontauth_if_connected>
 		
-</div>
+</main>
 
 
 

@@ -89,7 +89,7 @@
 	<!-- Détail de la prestation -->
 	<txp:variable name="detail_prestation">
 		<txp:category_list break="" wraptag="div" class="details-prestation"
-			categories="conception,crea-graphique,maquettage,webdesign,dev-back,documentation,reunion,formation"
+			categories="gestion-de-projet,conception,crea-graphique,maquettage,webdesign,dev-back,documentation,reunion,formation"
 		>
 			<txp:variable name="todos_this_cat"><txp:smd_wrap>
 				<txp:article_custom projet='<txp:variable name="projetID" />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">

@@ -85,17 +85,17 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 		<!-- Content Tabs for a project -->
 	</txp:hide>
 	<div class="main-content project-content">
-		<section id="todolist">
+		<section id="todolist" class="pane">
 			<txp:output_form form="tab-todolist-projet" />	
 		</section>
-		<section id="commentaires">
+		<section id="commentaires"  class="pane"">
 			<h1 class="block-title" data-this="Commentaires">commentaires</h1>
 			<txp:article form="comments_display" />
 		</section>
-		<section id="attachments">
+		<section id="attachments" class="pane">
 				<txp:output_form form="tab-attachments" />				
 		</section>
-		<section id="adresses">
+		<section id="adresses" class="pane">
 			<txp:output_form form="tab-adresse" />	
 		</section>
 		<txp:hide>
@@ -104,7 +104,7 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 		<txp:cbe_frontauth_if_connected level="1">					
 			<txp:if_custom_field name="Taux_horaire" value="">
 			<txp:else />
-				<section id="finance">
+				<section id="finance" class="pane">
 					<txp:output_form form="tab-finance" />				
 				</section>		
 			</txp:if_custom_field>

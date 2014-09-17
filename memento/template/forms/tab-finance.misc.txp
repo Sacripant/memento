@@ -47,7 +47,7 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 	<div id="devis">
 		
 	<!-- Start catégories liste -->
-	<txp:category_list break="" categories="conception,crea-graphique,webdesign,dev-back,documentation,formation,reunion">
+	<txp:category_list break="" categories="gestion-de-projet,conception,crea-graphique,webdesign,dev-back,documentation,formation,reunion">
 	
 		<!-- VARIABLE : Liste des todos par catégorie -->
 		<txp:variable name="todos_this_cat"><txp:smd_wrap>

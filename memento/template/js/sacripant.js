@@ -26,20 +26,80 @@ $(function(){
 	/*==========================
 	Content Tabs 
 	==========================*/
-	var tabsnav = $('.sidenav ul')
-	,	 tabsPanes = $('.main-content > section')
+
+	var tabsnav = $('.a-sidenav')
+	,	panes = $('.pane')
+	,	hash = location.hash
 	;
-	
-	function startTabs(){
-		tabsnav.tabs(tabsPanes, {
-			current: "fii",
-			history: true
-		});
+
+	function displaypane(tab) {
+		var pane = $(tab[0].hash)
+		;
+
+		// Panes
+		panes.not(pane).removeClass('pane-show').addClass('hide');
+		pane.removeClass('hide');
+		window.setTimeout(function(){
+			pane.addClass('pane-show');
+		}, 100);
+		// Tabs
+		// console.log(tab);
+		tabsnav.not(tab).removeClass('fii');
+		tab.addClass('fii');
 	}
-	startTabs();
+
+
+	// Page Load
+
+	// console.log( panes );
+	// console.log( panes.indexOf( $(hash)[0] ) );
+	// console.log( $(hash).is(panes) );
+	if (hash && $(hash).is(panes))
+	{
+		// console.log(hash);
+		displaypane($('[href='+hash+']'));
+	}
+	if (!hash)
+	{
+		displaypane($(tabsnav).eq(0));
+	}
+
+	// Tab click
+	tabsnav.click(function(event) {
+		displaypane($(this));
+	});
+
+	// Hash change
+	window.onhashchange = function()
+	{
+		var hash = location.hash;
+		if ( hash && $(hash).is(panes) )
+		{
+			displaypane($('[href='+hash+']'));
+		}
+	}
+
+
+
+
+		
+	// $('[href=')
+
+	// (function activeFirstPane () 
+	// {
+	// 	if (document.URL ) {};
+	// }());
+	
+	// function startTabs(){
+	// 	tabsnav.tabs(tabsPanes, {
+	// 		current: "fii",
+	// 		history: true
+	// 	});
+	// }
+	// startTabs();
 	
 	// chargement de l'api Tabs
-	var apiTabs = tabsnav.data('tabs');
+	// var apiTabs = tabsnav.data('tabs');
 	
 	/*========================== 
 	CODE FOR ADMIN
@@ -71,39 +131,50 @@ $(function(){
 				
 					$('textarea', line).focus();
 				
-					$('input.date-input', editForm).dateinput({
-						format : 'dd.mm.yy',
-						firstDay : 1,
-					});
+					// $('input.date-input', editForm).dateinput({
+					// 	format : 'dd.mm.yy',
+					// 	firstDay : 1,
+					// });
 					editForm.ajaxForm({					
 						beforeSerialize: function(){
 							var end = $('#string_expires', editForm)
 							,   endVal = end.val()
-							,	 endDateVal = end.data("dateinput").getValue('yyyy-mm-dd 23:59:59')
-							,	 start = $('#string_Posted', editForm)
-							, 	 startDateVal = start.data("dateinput").getValue('yyyy-mm-dd 00:00:01')
-							, 	 status = $('#string_custom_2 option:selected', editForm).val()
-							,	 now = new Date().toISOString().substr(0, 10);
+							// ,	endDateVal = end.data("dateinput").getValue('yyyy-mm-dd 23:59:59')
+							,	start = $('#string_Posted', editForm)
+							,	startVal = start.val()
+							// , 	startDateVal = start.data("dateinput").getValue('yyyy-mm-dd 00:00:01')
+							, 	status = $('#string_custom_2 option:selected', editForm).val()
+							,	now = new Date().toISOString().substr(0, 10)
+							,	reNoHour = /^(\d){4}-(\d){2}-(\d){2}$/
 							;
 								
-							start.val(startDateVal);
-													
+							// Format START
+							if ( reNoHour.test(startVal) ) 
+							{
+								start.val( startVal +' 06:00:01' );	
+							}
+							
+							// Format END				
 							if (endVal === "") {
-								if ( status === "Terminé")
+								if ( status === "Terminé" )
 								{
-									$('#string_expires').val( now +' 23:59:59');
+									end.val( now +' 23:59:59' );
 								}
 								else 
 								{
-									$('#string_expires').val('0000-00-00 00:00:00');	
+									end.val( '0000-00-00 00:00:00' );	
 								}
-							} else {
-								end.val(endDateVal);
+							} 
+							else if ( reNoHour.test(endVal) ) 
+							{
+								// console.log("No Hour, please add");
+								end.val( endVal +' 23:59:59' );
 							}
 						},
 						success:    function(data) { 
 							location.reload(); 
-						}
+						},
+						debug: 1
 					}); // end Ajaxform
 				
 					// Escape
@@ -182,7 +253,7 @@ $(function(){
 		==========================*/
 		$('#add-todo').click(function() {
 			var line = $('.add-todo-line')
-			,	 button = line.children().clone(true)
+			,	button = line.children().clone(true)
 			;
 		
 			line.load(pageDatas.site.siteUrl+"?rah_external_output=From-newTodo&idProjet="+pageDatas.projet.id,
@@ -234,13 +305,15 @@ $(function(){
 	
 	todoHeaders.click(function() {
 		var $this = $(this)
-		,	 sortTypeClass = this.classList[0];
+		,	sortTypeClass = this.classList[0];
 		
-		console.log(sortTypeClass);
-		if ($this.is('.asc,.desc')) {
+		// console.log(sortTypeClass);
+		if ($this.is('.asc,.desc')) 
+		{
 			$this.is('.asc') ? this.className = sortTypeClass +" desc" :  this.className = sortTypeClass +" asc";
-		}else{
-			// var sortTypeClass = this.className;
+		}
+		else
+		{
 			todoHeaders.not($this).removeClass('asc desc');
 			this.className = sortTypeClass +" asc";	
 		};
@@ -284,7 +357,9 @@ $(function(){
 	// if #cpreview in url	
 	if (document.location.hash === '#cpreview') {
 		// charge pane #commentaire
-		apiTabs.click('#commentaires');
+		// apiTabs.click('#commentaires');
+		// console.log( $('[href=#commentaires]') );
+		displaypane( $('[href=#commentaires]') );
 		toggleCommentBlock();
 		
 		var commentBody = $('#message').val(),
@@ -299,7 +374,9 @@ $(function(){
 	// if #c[0-9]* commentaire link in url
 	// var commentLink = document.location.hash.match(/^#c[0-9]*$/);
 	if (/^#c[0-9]*$/.test(document.location.hash)) {
-		apiTabs.click('#commentaires');	
+		// apiTabs.click('#commentaires');
+		displaypane( $('[href=#commentaires]') );
+	
 	}
 	
 	/* =======================
