@@ -216,6 +216,30 @@
 								</li>
 							</txp:rah_repeat>
 						</div>
+
+						<!-- Notes Juridiques -->
+						<div class="footer-notes">
+
+							<!-- Durée de validité -->
+							<p>
+								Ce présent devis est valable jusqu'au
+								<txp:variable name="start-date-devis">
+									<txp:smd_wrap transform="date|%Y-%m-%d">
+										<txp:custom_field name="num-date_Devis" />
+									</txp:smd_wrap>
+								</txp:variable>
+								<txp:php>
+									$datestart = variable(array ('name' => 'start-date-devis'));
+									$date = new DateTime($datestart);
+									$date->add(new DateInterval('P3M')); //Où 'P3M' indique 'Période de 3 Mois'
+									echo $date->format('d m Y');
+								</txp:php>.
+							</p>
+							
+							<p>
+								Cachet, date et signature précédés de <em>"BON POUR ACCORD"</em>.
+							</p>
+						</div>
 					</footer>
 				</article>
 				
