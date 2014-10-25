@@ -127,10 +127,15 @@ article header h2 {}
 .total-groupe .note	{ font-size: 8pt; margin-top: 12pt; }
 
 /*Répartiion Factures*/
+.repartition	{ margin-bottom: 1em; }
 .repartition h3 { font-style: italic; }
 .devis-liste-factures {
 	border: 1px solid #999;
 	padding: 0.4em;
+}
+
+.footer-notes {
+	font-style: italic;
 }
 
 /*Specifique au PRINT*/

@@ -5,12 +5,12 @@
 	<txp:variable name="now"><txp:smd_wrap transform="fordb"><txp:php>echo strftime("%F %R");</txp:php></txp:smd_wrap></txp:variable>
 	
 	<txp:rah_repeat value='<txp:variable name="query" />' delimiter="&amp;" wraptag="" break="">
-		<txp:variable name="id_todo"><txp:smd_wrap transform="replace||tp_||,replace||th_||,split|=||1" item='<txp:rah_repeat_value />' /></txp:variable>
+		<txp:rah_repeat_value />
+		<txp:variable name="id_todo"><txp:smd_wrap transform="replace||tp_||,replace||th_||,replace||ht_||,split|=||1" item='<txp:rah_repeat_value />' /></txp:variable>
 		<txp:variable name="tps"><txp:smd_wrap transform="split|=||2" item='<txp:rah_repeat_value />' /></txp:variable>
 		
 		<txp:variable name="id_todo" /> && id_projet
 		<txp:variable name="tps" /> && taux_horaire
-		
 		
 		<txp:rah_repeat_if_first>
 			<!-- Update Project Taux horaire -->
@@ -30,6 +30,17 @@
 		   		WHERE ID= <txp:variable name="id_todo" />;' 
 			/>		
 		</txp:rah_repeat_if_first>
+
+		<txp:rah_repeat_if_last>
+			<!-- Update Total HT -->
+			<txp:smd_query query='UPDATE textpattern 
+				SET custom_11 =''<txp:variable name="tps" />''
+		   		WHERE ID= <txp:variable name="id_todo" />;' 
+			/>		
+		</txp:rah_repeat_if_last>
+
+
+
 	</txp:rah_repeat>
 </txp:cbe_frontauth_if_logged>
 

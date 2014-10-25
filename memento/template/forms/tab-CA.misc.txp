@@ -1,0 +1,74 @@
+<txp:hide>
+============
+Module tab-CA appelé depuis la page default.txp
+============
+Affiche le Chiffre d'affaire par année basé sur les dates des factures
+============
+Necessite plugins …
+============
+</txp:hide>
+
+
+
+<h1 class="block-title" data-this="Chiffre d'affaire">Chiffre d'affaire</h1>
+
+<section class="ca_section" id="ca_section">
+	<h2 class="h--ca_section"></h2>
+
+	<table>
+	    <thead>
+	        <tr>
+	            <th>Project</th>
+	            <th>Quand</th>
+	            <th>Date Facture</th>
+	            <!-- <th>Total HT</th> -->
+	            <th>Montant HT</th>
+	            <th>Montant taxe</th>
+	            <th>Montant TTC</th>
+	        </tr>
+	    </thead>
+	    <tfoot>
+	    	<tr>
+	    		<td></td>
+	    		<td></td>
+	    		<td></td>
+	    		<td class="total_ht--ca_section">Total HT</td>
+	    		<td class="total_taxe--ca_section">Total Taxe</td>
+	    		<td class="total_ttc--ca_section">Total TTC</td>
+	    	</tr>
+	    </tfoot>
+	    <tbody class="tbody--ca_section">
+	        <!-- this will be auto-populated -->
+	    </tbody>
+	</table>
+</section>
+
+
+<script>
+	var paiements = [
+		<txp:article_custom section="projet" limit="999" repartition="_%">
+			<txp:if_custom_field name="Etat" value="Programmé,En cours,En pause,Terminé " match="any">
+				<txp:rah_repeat value='<txp:custom_field name="repartition" />' trim="1">
+					<txp:rah_repeat 
+						value='<txp:rah_repeat_value />' 
+						delimiter="-" 
+						assign="index, quand, pourcentage, date-facture" 
+					/>
+						{
+							projet : "<txp:title />",
+							index : <txp:variable name="index" />,
+							quand : "<txp:variable name="quand" />",
+							pourcentage : "<txp:smd_wrap transform="replace||%||" item='<txp:variable name="pourcentage" />' />",
+							annee : "<txp:smd_wrap transform="date|%Y" item='<txp:variable name="date-facture" />' />",
+							dateFacture : "<txp:variable name="date-facture" />",
+							taxe : <txp:if_custom_field name="taxe" value="off">0<txp:else /><txp:custom_field name="taxe" /></txp:if_custom_field>,
+							totalHT : "<txp:custom_field name="total-HT" />",
+							devise : "<txp:custom_field name="Devise" />"
+						},
+				</txp:rah_repeat>
+			</txp:if_custom_field>
+		</txp:article_custom>
+	];
+</script>
+
+

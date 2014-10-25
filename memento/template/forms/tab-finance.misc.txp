@@ -34,7 +34,9 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 		<ul>
 			<li>
 				<strong>taux horaire&nbsp;:</strong> 
-				<input type="number" class="taux-horaire inputnum" name='th_<txp:article_id />' value='<txp:custom_field name="Taux_horaire" />' />
+
+				<!-- Input th_ (taux horaire) -->
+				<input type="number" step="any" class="taux-horaire inputnum" name='th_<txp:article_id />' value='<txp:custom_field name="Taux_horaire" />' />
 				<span class="devise"><txp:custom_field name="Devise" /></span>
 			</li>
 			<li>
@@ -57,6 +59,7 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 					<span class="montant montant-item">
 						<span class="total-item"></span>
 						<span class="temps-prevu"> 
+							<!-- Input tp_ (temps) -->
 							<input type="number" class="inputnum" name="tp_<txp:article_id />" value='<txp:custom_field name="Temps_prevu" />' />
 						</span>
 					</span>
@@ -86,11 +89,16 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 				<!-- TOTAL HT + taxe = TOTAL TTC -->
 					<!-- Total HT -->
 					<h3 class="item-devis total-ht">
-						<strong class="item-devis-title">Total HT</strong><span class="montant">
+						<strong class="item-devis-title">Total HT</strong>
+						<span class="montant">
 							<span class="montant-total-ht"></span>
 							<span class="devise"><txp:custom_field name="Devise" /></span>
 						</span>
 					</h3>
+
+					<!-- Input for saving Total HT in BDD -->
+					<input type="hidden" class="input-montant-total-ht" name="ht_<txp:article_id />" value="abcd"/>
+
 				
 				<txp:if_custom_field name="taxe" value="off">
 				<txp:else />

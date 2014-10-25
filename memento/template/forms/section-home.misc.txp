@@ -15,6 +15,9 @@
 			<li class="li-sidenav li-nav_projet">
 				<a class="a-sidenav picto" href="#adresses" title="Annuaire" data-picto="&#59170;"><strong>Adresses</strong></a>
 			</li>
+			<li class="li-sidenav li-nav_projet">
+				<a class="a-sidenav picto" href="#CA" title="Annuaire" data-picto="&#x1f4b0;"><strong>Chiffre d'affaire</strong></a>
+			</li>
 		</txp:cbe_frontauth_if_connected>
 	</ul>
 </nav>
@@ -49,6 +52,10 @@
 		<!-- Adresses -->
 		<section id="adresses" class="pane">
 			<txp:output_form form="tab-adresse" />
+		</section>
+
+		<section id="CA" class="pane">
+			<txp:output_form form="tab-CA" />			
 		</section>
 	</txp:cbe_frontauth_if_connected>
 		

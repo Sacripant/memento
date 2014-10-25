@@ -1,9 +1,41 @@
+// These function are global
+// using by finance.js & CA.js
+
+function formatage_montant(nbr, space)
+{
+	if (pageDatas.projet.devise === "Fcfa") var nbr = nbr*1000;
+	var nbr = Math.round(nbr);
+	var nombre = ''+nbr; // become string
+
+	if (space)
+		var retour = nombre.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
+	else
+		var retour = nombre;
+
+	return retour;
+}
+
+function calcul_total(arrayValues, cible)
+{
+	var total=0;
+	$.each(arrayValues, function(i, value){
+		total += parseInt(value);
+	});
+	
+	
+	var totalString = formatage_montant(total, true);
+	cible.text(totalString);
+	return total;
+}
+
+
+
 $(function() {
 	
 // var siteUrl = "http://localhost/sacripant/memento/trunk/";
 
 // si la tab finance existe ou si on est sur la page printfacture
-console.log(pageDatas);
+// console.log(pageDatas);
 if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') ) 
 {
 
@@ -20,43 +52,23 @@ var devis = $('#devis, #finance')
 // ,	 taxe = $('.total-groupe-devis h3:first .item-devis-title').text();
 ;
 
-function formatage_montant(nbr)
-{
-	if (pageDatas.projet.devise === "Fcfa") { var nbr = nbr*1000 };
-	var nbr = Math.round(nbr);
-	var nombre = ''+nbr; // become string
-	var retour = nombre.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
-	return retour;
-}
 
-function calcul_total(arrayValues, cible)
-{
-	var total=0;
-	$.each(arrayValues, function(i, value){
-		total += value;
-	});
-	
-	
-	var totalString = formatage_montant(total);
-	cible.text(totalString);
-	return total;
-}
 
 function calcul_taxe(totalHT, target){
 	var taxe	= pageDatas.projet.taxe
-	,	 taxe = 1+(taxe/100)
+	,	taxe 	= 1+(taxe/100)
 	;
 
-	console.log(taxe);
-	if (pageDatas.projet.taxe === 0) {totalTTC = totalHT;}
+	// console.log(taxe);
+	if (pageDatas.projet.taxe === 0) totalTTC = totalHT;
 	if (pageDatas.projet.taxe !== 0) 
 	{
 		totalTTC = totalHT*taxe;
 		
 		totalTaxe = totalTTC-totalHT;
-		target.find('.montant-taxe').text( formatage_montant(totalTaxe) );
+		target.find('.montant-taxe').text( formatage_montant(totalTaxe, true) );
 	} 		
-	target.find('.montant-total-ttc').text( formatage_montant(totalTTC) );
+	target.find('.montant-total-ttc').text( formatage_montant(totalTTC, true) );
 	
 	return totalTTC;
 }
@@ -64,14 +76,14 @@ function calcul_taxe(totalHT, target){
 function calcul()
 {
 	var taux = $('.taux-horaire').val() || $('.taux-horaire').text()
-	,	 sousTotaux = [];
+	,	sousTotaux = [];
 	tranches = [];
 	
 	// Montant des items
 	sectionsDevis.each(function(iSection) {
 		var itemsValue = []
-		,	 items = $('.montant-item', this)
-		,	 sousTotalWrap = $('.montant-sous-total', this);
+		,	items = $('.montant-item', this)
+		,	sousTotalWrap = $('.montant-sous-total', this);
 	
 		items.each(function(iItem) {
 			var $this = $(this)
@@ -79,7 +91,7 @@ function calcul()
 			, 	 montant = temps*taux;
 						
 			itemsValue.push(montant);				
-			var montant = formatage_montant(montant);									
+			var montant = formatage_montant(montant, true);									
 			$('.total-item', this).text(montant);
 		});
 	
@@ -90,13 +102,17 @@ function calcul()
 
 	// Affichage des totaux du Devis et mise en memoire
 	var devisTotalHTWrap = $('#devis').find('.montant-total-ht')
-	,	 totalHT = calcul_total(sousTotaux, devisTotalHTWrap)
+	, 	devisTotalHTInput = $('#devis').find('.input-montant-total-ht')
+	,	totalHT = calcul_total(sousTotaux, devisTotalHTWrap)
 	;
+
+	// Add totalHT in input[hidden] value for save in BDD
+	devisTotalHTInput.val(formatage_montant(totalHT, false));
 	
 	
 	totalTTC = calcul_taxe( totalHT, $('#devis') );
 	
-	console.log(totalHT);
+	// console.log(totalHT);
 
 	// Répartition des factures / modalités de paiement
 	$('.devis-liste-factures li').each(function(index) {
@@ -107,9 +123,9 @@ function calcul()
 		var montantTTC = totalTTC*coef;
 		var montantHT = totalHT*coef;
 		// Répartition HT
-		$('.somme-a-payer', this).text(formatage_montant(montantHT) +" "+pageDatas.projet.devise+ " HT" );
+		$('.somme-a-payer', this).text(formatage_montant(montantHT, true) +" "+pageDatas.projet.devise+ " HT" );
 		// Répartition TTC
-		// $('.somme-a-payer', this).text(formatage_montant(montantTTC) +" "+pageDatas.projet.devise+ " TTC" );
+		// $('.somme-a-payer', this).text(formatage_montant(montantTTC, true) +" "+pageDatas.projet.devise+ " TTC" );
 
 		// Push each tranches de paiement
 		tranches.push(montantHT);
@@ -174,14 +190,15 @@ else
 	};
 		
 	$('#calcul').submit(function() {
+		console.log( queryString() );
 		$.ajax({
 			type:"post",
 		 	url: pageDatas.site.siteUrl+'?rah_external_output=query-finance',
 			data: { query : queryString() },
 			dataType: "text",
 			success : 	function(data, statut)
-							{ // code_html contient le HTML renvoyé
-								location.reload(); 
+						{ 
+							location.reload(); 
 			       		}
 		});
 		return false;
