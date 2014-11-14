@@ -32,10 +32,7 @@ function calcul_total(arrayValues, cible)
 
 $(function() {
 	
-// var siteUrl = "http://localhost/sacripant/memento/trunk/";
-
 // si la tab finance existe ou si on est sur la page printfacture
-// console.log(pageDatas);
 if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') ) 
 {
 
@@ -145,13 +142,13 @@ if ($('body').is('#printfacture'))
 	totalGroupe.prependTo('.add_totaux');
 	
 	// Total à payer pour chaque facture
-	console.log(tranches);	
+	// console.log(tranches);	
 	$.each(tranches, function(i, value){
 		++i;
 		var facture = $('#facture'+i);
 		var totalFacture = facture.find('.total-groupe-facture');
 				
-		totalFacture.find('.montant-total-ht').text(formatage_montant(value));
+		totalFacture.find('.montant-total-ht').text(formatage_montant(value, true));
 		calcul_taxe( value, totalFacture );	
 	});
 
