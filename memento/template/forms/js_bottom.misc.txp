@@ -13,6 +13,7 @@
 
 	<txp:cbe_frontauth_if_connected level="1">
 			<script src="<txp:site_url />/template/js/finance.js"></script>
+		<txp:if_section name="">
 			<script src="<txp:site_url />/template/js/CA.js"></script>
 		</txp:if_section>
 	</txp:cbe_frontauth_if_connected>

@@ -34,8 +34,8 @@ $(document).ready(function() {
 		var quotient 	= 1+(taxe/100)
 		;
 
-		if (taxe === 0) totalTTC = totalHT;
-		if (taxe !== 0) totalTTC = totalHT*quotient;
+		if (taxe === 0) var totalTTC = totalHT;
+		if (taxe !== 0) var totalTTC = totalHT*quotient;
 					
 		return totalTTC;
 	}

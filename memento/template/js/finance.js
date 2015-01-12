@@ -3,7 +3,10 @@
 
 function formatage_montant(nbr, space)
 {
-	if (pageDatas.projet.devise === "Fcfa") var nbr = nbr*1000;
+	if (pageDatas.projet.devise && pageDatas.projet.devise === "Fcfa") 
+	{
+		var nbr = nbr*1000;
+	}
 	var nbr = Math.round(nbr);
 	var nombre = ''+nbr; // become string
 
@@ -32,7 +35,10 @@ function calcul_total(arrayValues, cible)
 
 $(function() {
 	
+// var siteUrl = "http://localhost/sacripant/memento/trunk/";
+
 // si la tab finance existe ou si on est sur la page printfacture
+// console.log(pageDatas);
 if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') ) 
 {
 
@@ -142,13 +148,13 @@ if ($('body').is('#printfacture'))
 	totalGroupe.prependTo('.add_totaux');
 	
 	// Total à payer pour chaque facture
-	// console.log(tranches);	
+	console.log(tranches);	
 	$.each(tranches, function(i, value){
 		++i;
 		var facture = $('#facture'+i);
 		var totalFacture = facture.find('.total-groupe-facture');
 				
-		totalFacture.find('.montant-total-ht').text(formatage_montant(value, true));
+		totalFacture.find('.montant-total-ht').text(formatage_montant(value));
 		calcul_taxe( value, totalFacture );	
 	});
 

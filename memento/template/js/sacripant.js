@@ -282,10 +282,11 @@ $(function(){
 	
 	function filtrage(target) {
 		var filtre = target
-		,	 targetWrap = target.parents('.filtrage').next()
-		,	 target = filtre.attr('data-target')
-		,	 switcher = (filtre.is(':checked')) ? "table-row" : "none";
-		// console.log(targetWrap);
+		,	targetWrap = target.parents('.filtrage').next()
+		,	target = filtre.attr('data-target')
+		,	switcher = (filtre.is(':checked')) ? "table-row" : "none"
+		;
+
 		$(target,targetWrap).css('display', switcher);
 	}
 	
