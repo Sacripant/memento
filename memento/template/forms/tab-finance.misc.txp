@@ -60,7 +60,7 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 						<span class="total-item"></span>
 						<span class="temps-prevu"> 
 							<!-- Input tp_ (temps) -->
-							<input type="number" class="inputnum" name="tp_<txp:article_id />" value='<txp:custom_field name="Temps_prevu" />' />
+							<input type="number" class="inputnum" name="tp_<txp:article_id />" value='<txp:custom_field name="Temps_prevu" />' step="0.1" min="0"/>
 						</span>
 					</span>
 				</li>
