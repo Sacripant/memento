@@ -20,12 +20,13 @@ function formatage_montant(nbr, space)
 
 function calcul_total(arrayValues, cible)
 {
-	var total=0;
+	"use strict";
+
+	var total = 0;
 	$.each(arrayValues, function(i, value){
-		total += parseInt(value);
+		total += parseFloat(value);
 	});
-	
-	
+		
 	var totalString = formatage_montant(total, true);
 	cible.text(totalString);
 	return total;
@@ -88,11 +89,12 @@ function calcul()
 		,	items = $('.montant-item', this)
 		,	sousTotalWrap = $('.montant-sous-total', this);
 	
+
 		items.each(function(iItem) {
 			var $this = $(this)
 			,	 temps = $this.attr("data-temps") || $('input', this).val()
 			, 	 montant = temps*taux;
-						
+
 			itemsValue.push(montant);				
 			var montant = formatage_montant(montant, true);									
 			$('.total-item', this).text(montant);
@@ -120,7 +122,7 @@ function calcul()
 	// Répartition des factures / modalités de paiement
 	$('.devis-liste-factures li').each(function(index) {
 		var pourcent = $(this).attr('data-pourcentage')
-		,	 coef = pourcent.replace('%', '');
+		,	coef = pourcent.replace('%', '');
 		coef /= 100;
 		
 		var montantTTC = totalTTC*coef;
