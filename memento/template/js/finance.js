@@ -150,13 +150,13 @@ if ($('body').is('#printfacture'))
 	totalGroupe.prependTo('.add_totaux');
 	
 	// Total à payer pour chaque facture
-	console.log(tranches);	
+	// console.log(tranches);	
 	$.each(tranches, function(i, value){
 		++i;
 		var facture = $('#facture'+i);
 		var totalFacture = facture.find('.total-groupe-facture');
 				
-		totalFacture.find('.montant-total-ht').text(formatage_montant(value));
+		totalFacture.find('.montant-total-ht').text(formatage_montant(value, true));
 		calcul_taxe( value, totalFacture );	
 	});
 
