@@ -26,7 +26,7 @@
 		<!-- ID projet -->
 		<txp:variable name="projetID"/><br />
 		<!-- Nb de tranches -->
-		<txp:variable name="nbTranches" /><
+		<txp:variable name="nbTranches" />
 	</txp:hide>
 	
 	
@@ -89,7 +89,18 @@
 	<!-- Détail de la prestation -->
 	<txp:variable name="detail_prestation">
 		<txp:category_list break="" wraptag="div" class="details-prestation"
-			categories="gestion-de-projet,conception,crea-graphique,maquettage,webdesign,dev-back,documentation,reunion,formation"
+			categories="
+				gestion-de-projet,
+				conception,
+				crea-graphique,
+				prototypage,
+				webdesign,
+				integration-web,
+				dev-back,
+				documentation,
+				formation,
+				reunion
+			"
 		>
 			<txp:variable name="todos_this_cat"><txp:smd_wrap>
 				<txp:article_custom projet='<txp:variable name="projetID" />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
@@ -338,7 +349,7 @@
 
 							<!-- Phrase de modalité de paiement -->
 							<p class="note ref_devis">
-								Merci de régler le montant de <em><span class='montant-total-ht'></span> <span class="devise"><txp:custom_field name="Devise" /></span></em> par chèque à l'attention de Mr <em>Thomas JUND</em>.
+								Merci de régler le montant de <em><span class='montant-total-ht'></span> <span class="devise"><txp:custom_field name="Devise" /></span></em> par chèque à l'attention de Mr <em>Thomas Joseph JUND</em>.
 							</p>
 
 						</div> <!-- .total-goupe -->
