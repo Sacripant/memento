@@ -134,33 +134,37 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 				</txp:if_custom_field>
 			</div> <!-- .total-goupe -->
 
-			<!-- Répartition des payements -->
-			<txp:rah_repeat value='<txp:custom_field name="repartition" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
-				<txp:hide><txp:smd_wrap transform="date|%A %e %b %Y" item="2012/11/09" /></txp:hide>
-				<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
-				<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
-				<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
-				
-			<!-- FACTURE <txp:variable name="index" /> -->
-				<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
-		
-				<!-- IF var quand = DATE YYYY/MM/DD -->
-					<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-						<strong class='item-devis-title'>
-							<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
-							<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
-						</strong>
-					<txp:else />
-				<!-- ELSE -->
-						<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
-					</txp:cbe_if_variable>
-						
-					<span class="montant">
-						<span class='somme-a-payer'></span>
-						<txp:hide><span class="devise"><txp:custom_field name="Devise" /></span></txp:hide>
-					</span>
-				</li>
-			</txp:rah_repeat>
+			<txp:if_custom_field name="repartition">
+				<!-- 
+					Répartition des payements 
+				-->
+				<txp:rah_repeat value='<txp:custom_field name="repartition" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
+					<txp:hide><txp:smd_wrap transform="date|%A %e %b %Y" item="2012/11/09" /></txp:hide>
+					<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+					
+				<!-- FACTURE <txp:variable name="index" /> -->
+					<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+			
+					<!-- IF var quand = DATE YYYY/MM/DD -->
+						<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+							<strong class='item-devis-title'>
+								<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+								<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+							</strong>
+						<txp:else />
+					<!-- ELSE -->
+							<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
+						</txp:cbe_if_variable>
+							
+						<span class="montant">
+							<span class='somme-a-payer'></span>
+							<txp:hide><span class="devise"><txp:custom_field name="Devise" /></span></txp:hide>
+						</span>
+					</li>
+				</txp:rah_repeat>
+			</txp:if_custom_field>
 		</txp:if_last_category>
 	</txp:category_list>
 	</div><!-- #devis -->
