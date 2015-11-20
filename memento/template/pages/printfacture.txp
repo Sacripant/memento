@@ -197,37 +197,39 @@
 						</div> <!-- .total-goupe -->
 						
 						
-						
-						<!-- Tableau de Tranches de paiement -->
-						<div class="repartition">
-							<h2>Modalités de règlement</h2>
-							
-							<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
-								<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
-								<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
-								<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
-								<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+						<txp:if_custom_field name="repartition">
+						<!-- 
+							Tableau de Tranches de paiement 
+						-->
+							<div class="repartition">
+								<h2>Modalités de règlement</h2>
 								
+								<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
+									<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+									<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+									<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+									<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+									
+									
+									<!-- IF var quand = DATE YYYY/MM/DD -->
+										<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+											<strong class='item-devis-title'>
+												<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+												<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+											</strong>
+										<txp:else />
+									<!-- ELSE -->
+											<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
+										</txp:cbe_if_variable>
 								
-								<!-- IF var quand = DATE YYYY/MM/DD -->
-									<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-										<strong class='item-devis-title'>
-											<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
-											<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
-										</strong>
-									<txp:else />
-								<!-- ELSE -->
-										<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
-									</txp:cbe_if_variable>
-							
-								<!-- Montant + devise -->
-									<span class="montant">
-										<span class='somme-a-payer'></span>
-									</span>
-								</li>
-							</txp:rah_repeat>
-						</div>
-
+									<!-- Montant + devise -->
+										<span class="montant">
+											<span class='somme-a-payer'></span>
+										</span>
+									</li>
+								</txp:rah_repeat>
+							</div>
+						</txp:if_custom_field>
 						<!-- Notes Juridiques -->
 						<div class="footer-notes">
 
@@ -347,10 +349,30 @@
 								</h4>	
 							</txp:if_custom_field>
 
-							<!-- Phrase de modalité de paiement -->
+							<!-- 
+								Phrase de modalité de paiement 
+								- cheque
+								- virement
+							-->
+							<txp:variable name="modalite" value="virement"/>
+
 							<p class="note ref_devis">
-								Merci de régler le montant de <em><span class='montant-total-ht'></span> <span class="devise"><txp:custom_field name="Devise" /></span></em> par chèque à l'attention de Mr <em>Thomas Joseph JUND</em>.
+								Merci de régler le montant de 
+								<em>
+									<span class='montant-total-ht'></span> 
+									<span class="devise"><txp:custom_field name="Devise" /></span>
+								</em> 
+								
+								<txp:if_variable name="modalite" value="cheque">
+									par chèque
+								</txp:if_variable>
+								<txp:if_variable name="modalite" value="virement">
+									par virement bancaire (RIB en pièce jointe)
+								</txp:if_variable>
+
+								à l'attention de Mr <em>Thomas Joseph JUND</em>.
 							</p>
+
 
 						</div> <!-- .total-goupe -->
 					
