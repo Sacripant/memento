@@ -9,7 +9,7 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 <txp:hide>
 				Authorisation d'accéder à ce projet
 </txp:hide>
-<txp:cbe_frontauth_if_connected name='admin,<txp:author title="0" />'>
+<txp:cbe_frontauth_if_connected level="1" name='<txp:author title="0" />'>
 <txp:else />
 	<txp:txp_die status="401" />
 </txp:cbe_frontauth_if_connected>
@@ -88,7 +88,7 @@ Affiche le Header + la structure ( sidebar + main-content) d'un projet
 		<section id="todolist" class="pane">
 			<txp:output_form form="tab-todolist-projet" />	
 		</section>
-		<section id="commentaires"  class="pane"">
+		<section id="commentaires"  class="pane">
 			<h1 class="block-title" data-this="Commentaires">commentaires</h1>
 			<txp:article form="comments_display" />
 		</section>
