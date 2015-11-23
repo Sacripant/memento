@@ -13,6 +13,7 @@ body 	{
 
 /*Misc*/
 .nude { list-style-type: none; margin: 0; }
+.white-mask { background: #fff; }
 
 
 #print			{ position: fixed; top 10px; right: 10px;}
@@ -22,11 +23,11 @@ body 	{
 header, h1, h2, h3, h4 {
 	font-family: "PT Serif", serif;
 	font-weight: normal;
-	
+	line-height: normal;
 }
 h1	{ }
 h2	{ font-size: 12pt; font-style: italic; line-height: 1.2em; font-weight: bold; margin-bottom: 6pt; }
-h3	{ font-size: 10pt; line-height: 15pt; font-weight: bold; }
+h3	{ font-size: 10pt; font-weight: bold; }
 h4 { font-size: 10pt; }
 
 ul {
@@ -107,24 +108,65 @@ article header h2 {}
 	margin-top: 1em;
 }
 .devis-section		{
-	margin-left: 1cm;
+	margin-left: .5cm;
 }
-.item-devis			{ clear: both; height: 1em; border-bottom: 1px dotted; margin-bottom: 0.3em; }
 
-.item-devis-title	{ float: left; padding-right: .4em; background-color: #fff; font-weight: normal; }
+.item-devis-liste	{ 
+	margin-left: 1em;
+	font-size: 8pt;
+}
+
+
+/*Item-devis*/
+.item-devis	{ 
+	clear: both;
+	position: relative; 
+	/*height: 1em; */
+	/*border-bottom: 1px dotted; */
+	margin-bottom: 0.33em;
+	/*background-color: yellow;*/
+	padding-top: 0;
+	overflow: hidden;
+}
+
+.item-devis-title	{ 
+	float: left; 
+	padding-right: .4em; 
+	/*background-color: #fff; */
+	font-weight: normal; 
+	max-width: 80%;
+}
 .item-devis-title:first-letter	{ 
 	text-transform: uppercase;
 }
-.item-devis-liste	{ margin-left: 1em; }
-.montant				{ float: right; text-align: right; padding-left: 0.4em; background-color: #fff; }
+.item-devis-title:after {
+	content: "0000";
+	width: 100%;
+	height: 1em;
+	border-bottom: 1px dotted;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
+
+
+.montant	{ 
+	float: right; 
+	text-align: right; 
+	padding-left: 0.4em; 
+	background-color: #fff; 
+}
+
+
 .sous-total			{ font-style: italic; margin-top: 0.4em; }
-.sous-total > *	{ position: relative; top: 1.5pt; }
 
 /*total Devis*/
 .total-groupe		{ font-size: 12pt; margin: 1em 0; }
 .total-groupe .montant { font-weight: bold; }
 .total-groupe h4 	{ height: 0.85em; margin-bottom: 0.5em;}
 .total-groupe .note	{ font-size: 8pt; margin-top: 12pt; }
+.rib				{ font-siez: 12pt; border: 1px dotted; padding: 1em; margin-top: 1em; }
 
 /*Répartiion Factures*/
 .repartition	{ margin-bottom: 1em; }

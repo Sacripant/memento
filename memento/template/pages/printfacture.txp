@@ -105,7 +105,9 @@
 			<txp:variable name="todos_this_cat"><txp:smd_wrap>
 				<txp:article_custom projet='<txp:variable name="projetID" />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
 					<li class="item-devis item-<txp:category />">
-						<strong class="item-devis-title"><txp:title /></strong>
+						<strong class="item-devis-title">
+							<span class="white-mask"><txp:title /></span>
+						</strong>
 						<span class="montant montant-item" data-temps='<txp:if_custom_field name="Temps_prevu" value="">0<txp:else /><txp:custom_field name="Temps_prevu" /></txp:if_custom_field>'>
 							<span class="total-item"></span>
 						</span>
@@ -123,7 +125,12 @@
 
 					<!-- Sous totale d'une cat -->
 					<h4 class="item-devis sous-total">
-						<strong class="item-devis-title">Sous Total <txp:category title="1"/></strong><span class="montant montant-sous-total"></span>
+						<strong class="item-devis-title">
+							<span class="white-mask">
+								Sous Total <txp:category title="1"/>
+							</span>
+						</strong>
+						<span class="montant montant-sous-total"></span>
 					</h4>	
 				</div>
 			</txp:if_variable>
@@ -170,7 +177,12 @@
 							<!-- TOTAL HT + taxe = TOTAL TTC -->
 								<!-- Total HT -->
 								<h3 class="item-devis total-ht">
-									<strong class="item-devis-title">Total HT</strong><span class="montant">
+									<strong class="item-devis-title">
+										<span class="white-mask">
+											Total HT
+										</span>
+									</strong>
+									<span class="montant">
 										<span class="montant-total-ht"></span>
 										<span class="devise"><txp:custom_field name="Devise" /></span>
 									</span>
@@ -180,14 +192,23 @@
 							<txp:else />
 								<!-- Taxe -->
 								<h3 class="item-devis taxe">
-									<strong class="item-devis-title">5% retenus</strong><span class="montant">
+									<strong class="item-devis-title">
+										<span class="white-mask">
+											5% retenus
+										</span>
+									</strong>
+									<span class="montant">
 										<span class="montant-taxe"></span>
 										<span class="devise"><txp:custom_field name="Devise" /></span>
 									</span>
 								</h3>	
 								<!-- Total TTC -->
 								<h3 class="item-devis total-ttc">
-									<strong class="item-devis-title">Total TTC</strong>
+									<strong class="item-devis-title">
+										<span class="white-mask">
+											Total TTC											
+										</span>
+									</strong>
 									<span class="montant">
 										<span class="montant-total-ttc"></span>
 										<span class="devise"><txp:custom_field name="Devise" /></span>
@@ -210,19 +231,20 @@
 									<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
 									<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
 									
+										<strong class='item-devis-title'>
+											<span class="white-mask">
+											<!-- IF var quand = DATE YYYY/MM/DD -->
+												<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+													<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+													<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+												<txp:else />
+											<!-- ELSE -->
+													<txp:mck_snippet title='<txp:variable name="quand" />'/>
+												</txp:cbe_if_variable>
+											</span>
+										</strong>
 									
-									<!-- IF var quand = DATE YYYY/MM/DD -->
-										<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-											<strong class='item-devis-title'>
-												<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
-												<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
-											</strong>
-										<txp:else />
-									<!-- ELSE -->
-											<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
-										</txp:cbe_if_variable>
-								
-									<!-- Montant + devise -->
+										<!-- Montant + devise -->
 										<span class="montant">
 											<span class='somme-a-payer'></span>
 										</span>
@@ -308,17 +330,19 @@
 					
 						<h2>Somme à payer :</h2>
 
-						<h3 class="clearfix">	
-							<!-- IF var quand = DATE YYYY/MM/DD -->
-								<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-									<strong class='item-devis-title'>
+						<h3 class="clearfix ">	
+							<strong class=''>
+								<span class="white-mask">
+								<!-- IF var quand = DATE YYYY/MM/DD -->
+									<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
 										<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
 										<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
-									</strong>
-								<txp:else />
-							<!-- ELSE -->
-									<strong class="item-devis-title"><txp:mck_snippet title='<txp:variable name="quand" />'/></strong>
-								</txp:cbe_if_variable>
+									<txp:else />
+								<!-- ELSE -->
+										<txp:mck_snippet title='<txp:variable name="quand" />'/>
+									</txp:cbe_if_variable>									
+								</span>
+							</strong>
 						</h3>				
 							
 									
@@ -326,7 +350,9 @@
 						<!-- TOTAL TTC + 5% + TOTAL HT -->
 							<h4 class="item-devis total-ht">
 								<strong class="item-devis-title">
-									Total HT
+									<span class="white-mask">
+										Total HT										
+									</span>
 								</strong>
 								<span class="montant">
 									<span class="montant-total-ht"></span>
@@ -355,23 +381,31 @@
 								- virement
 							-->
 							<txp:variable name="modalite" value="virement"/>
+							
+							<div class="note ref_devis">
 
-							<p class="note ref_devis">
-								Merci de régler le montant de 
-								<em>
-									<span class='montant-total-ht'></span> 
-									<span class="devise"><txp:custom_field name="Devise" /></span>
-								</em> 
-								
-								<txp:if_variable name="modalite" value="cheque">
-									par chèque
-								</txp:if_variable>
+								<p>
+									Merci de régler le montant de 
+									<em>
+										<span class='montant-total-ht'></span> 
+										<span class="devise"><txp:custom_field name="Devise" /></span>
+									</em> 
+									
+									<txp:if_variable name="modalite" value="cheque">
+										par chèque
+									</txp:if_variable>
+									<txp:if_variable name="modalite" value="virement">
+										par virement bancaire
+									</txp:if_variable>
+
+									à l'attention de Mr <em>JUND Thomas</em>.
+								</p>
+
 								<txp:if_variable name="modalite" value="virement">
-									par virement bancaire (RIB en pièce jointe)
+									<txp:mck_snippet title='rib' wraptag="div" class="rib" />
 								</txp:if_variable>
-
-								à l'attention de Mr <em>Thomas Joseph JUND</em>.
-							</p>
+								
+							</div>
 
 
 						</div> <!-- .total-goupe -->
