@@ -1,5 +1,5 @@
 <txp:smd_bio_info
-	fields="name,RealName,email,tel_mobile,skype,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville,tel_fixe"
+	fields="name,RealName,email,tel_mobile,skype,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville,tel_fixe,adresse_pays"
 	wraptag=""
 	class="" 
 	show_empty="1"
@@ -16,6 +16,7 @@
 				
 				<txp:smd_bio_data field="adresse_cp" wraptag="span" class="postal-code" />
 				<txp:smd_bio_data field="adresse_ville" wraptag="span" class="locality" />
+				<txp:smd_bio_data field="adresse_pays" wraptag="span" class="pays block" />
 			</p>				
 		</div>
 		<div class="user-meta">
