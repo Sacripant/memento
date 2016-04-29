@@ -18,7 +18,7 @@
 </head>
 
 
-<body <txp:if_section name="">id="heim"<txp:else />id="<txp:section />"</txp:if_section> >
+<body id="<txp:section />">
 	
 	<!-- VARIABLES -->
 	<txp:adi_gps />
@@ -43,11 +43,14 @@
 			<h2>Commanditaire :</h2>
 			<div class="commanditaire-content">
 				<txp:smd_bio_info
-					fields="name,RealName,type,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville"
+					fields="name,RealName,type,societe,adresse_rue,adresse_quartier,adresse_cp,adresse_ville,form_juridique,adresse_pays"
 					show_empty="1"
 				>
 					<txp:smd_if_bio field="type" value="entreprise">
 						<strong class="org">{smd_bio_societe}</strong><br />
+						<txp:smd_if_bio field="form_juridique">
+							{smd_bio_form_juridique} <br/>
+						</txp:smd_if_bio>
 					<txp:else />
 						<strong class="org">{smd_bio_RealName}</strong><br />
 					</txp:smd_if_bio>
@@ -64,6 +67,11 @@
 
 						{smd_bio_adresse_ville}
 					</span>
+					<txp:smd_if_bio field="adresse_pays">
+					<br/> <span class="country">
+						{smd_bio_adresse_pays}
+					</span>
+					</txp:smd_if_bio>
 				</txp:smd_bio_info>											
 			</div>
 		</div>			
@@ -77,13 +85,10 @@
 	
 	<!-- NATURE DU TRAVAIL -->
 	<txp:variable name="chose_facturee">
-		<header>
-			<h2>Nature du travail :</h2>
-			<div>
-				<h3 class="projet-title"><txp:title />.</h3>
-				<span class="projet-description"><txp:body /></span>
-			</div>	
-		</header>
+		<div>
+			<h3 class="projet-title"><txp:title />.</h3>
+			<div class="projet-description"><txp:body /></div>
+		</div>	
 	</txp:variable>
 	
 	<!-- Détail de la prestation -->
@@ -147,12 +152,14 @@
 			</txp:hide>
 			
 		
-			<!-- DEVIS -->
+			<!-- 
+				DEVIS 
+			-->
 			<section id="devis">
 			
 				<header>
 					<p class="date-courier">
-						À Dakar, le 
+						À l'Arbresle, le 
 						<txp:smd_wrap transform="date|%A %e %B %Y"><txp:custom_field name="num-date_Devis" /></txp:smd_wrap>
 						<!-- À Dakar, le Vendredi 27 juillet 2012 -->
 					</p>
@@ -166,7 +173,12 @@
 				</header>
 		
 				<article class="devis">
-					<txp:variable name="chose_facturee" />
+					<header>
+						<h2>Nature du travail</h2>
+						<txp:variable name="chose_facturee" />
+					</header>
+
+
 					<txp:variable name="detail_prestation" />
 
 
@@ -180,6 +192,11 @@
 									<strong class="item-devis-title">
 										<span class="white-mask">
 											Total HT
+											<txp:if_custom_field name="taxe" value="off">
+												<span class="note">
+													(TVA non applicable, art. 293 B du CGI)
+												</span>
+											</txp:if_custom_field>
 										</span>
 									</strong>
 									<span class="montant">
@@ -281,7 +298,9 @@
 			</section> <!-- END DEVIS -->
 			
 			
-			<!-- FACTURES -->
+			<!-- 
+				FACTURES 
+			-->
 			<!-- phrase de référence au devis -->
 			<txp:variable name="ref_devis">
 				<p class="note ref_devis">
@@ -291,7 +310,7 @@
 
 			
 			
-			
+			<!-- Create Nb facture avec custom field "tranches" -->
 			<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1">
 			
 				<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
@@ -306,10 +325,10 @@
 						<p class="date-courier">
 							<!-- IF var date-facture = DATE YYYY/MM/DD -->
 								<txp:cbe_if_variable name="date-facture" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-									À Dakar, le <txp:smd_wrap transform="date|%A %e %B %Y" item='<txp:variable name="date-facture" />' />
+									À l'Arbresle, le <txp:smd_wrap transform="date|%A %e %B %Y" item='<txp:variable name="date-facture" />' />
 								<txp:else />
 							<!-- ELSE date-facture = NOW-->
-									À Dakar, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
+									À l'Arbresle, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
 								</txp:cbe_if_variable>	
 						</p>
 						<txp:variable name="commanditaire" />
@@ -320,95 +339,109 @@
 						</h1>
 					</header>
 				
-					<article class="facture">
 					
-						<txp:variable name="chose_facturee" />
-						<div class="add_totaux"></div>
-						<txp:variable name="ref_devis" />
-				
-						<hr />
-					
-						<h2>Somme à payer :</h2>
-
-						<h3 class="clearfix ">	
-							<strong class=''>
-								<span class="white-mask">
-								<!-- IF var quand = DATE YYYY/MM/DD -->
-									<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-										<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
-										<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
-									<txp:else />
-								<!-- ELSE -->
-										<txp:mck_snippet title='<txp:variable name="quand" />'/>
-									</txp:cbe_if_variable>									
-								</span>
-							</strong>
-						</h3>				
+					<article>
+						<section class="rappel-presta">
+							<header>
+								<h2>Rappel de la prestation</h2>
+								<txp:variable name="chose_facturee" />
+							</header>
 							
-									
-						<div class="total-groupe total-groupe-facture clearfix">
-						<!-- TOTAL TTC + 5% + TOTAL HT -->
-							<h4 class="item-devis total-ht">
-								<strong class="item-devis-title">
+							<div class="rappel-total-presta add_totaux"></div>
+							<txp:variable name="ref_devis" />
+						</section>
+				
+						<section class="somme-a-payer">
+							
+							<h2>Somme à payer :</h2>
+
+							<h3 class="clearfix">	
+								<strong class=''>
 									<span class="white-mask">
-										Total HT										
+									<!-- IF var quand = DATE YYYY/MM/DD -->
+										<txp:cbe_if_variable name="quand" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
+											<strong><txp:smd_wrap transform="date|%b %Y" item='<txp:variable name="quand" />' /></strong> :
+											<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
+										<txp:else />
+									<!-- ELSE -->
+											<txp:mck_snippet title='<txp:variable name="quand" />'/>
+										</txp:cbe_if_variable>									
 									</span>
 								</strong>
-								<span class="montant">
-									<span class="montant-total-ht"></span>
-									<span class="devise"><txp:custom_field name="Devise" /></span>
-								</span>
-							</h4>
-							<txp:if_custom_field name="taxe" value="off">
-							<txp:else />
-								<h4 class="item-devis taxe">
-									<strong class="item-devis-title">5% retenus</strong><span class="montant">
-										<span class="montant-taxe"></span>
+							</h3>
+
+							<div class="total-groupe total-groupe-facture clearfix">
+							<!-- TOTAL TTC + 5% + TOTAL HT -->
+								<h4 class="item-devis total-ht">
+									<strong class="item-devis-title">
+										<span class="white-mask">
+											Total HT
+											<txp:if_custom_field name="taxe" value="off">
+												<span class="note">
+													(TVA non applicable, art. 293 B du CGI)
+												</span>
+											</txp:if_custom_field>
+										</span>
+									</strong>
+									<span class="montant">
+										<span class="montant-total-ht"></span>
 										<span class="devise"><txp:custom_field name="Devise" /></span>
 									</span>
-								</h4>	
-								<h4 class="item-devis total-ttc">
-									<strong class="item-devis-title">Total TTC</strong><span class="montant">
-										<span class="montant-total-ttc"></span>
-										<span class="devise"><txp:custom_field name="Devise" /></span>
-									</span>
-								</h4>	
-							</txp:if_custom_field>
+								</h4>
+								<txp:if_custom_field name="taxe" value="off">
+								<txp:else />
+									<h4 class="item-devis taxe">
+										<strong class="item-devis-title">5% retenus</strong><span class="montant">
+											<span class="montant-taxe"></span>
+											<span class="devise"><txp:custom_field name="Devise" /></span>
+										</span>
+									</h4>	
+									<h4 class="item-devis total-ttc">
+										<strong class="item-devis-title">Total TTC</strong><span class="montant">
+											<span class="montant-total-ttc"></span>
+											<span class="devise"><txp:custom_field name="Devise" /></span>
+										</span>
+									</h4>	
+								</txp:if_custom_field>
 
-							<!-- 
-								Phrase de modalité de paiement 
-								- cheque
-								- virement
-							-->
-							<txp:variable name="modalite" value="virement"/>
-							
-							<div class="note ref_devis">
-
-								<p>
-									Merci de régler le montant de 
-									<em>
-										<span class='montant-total-ht'></span> 
-										<span class="devise"><txp:custom_field name="Devise" /></span>
-									</em> 
-									
-									<txp:if_variable name="modalite" value="cheque">
-										par chèque
-									</txp:if_variable>
-									<txp:if_variable name="modalite" value="virement">
-										par virement bancaire
-									</txp:if_variable>
-
-									à l'attention de Mr <em>JUND Thomas</em>.
-								</p>
-
-								<txp:if_variable name="modalite" value="virement">
-									<txp:mck_snippet title='rib' wraptag="div" class="rib" />
-								</txp:if_variable>
+								<!-- 
+									Phrase de modalité de paiement 
+									- cheque
+									- virement
+								-->
+								<txp:variable name="modalite" value="virement"/>
 								
-							</div>
+								<div class="note ref_devis">
+
+									<p>
+										Merci de régler le montant de 
+										<em>
+											<span class='montant-total-ht'></span> 
+											<span class="devise"><txp:custom_field name="Devise" /></span>
+										</em> 
+										
+										<txp:if_variable name="modalite" value="cheque">
+											par chèque
+										</txp:if_variable>
+										<txp:if_variable name="modalite" value="virement">
+											par virement bancaire
+										</txp:if_variable>
+
+										à l'attention de Mr <em>JUND Thomas</em>.
+									</p>
+
+									<txp:if_variable name="modalite" value="virement">
+										<txp:mck_snippet title='rib' wraptag="div" class="rib" />
+									</txp:if_variable>
+									
+								</div>
 
 
-						</div> <!-- .total-goupe -->
+							</div> <!-- .total-goupe -->
+						</section>
+					
+							
+									
 					
 	
 					

@@ -16,7 +16,7 @@ body 	{
 .white-mask { background: #fff; }
 
 
-#print			{ position: fixed; top 10px; right: 10px;}
+/*#print			{ position: fixed; top 10px; right: 10px;}*/
 .metas-devis 	{ display: none; }
 
 /*Headers*/
@@ -41,7 +41,7 @@ ul {
 	argin: 0;
 }
 
-section {
+#devis, .facture {
 	border-bottom: 1px solid;
 	padding: 1em 0;
 }
@@ -67,14 +67,14 @@ h1	{
 	top: -40pt;
 	z-index: 100;
 }
-.finance-block-title {
+/*.finance-block-title {
 	font-size: 36pt;
 	font-weight: bold;
 	color: #fff;
 	-webkit-text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;
 	   -moz-text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;
 	        text-shadow: 0.5pt 0.5pt 0 #000, -0.5pt -0.5pt 0 #000;	
-}
+}*/
 .no-devis {
 	display: block;
 	font-family: "PT Mono", serif;
@@ -91,7 +91,7 @@ article {
 }
 article header {}
 article header h2 {}
-.projet-title, .projet-description p {
+.projet-title, .projet-description, .projet-description p {
 	display: inline;
 	font-size: 9pt;
 	line-height: 1.2em;
@@ -164,9 +164,9 @@ article header h2 {}
 /*total Devis*/
 .total-groupe		{ font-size: 12pt; margin: 1em 0; }
 .total-groupe .montant { font-weight: bold; }
-.total-groupe h4 	{ height: 0.85em; margin-bottom: 0.5em;}
+.total-groupe h4 	{ margin-bottom: 0.5em; }
 .total-groupe .note	{ font-size: 8pt; margin-top: 12pt; }
-.rib				{ font-siez: 12pt; border: 1px dotted; padding: 1em; margin-top: 1em; }
+.rib				{ border: 1px dotted; padding: 1em; margin-top: 1em; }
 
 /*Répartiion Factures*/
 .repartition	{ margin-bottom: 1em; }
@@ -180,7 +180,26 @@ article header h2 {}
 	font-style: italic;
 }
 
-/*Specifique au PRINT*/
+/* Specifique Factures */
+.rappel-presta {
+	padding: 1em;
+	border: 1pt solid #eee;
+	margin-bottom: 2em;
+}
+.rappel-total-presta .montant {
+	font-weight: normal;
+	font-size: 9pt;
+}
+
+.somme-a-payer h2 {
+	font-size: 14pt;
+}
+.somme-a-payer h4 {
+	font-size: 11pt;
+}
+
+
+/* Specifique PRINT */
 @media print {
 	body {
 		margin: 0;
