@@ -52,7 +52,7 @@ Necessite plugins …
 					<txp:rah_repeat 
 						value='<txp:rah_repeat_value />' 
 						delimiter="-" 
-						assign="index, quand, pourcentage, date-facture" 
+						assign="index, quand, pourcentage, date-facture, date-paie" 
 					/>
 						{
 							projet : "<txp:title />",
@@ -61,6 +61,7 @@ Necessite plugins …
 							pourcentage : "<txp:smd_wrap transform="replace||%||" item='<txp:variable name="pourcentage" />' />",
 							annee : "<txp:smd_wrap transform="date|%Y" item='<txp:variable name="date-facture" />' />",
 							dateFacture : "<txp:variable name="date-facture" />",
+							datePaie : "<txp:variable name="date-paie" />",
 							taxe : <txp:if_custom_field name="taxe" value="off">0<txp:else /><txp:custom_field name="taxe" /></txp:if_custom_field>,
 							totalHT : "<txp:custom_field name="total-HT" />",
 							devise : "<txp:custom_field name="Devise" />"
