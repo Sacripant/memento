@@ -77,16 +77,7 @@
 				<h1 class="h4">fichiers en attente de validation</h1>
 				<txp:variable name="pending_file_download_list" />		
 			</section>
-		</txp:if_variable>
-		
-		
-		
-		
-	
-	
-		
-		
-		
+		</txp:if_variable>	
 	</div>
 </section>
 
