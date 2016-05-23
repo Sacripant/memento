@@ -55,6 +55,7 @@ Necessite plugins …
 						assign="index, quand, pourcentage, date-facture, date-paie" 
 					/>
 						{
+							id : "<txp:article_id />",
 							projet : "<txp:title />",
 							index : <txp:variable name="index" />,
 							quand : "<txp:variable name="quand" />",

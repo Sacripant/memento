@@ -7,7 +7,7 @@ $(document).ready(function() {
         var annees = [];
         for (var e in paiements) annees.push(paiements[e].annee);
 
-        var annees = annees.filter(function(val, i) 
+        annees = annees.filter(function(val, i) 
         {
             if (val) 
                 return annees.indexOf(val) == i;
@@ -18,7 +18,7 @@ $(document).ready(function() {
 
         return annees;
 
-    };
+    }
 
     // Tri les el du obj par la propriété choisie
     function sortResults(obj, prop, asc) 
@@ -34,10 +34,11 @@ $(document).ready(function() {
 
     function calcul_ttc(totalHT, taxe){
         var quotient    = 1+(taxe/100)
+        ,   totalTTC
         ;
 
-        if (taxe === 0) var totalTTC = totalHT;
-        if (taxe !== 0) var totalTTC = totalHT*quotient;
+        if (taxe === 0) totalTTC = totalHT;
+        if (taxe !== 0) totalTTC = totalHT*quotient;
                     
         return totalTTC;
     }
@@ -80,7 +81,7 @@ $(document).ready(function() {
 
 
             html += '<tr>'
-                +'<td>' + obj[e].projet + '</td>'
+                +'<td> <strong>' + obj[e].id + '</strong> ' + obj[e].projet + '</td>'
                 +'<td>' + obj[e].index + ' • ' + obj[e].quand + ' • ' + obj[e].pourcentage + '</td>'
                 +'<td>' + obj[e].datePaie + '</td>'
                 //+'<td class="ca--totalHT">' + obj[e].totalHT + '</td>'
