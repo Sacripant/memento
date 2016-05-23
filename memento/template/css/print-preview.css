@@ -223,7 +223,7 @@ article header h2 {}
 		display: none;
 	}
 	
-	section {
+	#devis, .facture {
 		page-break-after: always;
 		border-bottom: 0 none;
 	}
