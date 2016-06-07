@@ -1,19 +1,25 @@
 // These function are global
 // using by finance.js & CA.js
 
-function formatage_montant(nbr, space)
+function formatage_montant(nbr, space, round)
 {
-	if (pageDatas.projet.devise && pageDatas.projet.devise === "Fcfa") 
-	{
-		var nbr = nbr*1000;
-	}
-	var nbr = Math.round(nbr);
-	var nombre = ''+nbr; // become string
+	"use strict";
+	
+	if (pageDatas.projet.devise && pageDatas.projet.devise === "Fcfa")
+		nbr = nbr*1000;
 
-	if (space)
-		var retour = nombre.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
-	else
-		var retour = nombre;
+	if (round)
+		nbr = Math.round(nbr);
+
+	// var nbr = Math.round(nbr);
+	var nombre = ''+nbr, // become string
+		retour; 
+
+	if (space) {
+		retour = nombre.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
+	} else {
+		retour = nombre;		
+	}
 
 	return retour;
 }
@@ -127,6 +133,9 @@ function calcul()
 		
 		var montantTTC = totalTTC*coef;
 		var montantHT = totalHT*coef;
+
+		console.log(montantHT);
+
 		// Répartition HT
 		$('.somme-a-payer', this).text(formatage_montant(montantHT, true) +" "+pageDatas.projet.devise+ " HT" );
 		// Répartition TTC
