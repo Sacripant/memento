@@ -17,7 +17,6 @@ $(document).ready(function() {
         console.log(annees);
 
         return annees;
-
     }
 
     // Tri les el du obj par la propriété choisie
@@ -45,7 +44,7 @@ $(document).ready(function() {
 
 
     // Affichage des el d'1 obj dans un tabeau
-    function showResults (obj) {
+    function showResults (obj, year) {
 
         // console.log(obj);
         var html = ''
@@ -61,7 +60,7 @@ $(document).ready(function() {
         ;
 
         // titre section
-        title.text( obj[0].annee );
+        title.text( year );
         // Id section
         caSection[0].id = "ca-" + obj[0].annee;
 
@@ -83,6 +82,7 @@ $(document).ready(function() {
             html += '<tr>'
                 +'<td> <strong>' + obj[e].id + '</strong> ' + obj[e].projet + '</td>'
                 +'<td>' + obj[e].index + ' • ' + obj[e].quand + ' • ' + obj[e].pourcentage + '</td>'
+                +'<td>' + obj[e].dateFacture + '</td>'
                 +'<td>' + obj[e].datePaie + '</td>'
                 //+'<td class="ca--totalHT">' + obj[e].totalHT + '</td>'
                 +'<td class="ca--ht">' + formatage_montant(ht, true) + '</td>'
@@ -112,24 +112,39 @@ $(document).ready(function() {
     // Load table template
     var tableTemplate =  $('#ca_section')
     ,   paiementsByYears = {}
+    ,   paiementsEnAttente = {}
     ;
 
     tableTemplate.remove();
 
+    // Factures en attentes
+    paiementsEnAttente = paiements.filter(function(val, i){
+        if (val.dateFacture && !val.datePaie)
+            return true;
+    });
 
+    showResults (paiementsEnAttente, "Facture(s) non reglées");
+
+
+
+
+    // Chiffre d'affaire pour chaque année
     $.each(return_annees(), function(i, value) 
     {
+        console.log(value);
         // filtre les factures pour l'année
         paiementsByYears[value] = paiements.filter(function(val, i) 
         {
-            return paiements[i].annee === value;
+            // console.log(val);
+            if (val.datePaie && val.annee === value)
+                return true;
         });
 
         // Tri les factures de l'années par date asc
         sortResults(paiementsByYears[value], "datePaie", true);
 
         // Affichage
-        showResults (paiementsByYears[value]);
+        showResults (paiementsByYears[value], value);
     });
 
 

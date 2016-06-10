@@ -99,10 +99,10 @@ function calcul()
 		items.each(function(iItem) {
 			var $this = $(this)
 			,	 temps = $this.attr("data-temps") || $('input', this).val()
-			, 	 montant = temps*taux;
+			, 	 montant = Math.round(temps*taux);
 
 			itemsValue.push(montant);				
-			var montant = formatage_montant(montant, true);									
+			var montant = formatage_montant(montant, true, true);									
 			$('.total-item', this).text(montant);
 		});
 	
@@ -134,7 +134,7 @@ function calcul()
 		var montantTTC = totalTTC*coef;
 		var montantHT = totalHT*coef;
 
-		console.log(montantHT);
+		// console.log(montantHT);
 
 		// Répartition HT
 		$('.somme-a-payer', this).text(formatage_montant(montantHT, true) +" "+pageDatas.projet.devise+ " HT" );

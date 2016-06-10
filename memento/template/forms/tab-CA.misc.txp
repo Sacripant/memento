@@ -21,6 +21,7 @@ Necessite plugins …
 	            <th>Project</th>
 	            <th>Quand</th>
 	            <th>Date Facture</th>
+	            <th>Date Règlement</th>
 	            <!-- <th>Total HT</th> -->
 	            <th>Montant HT</th>
 	            <th>Montant taxe</th>
@@ -29,6 +30,7 @@ Necessite plugins …
 	    </thead>
 	    <tfoot>
 	    	<tr>
+	    		<td></td>
 	    		<td></td>
 	    		<td></td>
 	    		<td></td>
