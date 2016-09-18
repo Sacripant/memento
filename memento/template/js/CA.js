@@ -46,6 +46,8 @@ $(document).ready(function() {
     // Affichage des el d'1 obj dans un tabeau
     function showResults (obj, year) {
 
+        console.log(obj);
+
         // console.log(obj);
         var html = ''
         ,   caSection = tableTemplate.clone()
@@ -123,7 +125,9 @@ $(document).ready(function() {
             return true;
     });
 
-    showResults (paiementsEnAttente, "Facture(s) non reglées");
+    if (paiementsEnAttente.length) {
+        showResults (paiementsEnAttente, "Facture(s) non reglées");        
+    };
 
 
 
