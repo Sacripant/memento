@@ -4,7 +4,7 @@ Module tab-CA appelé depuis la page default.txp
 ============
 Affiche le Chiffre d'affaire par année basé sur les dates des factures
 ============
-Necessite plugins …
+Necessite plugins rah_repeat
 ============
 </txp:hide>
 
