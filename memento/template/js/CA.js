@@ -82,7 +82,9 @@ $(document).ready(function() {
 
 
             html += '<tr>'
-                +'<td> <strong>' + obj[e].id + '</strong> ' + obj[e].projet + '</td>'
+                +'<td> <a href="' + pageDatas.site.siteUrl + 'textpattern/index.php?event=article&amp;step=edit&amp;ID=' + obj[e].id + '" target="_blank">'
+                +'  <strong>' + obj[e].id + '</strong> ' + obj[e].projet
+                +'</a> </td>'
                 +'<td>' + obj[e].index + ' • ' + obj[e].quand + ' • ' + obj[e].pourcentage + '</td>'
                 +'<td>' + obj[e].dateFacture + '</td>'
                 +'<td>' + obj[e].datePaie + '</td>'
