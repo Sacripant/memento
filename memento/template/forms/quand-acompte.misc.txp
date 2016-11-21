@@ -1,0 +1,14 @@
+<txp:hide>
+	Acompte (variable quand)
+	Text Snippet for "Répartition de la facturation"
+
+	Use in:
+		* forms/tab-finance
+		* pages/printfacture
+</txp:hide>
+
+Acompte de 
+<strong>
+   <txp:variable name="pourcentage" />
+</strong>
+ à la signature du devis.

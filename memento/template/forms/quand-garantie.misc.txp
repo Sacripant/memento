@@ -1,0 +1,14 @@
+<txp:hide>
+	Garantie (variable quand)
+	Text Snippet for "Répartition de la facturation"
+
+	Use in:
+		* forms/tab-finance
+		* pages/printfacture
+</txp:hide>
+
+<strong>
+   <txp:variable name="pourcentage" />
+</strong>
+1 mois après la date de livraison
+(période de garantie).

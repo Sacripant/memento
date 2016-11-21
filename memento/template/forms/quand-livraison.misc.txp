@@ -1,0 +1,18 @@
+<txp:hide>
+	Livraison (variable quand)
+	Text Snippet for "Répartition de la facturation"
+
+	Use in:
+		* forms/tab-finance
+		* pages/printfacture
+</txp:hide>
+
+<strong>
+   <txp:variable name="pourcentage" />
+</strong> 
+à la livraison 
+<txp:if_variable name='quand2' value="">
+	de la prestation.
+<txp:else />
+	<txp:variable name="quand2" />.
+</txp:if_variable>

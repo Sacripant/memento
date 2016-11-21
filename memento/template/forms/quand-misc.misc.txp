@@ -1,0 +1,17 @@
+<txp:hide>
+	Misc (variable quand)
+	100% + texte custom en variable quand-2
+	Text Snippet for "Répartition de la facturation"
+
+	Use in:
+		* forms/tab-finance
+		* pages/printfacture
+</txp:hide>
+
+<strong>
+   <txp:variable name="pourcentage" />
+</strong> 
+<txp:if_variable name='quand2' value="">
+<txp:else />
+	<txp:variable name="quand2" />.
+</txp:if_variable>
