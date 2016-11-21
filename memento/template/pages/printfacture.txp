@@ -93,20 +93,13 @@
 	
 	<!-- Détail de la prestation -->
 	<txp:variable name="detail_prestation">
-		<txp:category_list break="" wraptag="div" class="details-prestation"
-			categories="
-				gestion-de-projet,
-				conception,
-				crea-graphique,
-				prototypage,
-				webdesign,
-				integration-web,
-				dev-back,
-				documentation,
-				formation,
-				reunion
-			"
-		>
+
+	<!-- Liste détaillées des items de la facture par catégories -->
+	<txp:category_list 
+		break="" 
+		parent="facturees"
+		exclude="facturees"
+	>
 			<txp:variable name="todos_this_cat"><txp:smd_wrap>
 				<txp:article_custom projet='<txp:variable name="projetID" />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
 					<li class="item-devis item-<txp:category />">
@@ -243,10 +236,24 @@
 								<h2>Modalités de règlement</h2>
 								
 								<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
-									<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
-									<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
-									<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
-									<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage-<txp:variable name=''quand'' />' />">
+									<txp:hide>
+										<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+										<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+										<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>									
+									</txp:hide>
+									
+									<txp:rah_repeat value='<txp:rah_repeat_value />' trim="1" delimiter="-" assign="index, quand, pourcentage"></txp:rah_repeat>
+					
+									<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
+										<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item='<txp:variable name="quand" />' /></txp:variable>
+										<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item='<txp:variable name="quand" />' /></txp:variable>
+									<txp:else />
+										<txp:variable name='quand1' value='<txp:variable name="quand" />' />
+										<txp:variable name='quand2' value="" />
+									</txp:cbe_if_variable>
+
+
+									<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage' />">
 									
 										<strong class='item-devis-title'>
 											<span class="white-mask">
@@ -256,7 +263,7 @@
 													<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
 												<txp:else />
 											<!-- ELSE -->
-													<txp:mck_snippet title='<txp:variable name="quand" />'/>
+													<txp:output_form form='quand-<txp:variable name="quand1" />'/>
 												</txp:cbe_if_variable>
 											</span>
 										</strong>
@@ -312,11 +319,24 @@
 			
 			<!-- Create Nb facture avec custom field "tranches" -->
 			<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1">
-			
-				<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
-				<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
-				<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
-				<txp:variable name='date-facture'><txp:smd_wrap transform="split|-||4" item='<txp:rah_repeat_value />' /></txp:variable>
+				<txp:hide>
+					<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name='date-facture'><txp:smd_wrap transform="split|-||4" item='<txp:rah_repeat_value />' /></txp:variable>
+				</txp:hide>
+
+				<txp:rah_repeat value='<txp:rah_repeat_value />' trim="1" delimiter="-" assign="index, quand, pourcentage, date-facture"></txp:rah_repeat>
+				
+				<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
+
+					<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item='<txp:variable name="quand" />' /></txp:variable>
+					<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item='<txp:variable name="quand" />' /></txp:variable>
+				<txp:else />
+					<txp:variable name='quand1' value='<txp:variable name="quand" />' />
+					<txp:variable name='quand2' value="" />
+				</txp:cbe_if_variable>
+
 			
 				<!-- FACTURE 0<txp:variable name="index" /> -->	
 				<section id='facture<txp:variable name="index" />' class="facture">
@@ -335,7 +355,17 @@
 					
 						<h1>
 							<txp:output_form form="titre-print-svg" />
-							<span class="no-devis">N<sup>o</sup> <txp:variable name="devisID" /> <txp:variable name="index" />-<txp:variable name="nbTranches" /></span>
+							<span class="no-devis">
+								N<sup>o</sup> <txp:variable name="devisID" /> <txp:variable name="index" />-<txp:variable name="nbTranches" />
+								
+
+								<txp:hide>
+								</txp:hide>
+									<!-- REF SMILE SUP -->
+									<br/> <span class="ref-smile">ref Smile: 24938/11292/1</span>
+								
+							</span>
+
 						</h1>
 					</header>
 				
@@ -364,7 +394,7 @@
 											<txp:variable name="index" /><sup>e</sup> tranche de paiement de <strong><txp:variable name='pourcentage-<txp:variable name=''quand'' />' /></strong>.
 										<txp:else />
 									<!-- ELSE -->
-											<txp:mck_snippet title='<txp:variable name="quand" />'/>
+											<txp:output_form form='quand-<txp:variable name="quand1" />'/>
 										</txp:cbe_if_variable>									
 									</span>
 								</strong>
@@ -431,7 +461,7 @@
 									</p>
 
 									<txp:if_variable name="modalite" value="virement">
-										<txp:mck_snippet title='rib' wraptag="div" class="rib" />
+										<txp:output_form form='rib' />
 									</txp:if_variable>
 									
 								</div>
