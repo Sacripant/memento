@@ -5,9 +5,9 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# H�te: Localhost (MySQL 5.5.42)
-# Base de donn�es: memento-github
-# Temps de g�n�ration: 2017-02-17 17:34:24 +0100
+# Hôte: Localhost (MySQL 5.5.42)
+# Base de données: memento-github
+# Temps de génération: 2017-02-17 18:17:13 +0100
 # ************************************************************
 
 
@@ -140,7 +140,9 @@ VALUES
 	(26,'custom_2_set','Rejeté'),
 	(38,'custom_8_set','5.5'),
 	(37,'custom_8_set','off'),
-	(39,'custom_8_set','{19.6}');
+	(39,'custom_8_set','{19.6}'),
+	(40,'custom_12_set','{devis + factures}'),
+	(41,'custom_12_set','factures uniquement');
 
 /*!40000 ALTER TABLE `custom_fields` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -292,6 +294,7 @@ CREATE TABLE `textpattern` (
   `uid` varchar(32) NOT NULL DEFAULT '',
   `feed_time` date NOT NULL DEFAULT '0000-00-00',
   `custom_11` varchar(255) NOT NULL DEFAULT '',
+  `custom_12` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`ID`),
   KEY `categories_idx` (`Category1`(10),`Category2`(10)),
   KEY `Posted` (`Posted`),
@@ -305,23 +308,23 @@ CREATE TABLE `textpattern` (
 LOCK TABLES `textpattern` WRITE;
 /*!40000 ALTER TABLE `textpattern` DISABLE KEYS */;
 
-INSERT INTO `textpattern` (`ID`, `Posted`, `Expires`, `AuthorID`, `LastMod`, `LastModID`, `Title`, `Title_html`, `Body`, `Body_html`, `Excerpt`, `Excerpt_html`, `Image`, `Category1`, `Category2`, `Annotate`, `AnnotateInvite`, `comments_count`, `Status`, `textile_body`, `textile_excerpt`, `Section`, `override_form`, `Keywords`, `url_title`, `custom_1`, `custom_2`, `custom_3`, `custom_4`, `custom_5`, `custom_6`, `custom_7`, `custom_8`, `custom_9`, `custom_10`, `uid`, `feed_time`, `custom_11`)
+INSERT INTO `textpattern` (`ID`, `Posted`, `Expires`, `AuthorID`, `LastMod`, `LastModID`, `Title`, `Title_html`, `Body`, `Body_html`, `Excerpt`, `Excerpt_html`, `Image`, `Category1`, `Category2`, `Annotate`, `AnnotateInvite`, `comments_count`, `Status`, `textile_body`, `textile_excerpt`, `Section`, `override_form`, `Keywords`, `url_title`, `custom_1`, `custom_2`, `custom_3`, `custom_4`, `custom_5`, `custom_6`, `custom_7`, `custom_8`, `custom_9`, `custom_10`, `uid`, `feed_time`, `custom_11`, `custom_12`)
 VALUES
-	(1,'2013-06-23 15:54:11','0000-00-00 00:00:00','client','2016-04-29 15:19:20','admin','Mon premier projet','','Exemple de projet. Avec quelques taches.','	<p>Exemple de projet. Avec quelques taches.</p>','','','','','',1,'Commentaire',1,4,1,1,'projet','','','welcome-to-your-site','1','En cours','11295','','45','€','1-acompte-30%-2013/08/01-2013/09/01,\r\n2-livraison-50%-2013/10/01-2013/10/31,\r\n3-garantie-20%-2013/11/01-','19.6','','2014-10-25 13:37','577bbb3a183b2ced23806487b931f883','2013-06-23','11295'),
-	(2,'2013-06-23 00:00:01','2013-07-01 23:59:59','admin','2013-08-05 13:30:09','admin','Logo, Premières recherches','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-premieres-recherches','1','En cours','24','0.1','','','','','','','b5f31f85a5f2d654f8733178f2ead829','2013-06-23',''),
-	(3,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, développement de la piste retenue','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-developpement-de-la-piste-retenue','1','Non programmé','24','','','','','','','','5c27976edfb09c21963af9012485f13f','2013-06-23',''),
-	(4,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, déclinaison N/B CMJN RVB, …','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-declinaison-n-b-cmjn-rvb','1','Non programmé','8','','','','','','','','ffb4505900faec7b79dbcebe680737b7','2013-06-23',''),
-	(5,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, finalisation','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-finalisation','1','Non programmé','8','','','','','','','','27cf445eff03ce9867a6794a52bec7da','2013-06-23',''),
-	(6,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo : déclinaison sur supports de communication','','Papeterie, Carte de visite, etc.','Papeterie, Carte de visite, etc.','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-declinaison-sur-supports-de-communication','1','Non programmé','32','','','','','','','','c9f226f486ee2267f2c0198d9d38670f','2013-06-23',''),
-	(7,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Charte graphique print et web','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','charte-graphique-print-et-web','1','Non programmé','24','','','','','','','','519003a16f3eb9ea6ef09d0dcbdbd1b3','2013-06-23',''),
-	(8,'2013-07-01 00:00:01','2013-07-02 23:59:59','admin','2013-07-25 13:24:09','admin','Arborescence du site','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','arborescence-du-site','1','Programmé','8','','','','','','','','cfd8fc15c6d817a0b99ad73c7aa7962f','2013-06-23',''),
-	(9,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Mockup des pages gabarits','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','mockup-des-pages-gabarits','1','Non programmé','16','','','','','','','','a7a26b3ac7d29b165ae9f53312791340','2013-06-23',''),
-	(10,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','prototypage des pages gabarits','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','prototypage-des-pages-gabarits','1','Non programmé','32','','','','','','','','d31b3240dd38c82dd41fd76fa9d7f277','2013-06-23',''),
-	(11,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Maquettage web, première(s) proposition(s)','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','maquettage-web-premieres-propositions','1','Non programmé','16','','','','','','','','619ae5b73fdb7a495a8ef8c92962d8f1','2013-06-23',''),
-	(12,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Maquettage web, développement de la piste retenue','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','maquettage-web-developpement-de-la-piste-retenue','1','Non programmé','8','','','','','','','','cecd43b9f1b9b5944ae3165fe73f8295','2013-06-23',''),
-	(13,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Intégration responsive des pages gabarits','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','integration-responsive-des-pages-gabarits','1','Non programmé','40','','','','','','','','3de5579ac492b6e3ddecde53bfd47e90','2013-06-23',''),
-	(14,'2013-06-24 00:00:01','2013-06-24 23:59:59','admin','2013-07-25 13:25:13','admin','Réunion Kick-off','','','','','','','reunion','',0,'Laisser un commentaire',0,4,0,0,'todo','','','reunion-kick-off','1','En cours','3','','','','','','','','4ee336d44f5b5d90f8369cb2e0108f0d','2013-06-23',''),
-	(15,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Prise en main de l\'interface d\'admin','','','','','','','formation','',0,'Laisser un commentaire',0,4,0,0,'todo','','','prise-en-main-de-l-interface-d-admin','1','Non programmé','8','','','','','','','','683a9c1f65c0dc405e8f96aed211159e','2013-06-23','');
+	(1,'2013-06-23 15:54:11','0000-00-00 00:00:00','client','2017-02-17 18:17:03','admin','Mon premier projet','','Exemple de projet. Avec quelques taches.','	<p>Exemple de projet. Avec quelques taches.</p>','','','','','',1,'Commentaire',1,4,1,1,'projet','','','welcome-to-your-site','1','En cours','11295','','45','€','1-acompte-30%-2013/08/01-2013/09/01,\r\n2-livraison-50%-2013/10/01-2013/10/31,\r\n3-garantie-20%-2013/11/01-','19.6','','2014-10-25 13:37','577bbb3a183b2ced23806487b931f883','2013-06-23','11295','devis + factures'),
+	(2,'2013-06-23 00:00:01','2013-07-01 23:59:59','admin','2013-08-05 13:30:09','admin','Logo, Premières recherches','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-premieres-recherches','1','En cours','24','0.1','','','','','','','b5f31f85a5f2d654f8733178f2ead829','2013-06-23','',''),
+	(3,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, développement de la piste retenue','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-developpement-de-la-piste-retenue','1','Non programmé','24','','','','','','','','5c27976edfb09c21963af9012485f13f','2013-06-23','',''),
+	(4,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, déclinaison N/B CMJN RVB, …','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-declinaison-n-b-cmjn-rvb','1','Non programmé','8','','','','','','','','ffb4505900faec7b79dbcebe680737b7','2013-06-23','',''),
+	(5,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo, finalisation','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-finalisation','1','Non programmé','8','','','','','','','','27cf445eff03ce9867a6794a52bec7da','2013-06-23','',''),
+	(6,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Logo : déclinaison sur supports de communication','','Papeterie, Carte de visite, etc.','Papeterie, Carte de visite, etc.','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','logo-declinaison-sur-supports-de-communication','1','Non programmé','32','','','','','','','','c9f226f486ee2267f2c0198d9d38670f','2013-06-23','',''),
+	(7,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Charte graphique print et web','','','','','','','crea-graphique','',0,'Laisser un commentaire',0,4,0,0,'todo','','','charte-graphique-print-et-web','1','Non programmé','24','','','','','','','','519003a16f3eb9ea6ef09d0dcbdbd1b3','2013-06-23','',''),
+	(8,'2013-07-01 00:00:01','2013-07-02 23:59:59','admin','2013-07-25 13:24:09','admin','Arborescence du site','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','arborescence-du-site','1','Programmé','8','','','','','','','','cfd8fc15c6d817a0b99ad73c7aa7962f','2013-06-23','',''),
+	(9,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Mockup des pages gabarits','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','mockup-des-pages-gabarits','1','Non programmé','16','','','','','','','','a7a26b3ac7d29b165ae9f53312791340','2013-06-23','',''),
+	(10,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','prototypage des pages gabarits','','','','','','','conception','',0,'Laisser un commentaire',0,4,0,0,'todo','','','prototypage-des-pages-gabarits','1','Non programmé','32','','','','','','','','d31b3240dd38c82dd41fd76fa9d7f277','2013-06-23','',''),
+	(11,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Maquettage web, première(s) proposition(s)','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','maquettage-web-premieres-propositions','1','Non programmé','16','','','','','','','','619ae5b73fdb7a495a8ef8c92962d8f1','2013-06-23','',''),
+	(12,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Maquettage web, développement de la piste retenue','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','maquettage-web-developpement-de-la-piste-retenue','1','Non programmé','8','','','','','','','','cecd43b9f1b9b5944ae3165fe73f8295','2013-06-23','',''),
+	(13,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Intégration responsive des pages gabarits','','','','','','','webdesign','',0,'Laisser un commentaire',0,4,0,0,'todo','','','integration-responsive-des-pages-gabarits','1','Non programmé','40','','','','','','','','3de5579ac492b6e3ddecde53bfd47e90','2013-06-23','',''),
+	(14,'2013-06-24 00:00:01','2013-06-24 23:59:59','admin','2013-07-25 13:25:13','admin','Réunion Kick-off','','','','','','','reunion','',0,'Laisser un commentaire',0,4,0,0,'todo','','','reunion-kick-off','1','En cours','3','','','','','','','','4ee336d44f5b5d90f8369cb2e0108f0d','2013-06-23','',''),
+	(15,'2013-06-23 16:14:48','0000-00-00 00:00:00','admin','2013-06-23 16:14:48','admin','Prise en main de l\'interface d\'admin','','','','','','','formation','',0,'Laisser un commentaire',0,4,0,0,'todo','','','prise-en-main-de-l-interface-d-admin','1','Non programmé','8','','','','','','','','683a9c1f65c0dc405e8f96aed211159e','2013-06-23','','');
 
 /*!40000 ALTER TABLE `textpattern` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -2101,7 +2104,8 @@ VALUES
 	(1537,'fr-fr','smd_bio_valhelp_lrc','smd_bio','Comma- or newline-separated list of available options in the set. If you list only item labels, the names will be automatically generated (lower case, no spaces). You may specify your own names using: name1 => Label 1, name2 -> Label 2, ...','2005-08-14 00:00:00'),
 	(1538,'fr-fr','smd_bio_valhelp_text','smd_bio','The default value that will appear in the text box','2005-08-14 00:00:00'),
 	(1539,'fr-fr','smd_bio_valhelp_ynr','smd_bio','Default value of the Yes/No checkbox. 0 (or omitted) = No; 1 = Yes','2005-08-14 00:00:00'),
-	(1540,'fr-fr','smd_bio_value','smd_bio','Value','2005-08-14 00:00:00');
+	(1540,'fr-fr','smd_bio_value','smd_bio','Value','2005-08-14 00:00:00'),
+	(1541,'fr-fr','custom_12_set','prefs','type_reglement','2017-02-17 18:15:24');
 
 /*!40000 ALTER TABLE `txp_lang` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -2276,7 +2280,7 @@ VALUES
 	(1,'use_sections','1',2,'publish','text_input',0,''),
 	(1,'send_lastmod','1',1,'publish','yesnoradio',120,''),
 	(1,'path_from_root','/',2,'publish','text_input',0,''),
-	(1,'lastmod','2016-04-29 15:19:20',2,'publish','text_input',0,''),
+	(1,'lastmod','2017-02-17 18:17:03',2,'publish','text_input',0,''),
 	(1,'comments_dateformat','%x %H:%M',0,'comments','dateformats',140,''),
 	(1,'dateformat','%e.%m.%y',0,'publish','dateformats',140,''),
 	(1,'archive_dateformat','%e.%m.%y',0,'publish','dateformats',160,''),
@@ -2350,7 +2354,7 @@ VALUES
 	(1,'searchable_article_fields','Title, Body',2,'publish','text_input',0,''),
 	(1,'admin_sort_column','name',2,'admin','',0,'admin'),
 	(1,'admin_sort_dir','asc',2,'admin','',0,'admin'),
-	(1,'max_custom_fields','11',2,'publish','text_input',0,''),
+	(1,'max_custom_fields','12',2,'publish','text_input',0,''),
 	(1,'log_sort_column','time',2,'log','',0,'admin'),
 	(1,'log_sort_dir','desc',2,'log','',0,'admin'),
 	(1,'article_sort_column','id',2,'list','',0,'admin'),
@@ -2414,7 +2418,8 @@ VALUES
 	(1,'last_update_check','a:2:{s:3:\"msg\";s:201:\"Une nouvelle version de Textpattern 4.6.2 <a href=\"http://textpattern.com/download\" rel=\"external\" title=\"Accès au téléchargement sur le site Textpattern CMS\">est disponible en téléchargement</a>.\";s:4:\"when\";i:1487346479;}',2,'publish','text_input',0,''),
 	(1,'adi_notes_txp_tag_privs','1',2,'adi_notes_ad','text_input',0,''),
 	(1,'adi_notes_custom_style_old','margin:1em auto 0; padding:1em; border:1px solid; border-color:#e3d8c3 #c3b8a3 #c3b8a3 #e3d8c3; background-color:#ffffcc; color:#202020',2,'adi_notes_ad','text_input',0,''),
-	(1,'adi_notes_width_old','width:600px; max-width:600px;',2,'adi_notes_ad','text_input',0,'');
+	(1,'adi_notes_width_old','width:600px; max-width:600px;',2,'adi_notes_ad','text_input',0,''),
+	(1,'custom_12_set','type_reglement',1,'custom','select',12,'');
 
 /*!40000 ALTER TABLE `txp_prefs` ENABLE KEYS */;
 UNLOCK TABLES;
