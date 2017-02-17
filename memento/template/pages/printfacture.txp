@@ -360,9 +360,9 @@
 								
 
 								<txp:hide>
+									<!-- Optionnal REF -->
+									<br/> <span class="optionnal-ref-smile">ref: XXXXXX XXXXX XXX</span>
 								</txp:hide>
-									<!-- REF SMILE SUP -->
-									<br/> <span class="ref-smile">ref Smile: 24938/11292/1</span>
 								
 							</span>
 
