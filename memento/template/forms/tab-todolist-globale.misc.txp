@@ -48,9 +48,9 @@ Necessite plugins "smd_query"
 	</thead>
 	<tbody>
 		<!-- filtrer les projets programmé, en cours -->
-		<txp:variable name="projet-liste"><txp:smd_wrap>
+		<txp:variable name="projet-liste"><txp:smd_wrap_all>
 			<txp:smd_query column="ID" table="textpattern" where="Section = 'projet' AND custom_2 in ('Programmé','En cours')" break=",">{ID}</txp:smd_query>
-		</txp:smd_wrap></txp:variable>
+		</txp:smd_wrap_all></txp:variable>
 
 		<txp:if_variable name='projet-liste' value="">
 			<tr>

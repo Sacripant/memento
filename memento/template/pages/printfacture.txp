@@ -76,12 +76,7 @@
 			</div>
 		</div>			
 	</txp:variable>
-	
-	<!-- TAUX HORAIRE ET DEVISE -->
-	<div class="metas-devis">
-		<span class="taux-horaire"><txp:custom_field name="Taux_horaire" /></span> 
-		<span class="devise"><txp:custom_field name="Devise" /></span>
-	</div>
+
 	
 	<!-- NATURE DU TRAVAIL -->
 	<txp:variable name="chose_facturee">
@@ -94,12 +89,12 @@
 	<!-- Détail de la prestation -->
 	<txp:variable name="detail_prestation">
 
-	<!-- Liste détaillées des items de la facture par catégories -->
-	<txp:category_list 
-		break="" 
-		parent="facturees"
-		exclude="facturees"
-	>
+		<!-- Liste détaillées des items de la facture par catégories -->
+		<txp:category_list 
+			break="" 
+			parent="facturees"
+			exclude="facturees"
+		>
 			<txp:variable name="todos_this_cat"><txp:smd_wrap>
 				<txp:article_custom projet='<txp:variable name="projetID" />' parent="" section="todo" category='<txp:category />' wraptag="ul" class="nude item-devis-liste" limit="999" time="any" sort="id asc">
 					<li class="item-devis item-<txp:category />">
@@ -144,10 +139,13 @@
 				<button type="button" id="print" title="Imprimer le devis et les factures">Print</button>
 			</txp:hide>
 			
+			
 		
+			<txp:if_custom_field name='type_reglement' value="devis + factures">
 			<!-- 
 				DEVIS 
 			-->
+
 			<section id="devis">
 			
 				<header>
@@ -245,8 +243,8 @@
 									<txp:rah_repeat value='<txp:rah_repeat_value />' trim="1" delimiter="-" assign="index, quand, pourcentage"></txp:rah_repeat>
 					
 									<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
-										<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item='<txp:variable name="quand" />' /></txp:variable>
-										<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item='<txp:variable name="quand" />' /></txp:variable>
+										<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item="<txp:variable name='quand' />" /></txp:variable>
+										<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item="<txp:variable name='quand' />" /></txp:variable>
 									<txp:else />
 										<txp:variable name='quand1' value='<txp:variable name="quand" />' />
 										<txp:variable name='quand2' value="" />
@@ -303,6 +301,9 @@
 				</article>
 				
 			</section> <!-- END DEVIS -->
+
+			</txp:if_custom_field>
+
 			
 			
 			<!-- 
@@ -320,22 +321,21 @@
 			<!-- Create Nb facture avec custom field "tranches" -->
 			<txp:rah_repeat value='<txp:variable name="tranches" />' trim="1">
 				<txp:hide>
-					<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item='<txp:rah_repeat_value />' /></txp:variable>
-					<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item='<txp:rah_repeat_value />' /></txp:variable>
-					<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item='<txp:rah_repeat_value />' /></txp:variable>
-					<txp:variable name='date-facture'><txp:smd_wrap transform="split|-||4" item='<txp:rah_repeat_value />' /></txp:variable>
+					<txp:variable name="index"><txp:smd_wrap transform="split|-||1" item="<txp:rah_repeat_value />" /></txp:variable>
+					<txp:variable name="quand"><txp:smd_wrap transform="split|-||2" item="<txp:rah_repeat_value />" /></txp:variable>
+					<txp:variable name='pourcentage-<txp:variable name="quand" />'><txp:smd_wrap transform="split|-||3" item="<txp:rah_repeat_value />" /></txp:variable>
+					<txp:variable name='date-facture'><txp:smd_wrap transform="split|-||4" item="<txp:rah_repeat_value />" /></txp:variable>
 				</txp:hide>
 
 				<txp:rah_repeat value='<txp:rah_repeat_value />' trim="1" delimiter="-" assign="index, quand, pourcentage, date-facture"></txp:rah_repeat>
 				
-				<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
-
-					<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item='<txp:variable name="quand" />' /></txp:variable>
-					<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item='<txp:variable name="quand" />' /></txp:variable>
-				<txp:else />
-					<txp:variable name='quand1' value='<txp:variable name="quand" />' />
-					<txp:variable name='quand2' value="" />
-				</txp:cbe_if_variable>
+					<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
+						<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item="<txp:variable name='quand' />" /></txp:variable>
+						<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item="<txp:variable name='quand' />" /></txp:variable>
+					<txp:else />
+						<txp:variable name='quand1' value='<txp:variable name="quand" />' />
+						<txp:variable name='quand2' value="" />
+					</txp:cbe_if_variable>
 
 			
 				<!-- FACTURE 0<txp:variable name="index" /> -->	
@@ -345,7 +345,7 @@
 						<p class="date-courier">
 							<!-- IF var date-facture = DATE YYYY/MM/DD -->
 								<txp:cbe_if_variable name="date-facture" value="^[\d]{4}/\d{2}/\d{2}$" match="pattern">
-									À l'Arbresle, le <txp:smd_wrap transform="date|%A %e %B %Y" item='<txp:variable name="date-facture" />' />
+									À l'Arbresle, le <txp:smd_wrap transform="date|%A %e %B %Y" item="<txp:variable name='date-facture' />" />
 								<txp:else />
 							<!-- ELSE date-facture = NOW-->
 									À l'Arbresle, le <txp:php>echo strftime("%A %e %B %Y");</txp:php>
@@ -360,9 +360,9 @@
 								
 
 								<txp:hide>
-									<!-- Optionnal REF -->
-									<br/> <span class="optionnal-ref-smile">ref: XXXXXX XXXXX XXX</span>
 								</txp:hide>
+									<!-- REF SMILE SUP -->
+									<br/> <span class="ref-smile">ref Smile: 23458/11292/1</span>
 								
 							</span>
 
@@ -371,16 +371,32 @@
 				
 					
 					<article>
-						<section class="rappel-presta">
+
+						<script>
+							console.log('<txp:custom_field name="type_reglement" />');
+						</script>
+
+						
+						<txp:if_custom_field name='type_reglement' value='devis + factures'>
+							<section class="rappel-presta">
+								<header>
+									<h2>Rappel de la prestation</h2>
+									<txp:variable name="chose_facturee" />
+								</header>
+								
+								<div class="rappel-total-presta add_totaux"></div>
+								<txp:variable name="ref_devis" />
+							</section>
+						</txp:if_custom_field>
+				
+						<txp:if_custom_field name='type_reglement' value='factures uniquement'>
 							<header>
-								<h2>Rappel de la prestation</h2>
+								<h2>Nature du travail</h2>
 								<txp:variable name="chose_facturee" />
 							</header>
-							
-							<div class="rappel-total-presta add_totaux"></div>
-							<txp:variable name="ref_devis" />
-						</section>
-				
+							<txp:variable name="detail_prestation" />
+						</txp:if_custom_field>
+
 						<section class="somme-a-payer">
 							
 							<h2>Somme à payer :</h2>

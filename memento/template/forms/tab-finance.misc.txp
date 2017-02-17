@@ -128,6 +128,7 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 				<!-- 
 					Répartition des paiements
 				-->
+
 				<txp:rah_repeat value='<txp:custom_field name="repartition" />' trim="1" wraptag="ul" class="devis-liste-factures nude">
 					
 					<txp:hide>
@@ -138,16 +139,16 @@ Permet de modifier le taux horaire du projet et le temps prévu sur chaque todo 
 					-->
 					</txp:hide>
 
+
 					<txp:rah_repeat value='<txp:rah_repeat_value />' trim="1" delimiter="-" assign="index, quand, pourcentage"></txp:rah_repeat>
 					
 					<txp:cbe_if_variable name='quand' value="^[\w]*[\/][\w\W]*$" match="pattern">
-						<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item='<txp:variable name="quand" />' /></txp:variable>
-						<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item='<txp:variable name="quand" />' /></txp:variable>
+						<txp:variable name='quand1'><txp:smd_wrap transform="split|/||1" item="<txp:variable name='quand' />" /></txp:variable>
+						<txp:variable name='quand2'><txp:smd_wrap transform="split|/||2" item="<txp:variable name='quand' />" /></txp:variable>
 					<txp:else />
 						<txp:variable name='quand1' value='<txp:variable name="quand" />' />
 						<txp:variable name='quand2' value="" />
 					</txp:cbe_if_variable>
-
 				<!-- FACTURE <txp:variable name="index" /> -->
 					<li class="item-devis" data-pourcentage="<txp:variable name='pourcentage' />">
 			
