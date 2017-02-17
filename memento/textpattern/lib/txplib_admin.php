@@ -1,8 +1,8 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/txplib_admin.php $
-$LastChangedRevision: 3818 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_admin.php $
+$LastChangedRevision: 5889 $
 */
 
 //-------------------------------------------------------------
@@ -67,7 +67,7 @@ $LastChangedRevision: 3818 $
 			}
 			else
 			{
-				return gTxt('could_not_mail');
+				return array(gTxt('could_not_mail'), E_ERROR);
 			}
 		}
 

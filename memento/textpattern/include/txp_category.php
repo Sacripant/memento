@@ -9,8 +9,8 @@
 
 	Use of this software indicates acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/txp_category.php $
-$LastChangedRevision: 4089 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_category.php $
+$LastChangedRevision: 4972 $
 */
 
 if (!defined('txpinterface')) die('txpinterface is undefined.');
@@ -527,7 +527,7 @@ EOS
 
 		$message = array(gTxt('category_save_failed'), E_ERROR);
 		if (safe_update('txp_category', "name = '$name', parent = '$parent', title = '$title'", "id = $id") &&
-			safe_update('txp_category', "parent = '$name'", "parent = '$old_name'"))
+			safe_update('txp_category', "parent = '$name'", "parent = '$old_name' and type='$event'"))
 		{
 			rebuild_tree_full($event);
 

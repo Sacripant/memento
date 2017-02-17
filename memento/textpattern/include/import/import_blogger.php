@@ -1,6 +1,6 @@
 <?php
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/import/import_blogger.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/import/import_blogger.php $
 $LastChangedRevision: 3901 $
 */
 

@@ -12,7 +12,7 @@
  *	Only the Permission-Settings at the bottom this file are still actively used,
 	and these will be moved to the db before the next release
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/admin_config.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/admin_config.php $
 $LastChangedRevision: 3896 $
 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

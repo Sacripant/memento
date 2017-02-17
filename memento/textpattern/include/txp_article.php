@@ -6,8 +6,8 @@
 
 	Use of this software indicates acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/txp_article.php $
-$LastChangedRevision: 4060 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_article.php $
+$LastChangedRevision: 4270 $
 
 */
 
@@ -133,9 +133,9 @@ if (!empty($event) and $event == 'article') {
 			}
 
 			if ($expires) {
-				$whenexpires = "Expires=from_unixtime($expires)";
+				$whenexpires = "from_unixtime($expires)";
 			} else {
-				$whenexpires = "Expires=".NULLDATETIME;
+				$whenexpires = NULLDATETIME;
 			}
 
 			$user = doSlash($txp_user);
@@ -529,8 +529,9 @@ if (!empty($event) and $event == 'article') {
 			$rs['prev_id'] = $rs['next_id'] = 0;
 		}
 
-		// let plugins chime in on partials
+		// let plugins chime in on partials meta data
 		callback_event_ref('article_ui', 'partials_meta', 0, $rs, $partials);
+		$rs['partials_meta'] = &$partials;
 
 		// get content for volatile partials
 		foreach ($partials as $k => $p) {
@@ -885,7 +886,7 @@ if (!empty($event) and $event == 'article') {
 			'</form></div>'.n;
 		// Assume users would not change the timestamp if they wanted to "publish now"/"reset time"
 		echo script_js( <<<EOS
-		$('#write-timestamp input.edit').change(
+		$('#write-timestamp input.year,#write-timestamp input.month,#write-timestamp input.day,#write-timestamp input.hour,#write-timestamp input.minute,#write-timestamp input.second').change(
 			function() {
 				$('#publish_now').prop('checked', false);
 				$('#reset_time').prop('checked', false);
@@ -1166,10 +1167,11 @@ EOS
 	function article_partial_title($rs)
 	{
 		global $step;
+		$av_cb = $rs['partials_meta']['article_view']['cb'];
 		return pluggable_ui('article_ui', 'title',
 			graf('<label for="title">'.gTxt('title').'</label>'.sp.popHelp('title').br.
 				'<input type="text" id="title" name="Title" value="'.escape_title($rs['Title']).'" size="40" tabindex="1" />'.
-				($step != 'create' ?  article_partial_article_view($rs) : '')
+				($step != 'create' ?  $av_cb($rs) : '')
 				, ' class="title"'),
 			$rs);
 	}

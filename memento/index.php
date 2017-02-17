@@ -1,6 +1,6 @@
 <?php
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/index.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/index.php $
 $LastChangedRevision: 4086 $
 */
 

@@ -1,7 +1,7 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/theme/remora/remora.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/theme/remora/remora.php $
 $LastChangedRevision: 3989 $
 */
 

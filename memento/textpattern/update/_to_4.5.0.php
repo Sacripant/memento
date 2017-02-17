@@ -1,8 +1,8 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/update/_to_4.5.0.php $
-$LastChangedRevision: 4020 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/update/_to_4.5.0.php $
+$LastChangedRevision: 5875 $
 */
 
 	if (!defined('TXP_UPDATE'))
@@ -47,7 +47,7 @@ $LastChangedRevision: 4020 $
 	if (!safe_field('name', 'txp_prefs', "name = 'default_section'"))
 	{
 		$current_default_section = safe_field('name', 'txp_section', 'is_default=1');
-		safe_insert('txp_prefs', "prefs_id = 1, name = 'default_section', val = '$current_default_section', type = '2', event = 'section', html = 'text_input', position = '0'");
+		safe_insert('txp_prefs', "prefs_id = 1, name = 'default_section', val = '".doSlash($current_default_section)."', type = '2', event = 'section', html = 'text_input', position = '0'");
 	}
 	$cols = getThings('describe `'.PFX.'txp_section`');
 	if (in_array('is_default', $cols))

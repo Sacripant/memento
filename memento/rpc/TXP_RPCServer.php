@@ -4,7 +4,7 @@ XML-RPC Server for Textpattern 4.0.x
 http://txp.kusor.com/rpc-api
 (C)2005-2006 The Textpattern Development Team - http://textpattern.com
 @author Pedro Palazón - http://kusor.com
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/rpc/TXP_RPCServer.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/rpc/TXP_RPCServer.php $
 $LastChangedRevision: 4011 $
  */
 

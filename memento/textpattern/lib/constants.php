@@ -1,6 +1,6 @@
 <?php
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/constants.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/constants.php $
 $LastChangedRevision: 4060 $
 */
 

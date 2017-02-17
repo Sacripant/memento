@@ -1,7 +1,7 @@
 <?php
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/update/_to_4.0.2.php $
-$LastChangedRevision: 4011 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/update/_to_4.0.2.php $
+$LastChangedRevision: 5875 $
 */
 	if (!defined('TXP_UPDATE'))
 		exit("Nothing here. You can't access this file directly.");
@@ -11,7 +11,7 @@ $LastChangedRevision: 4011 $
 
 		safe_insert('txp_page',"
 			name='error_default',
-			user_html='".$error_default."'");
+			user_html='".doSlash($error_default)."'");
 	}
 
 	//take back use_textile
