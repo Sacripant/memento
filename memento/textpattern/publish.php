@@ -13,8 +13,8 @@
 
 	Use of this software denotes acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/publish.php $
-$LastChangedRevision: 4059 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/publish.php $
+$LastChangedRevision: 4461 $
 
 */
 
@@ -653,8 +653,8 @@ $LastChangedRevision: 4059 $
 		// if an article ID is specified, treat it as a custom list
 		$iscustom = (!empty($theAtts['id'])) ? true : $iscustom;
 
-		//for the txp:article tag, some attributes are taken from globals;
-		//override them before extract
+		// For the txp:article tag, some attributes are taken from globals;
+		// override them, then stash all filter attributes
 		if (!$iscustom)
 		{
 			$theAtts['category'] = ($c)? $c : '';
@@ -663,6 +663,8 @@ $LastChangedRevision: 4059 $
 			$theAtts['month'] = (!empty($month)? $month: '');
 			$theAtts['frontpage'] = ($s && $s=='default')? true: false;
 			$theAtts['excerpted'] = '';
+
+			filterAtts($theAtts);
 		}
 		extract($theAtts);
 
@@ -858,7 +860,6 @@ $LastChangedRevision: 4059 $
 				global $thisarticle, $uPosted, $limit;
 				$thisarticle['is_first'] = ($count == 1);
 				$thisarticle['is_last'] = ($count == $last);
-				filterAtts($theAtts);
 
 				// article form preview
 				if (txpinterface === 'admin' && ps('Form')) {

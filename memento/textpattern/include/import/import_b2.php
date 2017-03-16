@@ -1,6 +1,6 @@
 <?php
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/import/import_b2.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/import/import_b2.php $
 $LastChangedRevision: 3997 $
 */
 

@@ -9,8 +9,8 @@ All rights reserved.
 
 Use of this software indicates acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/txplib_publish.php $
-$LastChangedRevision: 4078 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_publish.php $
+$LastChangedRevision: 5671 $
 
 @since 4.5.0
 */
@@ -120,9 +120,10 @@ function article_column_map()
  * @param string $s string Optional section restriction
  * @param string $type string Find lesser or greater neighbour? Possible values: '<' (previous, default) or '>' (next)
  * @param array $atts Attribute of article at threshold
+ * @param string $threshold_type 'cooked': Use $threshold as SQL clause; 'raw': Use $threshold as an escapable scalar
  * @return array|string An array populated with article data, or the empty string in case of no matches
  */
-function getNeighbour($threshold, $s, $type, $atts = array())
+function getNeighbour($threshold, $s, $type, $atts = array(), $threshold_type = 'raw')
 {
 	global $prefs;
 	static $cache = array();
@@ -179,10 +180,15 @@ function getNeighbour($threshold, $s, $type, $atts = array())
 	);
 	$type = ($type == '>') ? $types['>'][$sortdir] : $types['<'][$sortdir];
 
+	// escape threshold and treat it as a string unless explicitly told otherwise
+	if ($threshold_type != 'cooked') {
+		$threshold = "'".doSlash($threshold)."'";
+	}
+
 	$safe_name = safe_pfx('textpattern');
 	$q = array(
 		"select ID, Title, url_title, unix_timestamp(Posted) as uposted
-			from ".$safe_name." where $sortby $type '".doSlash($threshold)."'",
+			from ".$safe_name." where $sortby $type ".$threshold,
 		($s!='' && $s!='default') ? "and Section = '".doSlash($s)."'" : filterFrontPage(),
 		$id,
 		$time,
@@ -222,46 +228,55 @@ function getNextPrev($id = 0, $threshold = null, $s = '')
 		$atts = filterAtts();
 
 		$m = preg_split('/\s+/', $atts['sort']);
-		if (empty($m[0]) || count($m) > 2 || preg_match('/[),]/', $m[0])) {
-			// Either no explicit sort order or a complex clause, e.g. 'foo asc, bar desc' or 'FUNC(foo,bar) asc'
-			// Fall back to chronologically descending order
+
+		// If in doubt, fall back to chronologically descending order.
+		if (empty($m[0])            // No explicit sort attribute
+			|| count($m) > 2        // Complex clause, e.g. 'foo asc, bar desc'
+			|| !preg_match('/^(?:[0-9a-zA-Z$_\x{0080}-\x{FFFF}]+|`[\x{0001}-\x{FFFF}]+`)$/u', $m[0])  // The clause's first verb is not a MySQL column identifier.
+		)
+		{
 			$atts['sortby'] = 'Posted';
 			$atts['sortdir']= 'desc';
-		} else {
-			// sort is like 'foo asc'
+		}
+		else
+		{
+			// Sort is like 'foo asc'.
 			$atts['sortby'] = $m[0];
 			$atts['sortdir'] = (isset($m[1]) && strtolower($m[1]) == 'desc' ? 'desc' : 'asc');
 		}
 
-
 		// atts w/ special treatment
 		switch($atts['sortby']) {
 			case 'Posted':
-				$threshold = strftime('%Y-%m-%d %H:%M:%S', $thisarticle['posted']);
+				$threshold = 'from_unixtime('.doSlash($thisarticle['posted']).')';
+				$threshold_type = 'cooked';
 				break;
 			case 'Expires':
-				$threshold = strftime('%Y-%m-%d %H:%M:%S', $thisarticle['expires']);
+				$threshold = 'from_unixtime('.doSlash($thisarticle['expires']).')';
+				$threshold_type = 'cooked';
 				break;
 			case 'LastMod':
-				$threshold = strftime('%Y-%m-%d %H:%M:%S', $thisarticle['modified']);
+				$threshold = 'from_unixtime('.doSlash($thisarticle['modified']).')';
+				$threshold_type = 'cooked';
 				break;
 			default:
 				// retrieve current threshold value per sort column from $thisarticle
 				$acm = array_flip(article_column_map());
 				$key = $acm[$atts['sortby']];
 				$threshold = $thisarticle[$key];
+				$threshold_type = 'raw';
 				break;
 		}
 		$s = $thisarticle['section'];
 	}
 
-	$thenext 			= getNeighbour($threshold, $s, '>', $atts);
+	$thenext 			= getNeighbour($threshold, $s, '>', $atts, $threshold_type);
 	$out['next_id']     = ($thenext) ? $thenext['ID'] : '';
 	$out['next_title']  = ($thenext) ? $thenext['Title'] : '';
 	$out['next_utitle'] = ($thenext) ? $thenext['url_title'] : '';
 	$out['next_posted'] = ($thenext) ? $thenext['uposted'] : '';
 
-	$theprev            = getNeighbour($threshold, $s, '<', $atts);
+	$theprev            = getNeighbour($threshold, $s, '<', $atts, $threshold_type);
 	$out['prev_id']     = ($theprev) ? $theprev['ID'] : '';
 	$out['prev_title']  = ($theprev) ? $theprev['Title'] : '';
 	$out['prev_utitle'] = ($theprev) ? $theprev['url_title'] : '';
@@ -401,7 +416,7 @@ function processTags($tag, $atts, $thing = NULL)
 		}
 	}
 
-	if ($tag === 'link')
+	if ($tag === 'link' || $tag === 'yield')
 	{
 		$tag = 'tpt_'.$tag;
 	}
@@ -582,40 +597,47 @@ function chopUrl($req)
 }
 
 /**
- * Save and retrieve the individual article's attributes plus article list attributes for next/prev tags
+ * Save and retrieve the individual article's attributes
+ * plus article list attributes for next/prev tags
  *
- * @param array $atts
- * @return array
- * @since 4.5.0
+ * @param   array $atts
+ * @return  array
+ * @since   4.5.0
+ * @package TagParser
  */
+
 function filterAtts($atts = null)
 {
 	global $prefs;
 	static $out = array();
 
-	$valid = array(
-		'sort'          => 'Posted desc',
-		'sortby'		=> '',
-		'sortdir'		=> '',
-		'keywords'      => '',
-		'expired'       => $prefs['publish_expired_articles'],
-		'id'            => '',
-		'time'          => 'past',
-	);
-
-	if (is_array($atts)) {
-		if (empty($out)) {
-			$out = $atts;
+	if (is_array($atts))
+	{
+		if (empty($out))
+		{
+			$out = lAtts(array(
+				'sort'          => 'Posted desc',
+				'sortby'		=> '',
+				'sortdir'		=> '',
+				'keywords'      => '',
+				'expired'       => $prefs['publish_expired_articles'],
+				'id'            => '',
+				'time'          => 'past',
+			), $atts, 0);
 			trace_add('[filterAtts accepted]');
-		} else {
-			// TODO: deal w/ nested txp:article[_custom] tags
+		}
+		else
+		{
+			// TODO: deal w/ nested txp:article[_custom] tags.
 			trace_add('[filterAtts ignored]');
 		}
 	}
 
-	if (empty($out)) {
+	if (empty($out))
+	{
 		trace_add('[filterAtts not set]');
 	}
-	return lAtts($valid, $out, 0);
+	return $out;
 }
+
 ?>

@@ -1,4 +1,4 @@
-# $HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/sites/site1/public/files/.htaccess-dist $
+# $HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/sites/site1/public/files/.htaccess-dist $
 # $LastChangedRevision: 3786 $
 # Inhibit directory listing
 Options -Indexes

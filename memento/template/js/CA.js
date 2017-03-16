@@ -5,15 +5,22 @@ $(document).ready(function() {
     function return_annees()
     {
         var annees = [];
-        for (var e in paiements) annees.push(paiements[e].annee);
+        for (var e in paiements) 
+            annees.push(paiements[e].annee);
 
+        // Delet Doublons
         annees = annees.filter(function(val, i) 
         {
             if (val) 
                 return annees.indexOf(val) == i;
             else 
                 return false;
-        }); 
+        });
+
+        // sort by date desc
+        annes = annees.sort(function(a, b){
+            return b-a;
+        })
         console.log(annees);
 
         return annees;

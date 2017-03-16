@@ -8,8 +8,8 @@
 
 	Use of this software indicates acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/txp_page.php $
-$LastChangedRevision: 4089 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_page.php $
+$LastChangedRevision: 4873 $
 
 */
 	if (!defined('txpinterface')) die('txpinterface is undefined.');
@@ -236,7 +236,7 @@ $LastChangedRevision: 4089 $
 
 		else
 		{
-			if (safe_update('txp_page', "user_html = '$html'", "name = '$name'"))
+			if (safe_update('txp_page', "user_html = '$html'", "name = '".doSlash($name)."'"))
 			{
 				update_lastmod();
 				$message = gTxt('page_updated', array('{name}' => $name));

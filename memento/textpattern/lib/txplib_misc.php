@@ -1,8 +1,8 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/txplib_misc.php $
-$LastChangedRevision: 4091 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_misc.php $
+$LastChangedRevision: 5892 $
 */
 
 // -------------------------------------------------------------
@@ -1316,7 +1316,7 @@ function escape_js($js)
 
 	function is_valid_email($address)
 	{
-		return preg_match('/^[a-z0-9](\.?[a-z0-9_+%-])*@([a-z0-9](-*[a-z0-9])*\.)+[a-z]{2,6}$/i', $address);
+		return (bool) filter_var($address, FILTER_VALIDATE_EMAIL);
 	}
 
 // -------------------------------------------------------------
@@ -2132,7 +2132,6 @@ function escape_js($js)
 	function set_pref($name, $val, $event='publish',  $type=0, $html='text_input', $position=0, $is_private=PREF_GLOBAL)
 	{
 		global $txp_user;
-		extract(doSlash(func_get_args()));
 
 		$user_name = '';
 		if ($is_private == PREF_PRIVATE) {
@@ -2141,6 +2140,13 @@ function escape_js($js)
 
 			$user_name = 'user_name = \''.doSlash($txp_user).'\'';
 		}
+
+		$name = doSlash($name);
+		$val = doSlash($val);
+		$event = doSlash($event);
+		$type = (int) $type;
+		$html = doSlash($html);
+		$position = (int) $position;
 
 		if (!safe_row('name', 'txp_prefs', "name = '$name'" . ($user_name ? " AND $user_name" : ''))) {
 			$user_name = ($user_name ? "$user_name," : '');
@@ -2155,7 +2161,7 @@ function escape_js($js)
 				prefs_id = 1"
 			);
     	} else {
-        	return safe_update('txp_prefs', "val = '$val'","name like '$name'" . ($user_name ? " AND $user_name" : ''));
+        	return safe_update('txp_prefs', "val = '$val'","name = '$name'" . ($user_name ? " AND $user_name" : ''));
     	}
 	}
 
@@ -3181,11 +3187,16 @@ function modal_halt($thing)
 	}
 
 /**
- * Test whether the client accepts a certain response format
- * @param   string  $format One of 'html', 'txt', 'js', 'css', 'json', 'xml', 'rdf', 'atom', or 'rss'
- * @return  boolean $format is accepted
- * @since 4.5.0
+ * Test whether the client accepts a certain response format.
+ *
+ * Discards formats with a quality factor below 0.1
+ *
+ * @param   string  $format One of 'html', 'txt', 'js', 'css', 'json', 'xml', 'rdf', 'atom', 'rss'
+ * @return  boolean $format TRUE if accepted
+ * @since   4.5.0
+ * @package Network
  */
+
 function http_accept_format($format)
 {
 	static $formats = array(
@@ -3200,18 +3211,30 @@ function http_accept_format($format)
 		'rss'  => array('application/rss+xml', '*/*'),
 	);
 	static $accepts = array();
-//	static $q = array(); // nice to have
+	static $q = array();
 
-	if (empty($accepts)) {
-		// build cache of accepted formats
+	if (empty($accepts))
+	{
+		// Build cache of accepted formats.
 		$accepts = preg_split('/\s*,\s*/', serverSet('HTTP_ACCEPT'), null, PREG_SPLIT_NO_EMPTY);
-		foreach ($accepts as &$a) {
-			// sniff out quality factors if present
-			if (preg_match('/(.*)\s*;\s*q=([.0-9]*)/', $a, $m)) {
+		foreach ($accepts as $i => &$a)
+		{
+			// Sniff out quality factors if present.
+			if (preg_match('/(.*)\s*;\s*q=([.0-9]*)/', $a, $m))
+			{
 				$a = $m[1];
-//				$q[$a] = floatval($m[2]);
-//			} else {
-//				$q[$a] = 1.0;
+				$q[$a] = floatval($m[2]);
+			}
+			else
+			{
+				$q[$a] = 1.0;
+			}
+			// Discard formats with quality factors below an arbitrary threshold
+			// as jQuery adds a wildcard '*/*; q=0.01' to the 'Accepts' header for XHR requests.
+			if ($q[$a] < 0.1)
+			{
+				unset($q[$a]);
+				unset($accepts[$i]);
 			}
 		}
 	}

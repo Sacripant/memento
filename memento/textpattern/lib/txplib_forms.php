@@ -1,8 +1,8 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/lib/txplib_forms.php $
-$LastChangedRevision: 3852 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_forms.php $
+$LastChangedRevision: 4872 $
 */
 
 //-------------------------------------------------------------
@@ -145,7 +145,7 @@ $LastChangedRevision: 3852 $
 					$required = false)
 	{
 		$o  = '<input type="'.$type.'"';
-		$o .= ' value="'.txpspecialchars($value).'"';
+		$o .= ($type == 'file' || $type == 'image') ? '' : ' value="'.txpspecialchars($value).'"';
 		$o .= strlen($name)? ' name="'.$name.'"' : '';
 		$o .= ($size)     ? ' size="'.$size.'"' : '';
 		$o .= ($class)    ? ' class="'.$class.'"' : '';

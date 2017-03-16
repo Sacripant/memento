@@ -1,7 +1,7 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/theme/classic/classic.php $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/theme/classic/classic.php $
 $LastChangedRevision: 4055 $
 */
 

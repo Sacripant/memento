@@ -9,8 +9,8 @@
 
 	Use of this software indicates acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/txp_diag.php $
-$LastChangedRevision: 4082 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_diag.php $
+$LastChangedRevision: 4192 $
 
 */
 
@@ -92,7 +92,6 @@ $LastChangedRevision: 4082 $
 		'/update/_to_4.4.0.php',
 		'/update/_to_4.4.1.php',
 		'/update/_to_4.5.0.php',
-		'/update/_to_4.5.1.php',
 		'/update/_update.php'
 	);
 

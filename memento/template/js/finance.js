@@ -52,15 +52,12 @@ if ( pageDatas.projet.finance === 1 || $('body').is('#printfacture') )
 /* Finance 
 ==========================*/
 
-var devis = $('#devis, #finance')
-// , 	 devise = $('.metas-devis .devise').text()
-, 	 sectionsDevis = $('.devis-section')
-,	 itemsDevis = $('.item-devis .montant-item')
-,	 totalTTCWrap = $('.montant-total-ttc')
-, 	 taxeWrap = $('.montant-taxe')
-, 	 totalHTWrap = $('.montant-total-ht')
-// ,	 taxe = $('.total-groupe-devis h3:first .item-devis-title').text();
-;
+var devis = $('#devis, #finance'),
+ 	sectionsDevis = $('.devis-section');
+	// itemsDevis = $('.item-devis .montant-item'),
+	// totalTTCWrap = $('.montant-total-ttc'),
+ 	// taxeWrap = $('.montant-taxe'),
+  	// totalHTWrap = $('.montant-total-ht');
 
 
 
@@ -85,9 +82,10 @@ function calcul_taxe(totalHT, target){
 
 function calcul()
 {
-	var taux = $('.taux-horaire').val() || $('.taux-horaire').text()
-	,	sousTotaux = [];
-	tranches = [];
+	var taux = pageDatas.projet.tauxHoraire;
+
+	pageDatas.projet.sousTotaux = [];
+	pageDatas.projet.tranches = [];
 	
 	// Montant des items
 	sectionsDevis.each(function(iSection) {
@@ -108,31 +106,35 @@ function calcul()
 	
 		// Affichage sous totaux par catégorie
 		var sousTotal = calcul_total(itemsValue, sousTotalWrap);
-		sousTotaux.push(sousTotal);	
+		pageDatas.projet.sousTotaux.push(sousTotal);	
 	});
 
 	// Affichage des totaux du Devis et mise en memoire
-	var devisTotalHTWrap = $('#devis').find('.montant-total-ht')
-	, 	devisTotalHTInput = $('#devis').find('.input-montant-total-ht')
-	,	totalHT = calcul_total(sousTotaux, devisTotalHTWrap)
-	;
+	var devisTotalHTWrap = $('.montant-total-ht'), 	
+		devisTotalHTInput = $('.input-montant-total-ht');
+		
+	pageDatas.projet.totalHT = calcul_total(pageDatas.projet.sousTotaux, devisTotalHTWrap);
 
 	// Add totalHT in input[hidden] value for save in BDD
-	devisTotalHTInput.val(formatage_montant(totalHT, false));
+	if (devisTotalHTInput.length)
+		devisTotalHTInput.val(formatage_montant(pageDatas.projet.totalHT, false));
 	
 	
-	totalTTC = calcul_taxe( totalHT, $('#devis') );
+	pageDatas.projet.totalTTC = calcul_taxe( pageDatas.projet.totalHT, $('#devis') );
 	
 	// console.log(totalHT);
 
 	// Répartition des factures / modalités de paiement
 	$('.devis-liste-factures li').each(function(index) {
-		var pourcent = $(this).attr('data-pourcentage')
-		,	coef = pourcent.replace('%', '');
-		coef /= 100;
+		var pourcent = $(this).attr('data-pourcentage'),
+			coef = pourcent.replace('%', '');
 		
-		var montantTTC = totalTTC*coef;
-		var montantHT = totalHT*coef;
+			coef /= 100;
+
+		console.log(coef);
+		
+		var montantTTC = pageDatas.projet.totalTTC*coef;
+		var montantHT = pageDatas.projet.totalHT*coef;
 
 		// console.log(montantHT);
 
@@ -142,7 +144,7 @@ function calcul()
 		// $('.somme-a-payer', this).text(formatage_montant(montantTTC, true) +" "+pageDatas.projet.devise+ " TTC" );
 
 		// Push each tranches de paiement
-		tranches.push(montantHT);
+		pageDatas.projet.tranches.push(montantHT);
 	});
 
 }
@@ -152,15 +154,16 @@ calcul();
 // Specifique à la section printfacture
 if ($('body').is('#printfacture')) 
 {
-	var detailPresta = $('#devis .details-prestation').clone()
-	,	 totalGroupe = $('#devis .total-groupe-devis').clone();
+	// var detailPresta = $('#devis .details-prestation').clone();
+	var totalGroupe = $('#devis .total-groupe-devis').clone();
 	
-	detailPresta.prependTo('.add_details-presta');
-	totalGroupe.prependTo('.add_totaux');
+	// detailPresta.prependTo('.add_details-presta');
+	if (totalGroupe.length);
+		totalGroupe.prependTo('.add_totaux');
 	
 	// Total à payer pour chaque facture
 	// console.log(tranches);	
-	$.each(tranches, function(i, value){
+	$.each(pageDatas.projet.tranches, function(i, value){
 		++i;
 		var facture = $('#facture'+i);
 		var totalFacture = facture.find('.total-groupe-facture');
@@ -221,7 +224,7 @@ else
 	// Go to Print Preview
 	
 	$('#print-preview').click(function() {
-		var nbTranches = tranches.length,
+		var nbTranches = pageDatas.projet.tranches.length,
 			 newurl = this.href+"&nbTranches="+nbTranches;
 		this.href = newurl;
 	});

@@ -13,8 +13,8 @@
 	"Mod File Upload" Copyright 2004 by Michael Manfre. All rights reserved.
 	Use of this mod denotes acceptance of the Textpattern license agreement
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.1/source/textpattern/include/txp_file.php $
-$LastChangedRevision: 4089 $
+$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_file.php $
+$LastChangedRevision: 5858 $
 
 */
 
@@ -601,6 +601,11 @@ $LastChangedRevision: 4089 $
 	function file_db_add($filename, $category, $permissions, $description, $size, $title='')
 	{
 		global $txp_user;
+
+		if (trim($filename) === '') {
+			return false;
+		}
+
 		$rs = safe_insert("txp_file",
 			"filename = '$filename',
 			 title = '$title',
@@ -867,8 +872,7 @@ $LastChangedRevision: 4089 $
 			description = '$description',
 			status = '$status',
 			size = '$size',
-			modified = now(),
-			author = '".doSlash($txp_user)."'"
+			modified = now()"
 			.($created ? ", created = $created" : '')
 		, "id = $id");
 
