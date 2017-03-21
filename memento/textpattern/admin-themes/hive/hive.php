@@ -48,7 +48,8 @@ class hive_theme extends \Textpattern\Admin\Theme
         $out[] = '<link rel="icon" href="'.$this->url.'assets/img/favicon.ico">';
         $out[] = '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">';
         $out[] = '<meta name="generator" content="Textpattern CMS">';
-        $out[] = '<script src="'.$this->url.'assets/js/main.min.js"></script>'.n;
+        // $out[] = '<script src="'.$this->url.'assets/js/main.min.js"></script>'.n;
+        $out[] = '<script src="'.$this->url.'assets/js/main.js"></script>'.n;
 
         // Custom JavaScript (see theme README for usage instructions).
         if (defined('admin_custom_js')) {

@@ -65,7 +65,7 @@ Necessite plugins "smd_query"
 			<txp:variable name="todo-liste">
 				<txp:smd_query column="ID" table="textpattern" where='custom_1 in (<txp:variable name="projet-liste" />) AND custom_2 in ("Non programmé","Programmé","En cours","En pause")' break=",">{ID}</txp:smd_query>
 			</txp:variable>
-			<txp:article_custom section="todo" id='<txp:variable name="todo-liste" />' break="" sort="posted asc" limit="999" time="any">
+			<txp:article_custom section="todo" id="<txp:variable name='todo-liste' />" break="" sort="posted asc" limit="999" time="any">
 				<txp:output_form form="odd_even" />
 				<txp:variable name="statut-class"><txp:smd_wrap transform="sanitize|url_title"><txp:custom_field name='etat' /></txp:smd_wrap></txp:variable>
 				<tr data-id="<txp:article_id />" class="todo <txp:variable name="statut-class" /><txp:variable name='odd-even' />">

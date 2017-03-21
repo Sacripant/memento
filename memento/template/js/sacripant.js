@@ -261,7 +261,9 @@ $(function(){
 					$('textarea', line).focus();
 					console.log($('.memForm', line));
 					$('.memForm', line).ajaxForm({
-						success:    function() { location.reload(); }
+						success:    function() { 
+							location.reload(); 
+						}
 					});
 				}
 			);

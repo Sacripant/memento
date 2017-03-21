@@ -1,0 +1,61 @@
+/* 
+	Write - Display none 
+*/
+#txp-textfilter-group,
+#txp-advanced-group,
+#txp-image-group,
+#txp-recent-group,
+.category-2,
+#write-status,
+.publish-now,
+.publish-at,
+#view_modes {
+	display:none !important;
+}
+
+#article_form #body { height: 150px; }
+
+
+#txp-custom-field-group .glz_custom_field,
+#txp-custom-field-group .glz_custom_select_field,
+#txp-custom-field-group .glz_custom_radio_field {
+	-webkit-box-sizing: border-box; 
+	   -moz-box-sizing: border-box; 
+	        box-sizing: border-box;
+	width: 25%;
+	float: left;
+	padding-right: 3%;
+}
+
+#txp-custom-field-group .etat {
+	width: 100%;
+}
+/*#txp-custom-field-group .taxe br:nth-child(5)  {
+	display: none;
+}*/
+
+
+/* Add clearfix for custom fields container */
+#txp-custom-field-group-content .txp-container:after {
+	content: "";
+	display: block;
+	height: 0;
+	clear: both;
+}
+
+
+.url-title,
+.repartition  {
+	clear: both;
+}
+
+/*#more_group .custom-statut { padding-bottom: 10px; }
+*/
+
+/* -- STYLES FOR VARIOUS PLUGINS (delete if you do not use) -- */
+
+
+/* glz_custom_fields */
+.glz_text_area_field textarea{
+	width:100% !important;
+}

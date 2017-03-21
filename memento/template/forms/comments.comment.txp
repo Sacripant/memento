@@ -1,23 +1,25 @@
-<article>
-	<!-- add a permlink so people can link direct to this comment -->
-	<h3 class="comment-anchor">
-		<txp:if_variable name="comment-preview" value="no">
-    		<txp:comment_permlink anchor="1">#<txp:comment_id /></txp:comment_permlink>
-		<txp:else />
-			#Preview
-		</txp:if_variable>
-	</h3>
-	<h2 class="p comment-data">
-		<span data-picto="" class="picto"><strong>Utilisateur&nbsp;:</strong></span><txp:comment_name /> 
-		| 
-		<time datetime="<txp:comment_time format='iso8601' />" itemprop="commentTime"><txp:comment_time />				
-				<txp:if_variable name="comment-preview" value="no">
-					(<txp:comment_time format="since" />)
-				</txp:if_variable>
-		</time>
-	</h2>
+<li class="comment">
+	<article>
+		<!-- add a permlink so people can link direct to this comment -->
+		<h3 class="comment-anchor">
+			<txp:if_variable name="comment-preview" value="no">
+	    		<txp:comment_permlink anchor="1">#<txp:comment_id /></txp:comment_permlink>
+			<txp:else />
+				#Preview
+			</txp:if_variable>
+		</h3>
+		<h2 class="p comment-data">
+			<span data-picto="" class="picto"><strong>Utilisateur&nbsp;:</strong></span><txp:comment_name /> 
+			| 
+			<time datetime="<txp:comment_time format='iso8601' />" itemprop="commentTime"><txp:comment_time />				
+					<txp:if_variable name="comment-preview" value="no">
+						(<txp:comment_time format="since" />)
+					</txp:if_variable>
+			</time>
+		</h2>
 
-  <div itemprop="commentText" class="comment-body">
-    <txp:comment_message />
-  </div>
-</article>
+	  <div itemprop="commentText" class="comment-body">
+	    <txp:comment_message />
+	  </div>
+	</article>
+</li>

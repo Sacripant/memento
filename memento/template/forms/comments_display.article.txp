@@ -15,7 +15,7 @@
 <txp:if_comments>	
 	<h2><txp:comments_count /> commentaire(s)</h2>
 	<txp:variable name="comment-preview" value="no" />
-	<txp:comments class="comments-list" breakclass="comment"/>
+	<txp:comments class="comments-list" />
 	
 <txp:else />
 	<h2>Il n'y a encore aucun commentaire</h2>

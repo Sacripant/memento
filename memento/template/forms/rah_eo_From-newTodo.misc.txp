@@ -24,7 +24,7 @@
 					<txp:mem_form_secret name="string_AuthorID" value='<txp:cbe_frontauth_whois />' />
 					<txp:mem_form_secret name="string_LastModID" value='<txp:cbe_frontauth_whois />' />
 					<txp:mem_form_secret name="randuid_uid" value='' />
-					<txp:mem_form_secret name="string_custom_1" value='<txp:variable name="idProjet" />' />				
+					<txp:mem_form_secret name="string_custom_1" value='<txp:variable name="idProjet" />' />	
 
 					<td class="edit-new-title"> <txp:mem_form_textarea rows="2" cols="30" name="string_Title" label="Titre" break="" default='' /> </td>
 					<td class="edit-new-cat"> 
