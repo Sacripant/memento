@@ -1,283 +1,392 @@
 <?php
+
 /*
-	This is Textpattern
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2005 Dean Allen
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-	Copyright 2005 by Dean Allen
-	www.textpattern.com
-	All rights reserved
+/**
+ * Pages panel.
+ *
+ * @package Admin\Page
+ */
 
-	Use of this software indicates acceptance of the Textpattern license agreement
+if (!defined('txpinterface')) {
+    die('txpinterface is undefined.');
+}
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_page.php $
-$LastChangedRevision: 4873 $
+if ($event == 'page') {
+    require_privs('page');
 
-*/
-	if (!defined('txpinterface')) die('txpinterface is undefined.');
+    bouncer($step, array(
+        'page_edit'   => false,
+        'page_save'   => true,
+        'page_delete' => true,
+        'tagbuild'    => false,
+    ));
 
-	if ($event == 'page') {
-		require_privs('page');
+    switch (strtolower($step)) {
+        case '':
+            page_edit();
+            break;
+        case 'page_edit':
+            page_edit();
+            break;
+        case 'page_save':
+            page_save();
+            break;
+        case 'page_delete':
+            page_delete();
+            break;
+        case 'page_new':
+            page_new();
+            break;
+        case 'tagbuild':
+            echo page_tagbuild();
+            break;
+    }
+}
 
-		bouncer($step,
-			array(
-				'page_edit'       => false,
-				'page_save'       => true,
-				'page_delete'     => true,
-				'save_pane_state' => true
-			)
-		);
+/**
+ * The main Page editor panel.
+ *
+ * @param string|array $message The activity message
+ */
 
-		switch(strtolower($step)) {
-			case "":                page_edit();             break;
-			case "page_edit":       page_edit();             break;
-			case "page_save":       page_save();             break;
-			case "page_delete":     page_delete();           break;
-			case "page_new":        page_new();              break;
-			case "save_pane_state": page_save_pane_state();  break;
-		}
-	}
+function page_edit($message = '')
+{
+    global $event, $step;
 
-// -------------------------------------------------------------
+    pagetop(gTxt('edit_pages'), $message);
 
-	function page_edit($message = '') {
-		global $event,$step;
+    extract(array_map('assert_string', gpsa(array(
+        'copy',
+        'save_error',
+        'savenew',
+    ))));
 
-		pagetop(gTxt('edit_pages'), $message);
+    $name = sanitizeForPage(assert_string(gps('name')));
+    $newname = sanitizeForPage(assert_string(gps('newname')));
 
-		extract(array_map('assert_string', gpsa(array('copy', 'savenew'))));
-		$name = sanitizeForPage(assert_string(gps('name')));
-		$newname = sanitizeForPage(assert_string(gps('newname')));
+    if ($step == 'page_delete' || empty($name) && $step != 'page_new' && !$savenew) {
+        $name = safe_field("page", 'txp_section', "name = 'default'");
+    } elseif (((($copy || $savenew) && $newname) || ($newname && ($newname != $name))) && !$save_error) {
+        $name = $newname;
+    }
 
-		if ($step == 'page_delete' || empty($name) && $step != 'page_new' && !$savenew)
-		{
-			$name = safe_field('page', 'txp_section', "name = 'default'");
-		}
-		elseif( ( $copy || $savenew ) && $newname )
-		{
-			$name = $newname;
-		}
+    $titleblock = inputLabel(
+        'new_page',
+        fInput('text', 'newname', $name, 'input-medium', '', '', INPUT_MEDIUM, '', 'new_page', false, true),
+        'page_name',
+        array('', 'instructions_page_name'),
+        array('class' => 'txp-form-field name')
+    );
 
-		// Format of each entry is popTagLink -> array ( gTxt() string, class/ID)
-		$tagbuild_items = array(
-			'page_article'     => array('page_article_hed', 'article-tags'),
-			'page_article_nav' => array('page_article_nav_hed', 'article-nav-tags'),
-			'page_nav'         => array('page_nav_hed', 'nav-tags'),
-			'page_xml'         => array('page_xml_hed', 'xml-tags'),
-			'page_misc'        => array('page_misc_hed', 'misc-tags'),
-			'page_file'        => array('page_file_hed', 'file-tags'),
-		);
+    if ($name === '') {
+        $titleblock .= hInput('savenew', 'savenew');
+    } else {
+        $titleblock .= hInput('name', $name);
+    }
 
-		$tagbuild_options = '';
-		foreach ($tagbuild_items as $tb => $item) {
-			$tagbuild_options .= n.n.'<div class="'.$item[1].'">'.hed('<a href="#'.$item[1].'">'.gTxt($item[0]).'</a>'
-					, 3, ' class="lever'.(get_pref('pane_page_'.$item[1].'_visible') ? ' expanded' : '').'"').
-						n.'<div id="'.$item[1].'" class="toggle" style="display:'.(get_pref('pane_page_'.$item[1].'_visible') ? 'block' : 'none').'">'.taglinks($tb).'</div></div>';
-		}
+    $titleblock .= eInput('page').sInput('page_save');
 
-		echo
-			'<h1 class="txp-heading">'.gTxt('tab_pages').'</h1>'.
-			'<div id="'.$event.'_container" class="txp-container">'.
-			startTable('', '', 'txp-columntable').
-			tr(
-				tda(
+    $html = (!$save_error) ? fetch('user_html', 'txp_page', 'name', $name) : gps('html');
 
-					'<div id="tagbuild_links">'.n.hed(
-						gTxt('tagbuilder')
-					, 2).
-						$tagbuild_options.
-						n.'</div>'
-				,' class="column"').
+    echo n.'<div class="txp-layout">'.
+        n.tag(
+            hed(gTxt('tab_pages'), 1, array('class' => 'txp-heading')),
+            'div', array('class' => 'txp-layout-1col')
+        );
 
-				tda(
-					page_edit_form($name)
-				, ' class="column"').
+    // Pages create/switcher column.
 
-				tda(
-					'<div id="content_switcher">'.
-					hed(gTxt('all_pages'), 2).
-					graf(sLink('page', 'page_new', gTxt('create_new_page')), ' class="action-create"').
-					page_list($name).
-					'</div>'
-				, ' class="column"')
-			).
-			endTable().'</div>';
-	}
+    $actionsExtras = '';
 
-// -------------------------------------------------------------
+    if ($name) {
+        $actionsExtras .= href('<span class="ui-icon ui-icon-copy"></span> '.gTxt('duplicate'), '#', array(
+            'class'     => 'txp-clone',
+            'data-form' => 'page_form',
+        ));
+    }
 
-	function page_edit_form($name)
-	{
-		global $step;
-		if ($name) {
-			$html = safe_field('user_html','txp_page',"name='".doSlash($name)."'");
-		} else {
-			$html = gps('html');
-		}
+    $actions = graf(
+        sLink('page', 'page_new', '<span class="ui-icon ui-extra-icon-new-document"></span> '.gTxt('create_new_page'), 'txp-new').
+        $actionsExtras,
+        array('class' => 'txp-actions txp-actions-inline')
+    );
 
-		if (empty($name))
-		{
-			$buttons = '<div class="edit-title">'.
-			gTxt('name_for_this_page').': '
-			.fInput('text','newname','','','','',INPUT_REGULAR).
-			hInput('savenew','savenew').
-			'</div>';
-		} else {
-			$buttons = '<div class="edit-title">'.gTxt('you_are_editing_page').sp.strong(txpspecialchars($name)).'</div>';
-		}
+    $buttons = graf(
+        tag_void('input', array(
+            'class'  => 'publish',
+            'type'   => 'submit',
+            'method' => 'post',
+            'value'  =>  gTxt('save'),
+        )), ' class="txp-save"'
+    );
 
-		$out[] = '<div id="main_content">'.$buttons.
-					'<textarea id="html" class="code" name="html" cols="'.INPUT_LARGE.'" rows="'.INPUT_REGULAR.'">'.txpspecialchars($html).'</textarea>'.
-					n.'<p>'.fInput('submit','save',gTxt('save'),'publish').
-					n.eInput('page').
-					n.sInput('page_save').
-					n.hInput('name',$name).'</p>';
+    echo n.tag(
+        page_list($name).n,
+        'div', array(
+            'class' => 'txp-layout-4col-alt',
+            'id'    => 'content_switcher',
+            'role'  => 'region',
+        )
+    );
 
-		if (!empty($name)) {
-			$out[] =
-				n.'<p class="copy-as"><label for="copy-page">'.gTxt('copy_page_as').'</label>'.
-				n.fInput('text','newname','','input-medium','','',INPUT_MEDIUM,'','copy-page').
-				n.fInput('submit','copy',gTxt('copy')).'</p>';
-		}
-		$out[] = '</div>';
+    // Pages code columm.
 
-		return form(join('',$out), '', '', 'post', '', '', 'page_form');
-	}
+    echo n.tag(
+        form(
+            $actions.
+            $titleblock.
+            inputLabel(
+                'html',
+                '<textarea class="code" id="html" name="html" cols="'.INPUT_LARGE.'" rows="'.TEXTAREA_HEIGHT_LARGE.'" dir="ltr">'.txpspecialchars($html).'</textarea>',
+                array(
+                    'page_code',
+                    n.href('<span class="ui-icon ui-extra-icon-code"></span> '.gTxt('tagbuilder'), '#', array('class' => 'txp-tagbuilder-dialog')),
+                ),
+                array('', 'instructions_page_code'),
+                array('class' => 'txp-form-field'),
+                array('div', 'div')
+            ).
+            $buttons
+            , '', '', 'post', '', '', 'page_form'),
+        'div', array(
+            'class' => 'txp-layout-4col-3span',
+            'id'    => 'main_content',
+            'role'  => 'region',
+        )
+    );
 
-// -------------------------------------------------------------
+    // Tag builder dialog.
+    echo n.tag(
+        page_tagbuild(),
+        'div', array(
+            'class'      => 'txp-tagbuilder-content',
+            'id'         => 'tagbuild_links',
+            'aria-label' => gTxt('tagbuilder'),
+            'title'      => gTxt('tagbuilder'),
+    ));
 
-	function page_list($current)
-	{
-		$protected = safe_column('DISTINCT page', 'txp_section', '1=1') + array('error_default');
+    echo n.'</div>'; // End of .txp-layout.
+}
 
-		$criteria = 1;
-		$criteria .= callback_event('admin_criteria', 'page_list', 0, $criteria);
+/**
+ * Renders a list of page templates.
+ *
+ * @param  string $current The selected template
+ * @return string HTML
+ */
 
-		$rs = safe_rows_start('name', 'txp_page', "$criteria order by name asc");
+function page_list($current)
+{
+    $out = array();
+    $protected = safe_column("DISTINCT page", 'txp_section', "1 = 1") + array('error_default');
 
-		while ($a = nextRow($rs))
-		{
-			extract($a);
+    $criteria = 1;
+    $criteria .= callback_event('admin_criteria', 'page_list', 0, $criteria);
 
-			$link  = eLink('page', '', 'name', $name, $name);
-			$dlink = !in_array($name, $protected) ? dLink('page', 'page_delete', 'name', $name) : '';
-			$out[] = ($current == $name) ?
-				tr(td($name).td($dlink)) :
-				tr(td($link).td($dlink));
-		}
+    $rs = safe_rows_start("name", 'txp_page', "$criteria ORDER BY name ASC");
 
-		return startTable('', '', 'txp-list').join(n, $out).endTable();
-	}
+    if ($rs) {
+        while ($a = nextRow($rs)) {
+            extract($a);
+            $active = ($current === $name);
 
-// -------------------------------------------------------------
+            $edit = eLink('page', '', 'name', $name, $name);
 
-	function page_delete()
-	{
-		$name  = ps('name');
-		$count = safe_count('txp_section', "page = '".doSlash($name)."'");
+            if (!in_array($name, $protected)) {
+                $edit .= dLink('page', 'page_delete', 'name', $name);
+            }
 
-		if ($name == 'error_default')
-		{
-			return page_edit();
-		}
+            $out[] = tag($edit, 'li', array(
+                'class' => $active ? 'active' : '',
+            ));
+        }
 
-		if ($count)
-		{
-			$message = array(gTxt('page_used_by_section', array('{name}' => $name, '{count}' => $count)), E_WARNING);
-		}
+        $out = tag(join(n, $out), 'ul', array(
+            'class' => 'switcher-list',
+        ));
 
-		else
-		{
-			safe_delete('txp_page', "name = '".doSlash($name)."'");
-			callback_event('page_deleted', '', 0, $name);
+        return wrapGroup('all_pages', $out, 'all_pages');
+    }
+}
 
-			$message = gTxt('page_deleted', array('{name}' => $name));
-		}
+/**
+ * Deletes a page template.
+ */
 
-		page_edit($message);
-	}
+function page_delete()
+{
+    $name = ps('name');
+    $count = safe_count('txp_section', "page = '".doSlash($name)."'");
+    $message = '';
 
-// -------------------------------------------------------------
+    if ($name == 'error_default') {
+        return page_edit();
+    }
 
-	function page_save()
-	{
-		extract(doSlash(array_map('assert_string', gpsa(array('savenew', 'html', 'copy')))));
-		$name = sanitizeForPage(assert_string(gps('name')));
+    if ($count) {
+        $message = array(gTxt('page_used_by_section', array('{name}' => $name, '{count}' => $count)), E_WARNING);
+    } else {
+        if (safe_delete('txp_page', "name = '".doSlash($name)."'")) {
+            callback_event('page_deleted', '', 0, $name);
+            $message = gTxt('page_deleted', array('{name}' => $name));
+        }
+    }
 
-		if ($savenew or $copy)
-		{
-			$newname = doSlash(sanitizeForPage(assert_string(gps('newname'))));
+    page_edit($message);
+}
 
-			if ($newname and safe_field('name', 'txp_page', "name = '$newname'"))
-			{
-				$message = array(gTxt('page_already_exists', array('{name}' => $newname)), E_ERROR);
-				if ($savenew)
-				{
-					$_POST['newname'] = '';
-				}
-			}
-			elseif ($newname)
-			{
-				if (safe_insert('txp_page', "name = '$newname', user_html = '$html'"))
-				{
-					update_lastmod();
-					$message = gTxt('page_created', array('{name}' => $newname));
-				}
-				else
-				{
-					$message = array(gTxt('page_save_failed'), E_ERROR);
-				}
-			}
-			else
-			{
-				$message = array(gTxt('page_name_invalid'), E_ERROR);
-			}
+/**
+ * Saves or clones a page template.
+ */
 
-			page_edit($message);
-		}
+function page_save()
+{
+    extract(doSlash(array_map('assert_string', psa(array(
+        'savenew',
+        'html',
+        'copy',
+    )))));
 
-		else
-		{
-			if (safe_update('txp_page', "user_html = '$html'", "name = '".doSlash($name)."'"))
-			{
-				update_lastmod();
-				$message = gTxt('page_updated', array('{name}' => $name));
-			}
-			else
-			{
-				$message = array(gTxt('page_save_failed'), E_ERROR);
-			}
+    $name = sanitizeForPage(assert_string(ps('name')));
+    $newname = sanitizeForPage(assert_string(ps('newname')));
 
-			page_edit($message);
-		}
-	}
+    $save_error = false;
+    $message = '';
 
-// -------------------------------------------------------------
+    if (!$newname) {
+        $message = array(gTxt('page_name_invalid'), E_ERROR);
+        $save_error = true;
+    } else {
+        if ($copy && ($name === $newname)) {
+            $newname .= '_copy';
+            $_POST['newname'] = $newname;
+        }
 
-	function page_new()
-	{
-		page_edit();
-	}
+        $exists = safe_field("name", 'txp_page', "name = '".doSlash($newname)."'");
 
-// -------------------------------------------------------------
+        if ($newname !== $name && $exists !== false) {
+            $message = array(gTxt('page_already_exists', array('{name}' => $newname)), E_ERROR);
+            if ($savenew) {
+                $_POST['newname'] = '';
+            }
 
-	function taglinks($type)
-	{
-		return popTagLinks($type);
-	}
+            $save_error = true;
+        } else {
+            if ($savenew or $copy) {
+                if ($newname) {
+                    if (safe_insert('txp_page', "name = '".doSlash($newname)."', user_html = '$html'")) {
+                        update_lastmod('page_created', compact('newname', 'name', 'html'));
+                        $message = gTxt('page_created', array('{name}' => $newname));
+                    } else {
+                        $message = array(gTxt('page_save_failed'), E_ERROR);
+                        $save_error = true;
+                    }
+                } else {
+                    $message = array(gTxt('page_name_invalid'), E_ERROR);
+                    $save_error = true;
+                }
+            } else {
+                if (safe_update('txp_page', "user_html = '$html', name = '".doSlash($newname)."'", "name = '".doSlash($name)."'")) {
+                    safe_update('txp_section', "page = '".doSlash($newname)."'", "page = '".doSlash($name)."'");
+                    update_lastmod('page_saved', compact('newname', 'name', 'html'));
+                    $message = gTxt('page_updated', array('{name}' => $name));
+                } else {
+                    $message = array(gTxt('page_save_failed'), E_ERROR);
+                    $save_error = true;
+                }
+            }
+        }
+    }
 
-// -------------------------------------------------------------
+    if ($save_error === true) {
+        $_POST['save_error'] = '1';
+    } else {
+        callback_event('page_saved', '', 0, $name, $newname);
+    }
 
-	function page_save_pane_state()
-	{
-		global $event;
-		$panes = array('article-tags', 'article-nav-tags', 'nav-tags', 'xml-tags', 'misc-tags', 'file-tags');
-		$pane = gps('pane');
-		if (in_array($pane, $panes))
-		{
-			set_pref("pane_page_{$pane}_visible", (gps('visible') == 'true' ? '1' : '0'), $event, PREF_HIDDEN, 'yesnoradio', 0, PREF_PRIVATE);
-			send_xml_response();
-		} else {
-			trigger_error('invalid_pane', E_USER_WARNING);
-		}
-	}
+    page_edit($message);
+}
 
-?>
+/**
+ * Directs requests to page_edit() armed with a 'page_new' step.
+ *
+ * @see page_edit()
+ */
+
+function page_new()
+{
+    page_edit();
+}
+
+/**
+ * Return a list of tag builder tags.
+ *
+ * @return HTML
+ */
+
+function page_tagbuild()
+{
+    $listActions = graf(
+        href('<span class="ui-icon ui-icon-arrowthickstop-1-s"></span> '.gTxt('expand_all'), '#', array(
+            'class'         => 'txp-expand-all',
+            'aria-controls' => 'tagbuild_links',
+        )).
+        href('<span class="ui-icon ui-icon-arrowthickstop-1-n"></span> '.gTxt('collapse_all'), '#', array(
+            'class'         => 'txp-collapse-all',
+            'aria-controls' => 'tagbuild_links',
+        )), array('class' => 'txp-actions')
+    );
+
+    // Format of each entry is popTagLink -> array ( gTxt() string, class/ID).
+    $tagbuild_items = array(
+        'page_article'     => array('page_article_hed','article-tags'),
+        'page_article_nav' => array('page_article_nav_hed', 'article-nav-tags'),
+        'page_nav'         => array('page_nav_hed', 'nav-tags'),
+        'page_xml'         => array('page_xml_hed', 'xml-tags'),
+        'page_misc'        => array('page_misc_hed', 'misc-tags'),
+        'page_file'        => array('page_file_hed', 'file-tags'),
+    );
+
+    $tagbuild_links = '';
+
+    foreach ($tagbuild_items as $tb => $item) {
+        $tagbuild_links .= wrapRegion($item[1].'_group', taglinks($tb), $item[1], $item[0], 'page_'.$item[1]);
+    }
+
+    return $listActions.$tagbuild_links;
+}
+
+/**
+ * Renders a list of tag builder options.
+ *
+ * @param  string $type
+ * @return HTML
+ * @access private
+ * @see    popTagLinks()
+ */
+
+function taglinks($type)
+{
+    return popTagLinks($type);
+}

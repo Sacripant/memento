@@ -1,1239 +1,1923 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_html.php $
-$LastChangedRevision: 4163 $
-*/
-
-	define("t","\t");
-	define("n","\n");
-	define("br","<br />");
-	define("sp","&#160;");
-	define("a","&#38;");
-
-
-/**
- * Render the admin-side theme's footer partial via the "admin_side" > "footer" pluggable UI.
- * and send the "admin_side" > "body_end" event.
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
  */
 
-	function end_page()
-	{
-		global $txp_user, $event, $app_mode, $theme, $textarray_script;
-
-		if ($app_mode != 'async' && $event != 'tag') {
-			echo '</div><!-- /txp-body --><div class="txp-footer">';
-			echo pluggable_ui('admin_side', 'footer', $theme->footer());
-			callback_event('admin_side', 'body_end');
-			echo n.script_js('textpattern.textarray = '.json_encode($textarray_script)).n.
-			'</div><!-- /txp-footer --></body>'.n.'</html>';
-		}
-	}
-
-
 /**
- * Render the user interface for one head cell of columnar data.
+ * Collection of HTML widgets.
  *
- * @param	string	$value	Element text
- * @param	string	$sort	Sort criterion ['']
- * @param	string	$event	Event name ['']
- * @param	boolean	$is_link	Include link to admin action in user interface according to the other params [false]
- * @param	string	$dir	Sort direction, either "asc" or "desc" ['']
- * @param	string	$crit	Search criterion ['']
- * @param	string	$method	Search method ['']
- * @param	string	$class	HTML "class" attribute applied to the resulting element ['']
- * @param	string	$step	Step name
- * @return 	string	HTML
+ * @package HTML
  */
 
-	function column_head($value, $sort = '', $event = '', $is_link = '', $dir = '', $crit = '', $method = '', $class = '', $step = 'list')
-	{
-		return column_multi_head( array(
-					array ('value' => $value, 'sort' => $sort, 'event' => $event, 'step' => $step, 'is_link' => $is_link,
-						   'dir' => $dir, 'crit' => $crit, 'method' => $method)
-				), $class);
-	}
-
-
 /**
- * Render the user interface for multiple head cells of columnar data.
+ * A tab character.
  *
- * @param	array	$head_items	An array of hashed elements.
- * 								Valid keys:
- * 							 	'value'
- * 								'sort'
- * 								'event'
- * 								'is_link'
- * 								'dir'
- * 								'crit'
- * 								'method'
- * @param	string	$class	HTML "class" attribute applied to the resulting element
- * @return	string	HTML
+ * @var string
  */
 
-	function column_multi_head($head_items, $class='')
-	{
-		$o = n.t.'<th'.($class ? ' class="'.$class.'"' : '').'>';
-		$first_item = true;
-		foreach ($head_items as $item)
-		{
-			if (empty($item)) continue;
-			extract(lAtts(array(
-				'value'   => '',
-				'sort'    => '',
-				'event'   => '',
-				'step'    => 'list',
-				'is_link' => '',
-				'dir'     => '',
-				'crit'    => '',
-				'method'  => '',
-			),$item));
-
-			$o .= ($first_item) ? '' : ', '; $first_item = false;
-
-			if ($is_link)
-			{
-				$o .= '<a href="index.php?step='.$step;
-
-				$o .= ($event) ? a."event=$event" : '';
-				$o .= ($sort) ? a."sort=$sort" : '';
-				$o .= ($dir) ? a."dir=$dir" : '';
-				$o .= ($crit != '') ? a."crit=$crit" : '';
-				$o .= ($method) ? a."search_method=$method" : '';
-
-				$o .= '">';
-			}
-
-			$o .= gTxt($value);
-
-			if ($is_link)
-			{
-				$o .= '</a>';
-			}
-		}
-		$o .= '</th>';
-
-		return $o;
-	}
-
+define("t", "\t");
 
 /**
- * Render a <th> element.
+ * A line feed.
  *
- * @param	string	$text	Cell text [space]
- * @param	string	$caption	unused  ['']
- * @param	string	$atts	HTML attributes  ['']
- * @return	string	HTML
+ * @var string
  */
 
-	function hCell($text='',$caption='',$atts='')
-	{
-		$text = ('' === $text) ? sp : $text;
-		return tag($text,'th',$atts);
-	}
-
+define("n", "\n");
 
 /**
- * Render a link invoking an admin-side action.
+ * A self-closing HTML line-break tag.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	string	$linktext	Link text
- * @param	string	$class	HTML class attribute for link
- * @return	string	HTML
+ * @var string
  */
 
-	function sLink($event,$step,$linktext,$class='')
-	{
-		$c = ($class) ? ' class="'.$class.'"' : '';
-		return '<a href="?event='.$event.a.'step='.$step.'"'.$c.'>'.$linktext.'</a>';
-	}
-
+define("br", "<br />");
 
 /**
- * Render a link invoking an admin-side action while taking up to two additional URL parameters.
+ * A non-breaking space as a HTML entity.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step ['']
- * @param	string	$thing	URL parameter key #1 ['']
- * @param	string	$value	URL parameter value #1 ['']
- * @param	string	$linktext	Link text
- * @param	string	$thing2	URL parameter key #2 ['']
- * @param	string	$val2	URL parameter value #2 ['']
- * @param	string	$title	Anchor title ['edit']
- * @return	string	HTML
+ * @var string
  */
 
-	function eLink($event,$step='',$thing='',$value='',$linktext,$thing2='',$val2='',$title='edit')
-	{
-		return join('',array(
-			'<a href="?event='.$event,
-			($step) ? a.'step='.$step : '',
-			($thing) ? a.''.$thing.'='.urlencode($value) : '',
-			($thing2) ? a.''.$thing2.'='.urlencode($val2) : '',
-			a.'_txp_token='.form_token(),
-			'"'.(($title) ? ' title="'.gTxt($title).'"' : '') .'>'.escape_title($linktext).'</a>'
-		));
-	}
-
+define("sp", "&#160;");
 
 /**
- * Render a link invoking an admin-side action while taking up to one additional URL parameter.
+ * An ampersand as a HTML entity.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	string	$thing	URL parameter key
- * @param	string	$value	URL parameter value
- * @return			string 	HTML
+ * @var string
  */
 
-	function wLink($event,$step='',$thing='',$value='')
-	{
-		// TODO: Why index.php? while we don't need this in eLink etc.
-		return join('',array(
-			'<a href="index.php?event='.$event,
-			($step) ? a.'step='.$step : '',
-			($thing) ? a.''.$thing.'='.urlencode($value) : '',
-			a.'_txp_token='.form_token(),
-			'" class="dlink">'.sp.'!'.sp.'</a>'
-		));
-	}
-
+define("a", "&#38;");
 
 /**
- * Render a link invoking an admin-side "delete" action while taking up to two additional URL parameters.
+ * Renders the admin-side footer.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	string	$thing	URL parameter key #1
- * @param	string	$value	URL parameter value #1
- * @param	string	$verify	Show an "Are you sure?" dialogue with this text ['confirm_delete_popup']
- * @param	string	$thing2	URL parameter key #2 ['']
- * @param	string	$thing2val	URL parameter value #2 ['']
- * @param	boolean	$get	Use GET request [false: Use POST request]
- * @param	array	$remember	Convey URL parameters for page state. Member sequence is $page, $sort, $dir, $crit, $search_method
+ * The footer's default markup is provided by a theme. It can be further
+ * customised via the "admin_side > footer" pluggable UI callback event.
+ *
+ * In addition to the pluggable UI, this function also calls callback events
+ * "admin_side > main_content_end" and "admin_side > body_end".
  */
 
-	function dLink($event, $step, $thing, $value, $verify = '', $thing2 = '', $thing2val = '', $get = '', $remember = null) {
-		if ($remember) {
-			list($page, $sort, $dir, $crit, $search_method) = $remember;
-		}
+function end_page()
+{
+    global $event, $app_mode, $theme, $textarray_script;
 
-		if ($get) {
-			$url = '?event='.$event.a.'step='.$step.a.$thing.'='.urlencode($value).a.'_txp_token='.form_token();
+    if ($app_mode != 'async' && $event != 'tag') {
+        callback_event('admin_side', 'main_content_end');
+        echo n.'</main><!-- /txp-body -->'.n.'<footer class="txp-footer">';
+        echo pluggable_ui('admin_side', 'footer', $theme->footer());
+        callback_event('admin_side', 'body_end');
 
-			if ($thing2) {
-				$url .= a.$thing2.'='.urlencode($thing2val);
-			}
+        gTxtScript(array(
+            'password_strength_0',
+            'password_strength_1',
+            'password_strength_2',
+            'password_strength_3',
+            'password_strength_4',
+            ),
+            array(),
+            array(array('admin', 'admin'), array('new_pass_form', 'change_pass'))
+        );
 
-			if ($remember) {
-				$url .= a.'page='.$page.a.'sort='.$sort.a.'dir='.$dir.a.'crit='.$crit.a.'search_method='.$search_method;
-			}
-
-			return join('', array(
-				'<a href="'.$url.'" class="dlink destroy" onclick="return verify(\'',
-				($verify) ? gTxt($verify) : gTxt('confirm_delete_popup'),
-				'\')">×</a>'
-			));
-		}
-
-		return join('', array(
-			'<form method="post" action="index.php" onsubmit="return confirm(\''.gTxt('confirm_delete_popup').'\');">',
-			 fInput('submit', '', '×', 'destroy'),
-			 eInput($event).
-			 sInput($step),
-			 hInput($thing, $value),
-			 ($thing2) ? hInput($thing2, $thing2val) : '',
-			 ($remember) ? hInput('page', $page) : '',
-			 ($remember) ? hInput('sort', $sort) : '',
-			 ($remember) ? hInput('dir', $dir) : '',
-			 ($remember) ? hInput('crit', $crit) : '',
-			 ($remember) ? hInput('search_method', $search_method) : '',
-			 n.tInput(),
-			 '</form>'
-		));
-	}
-
+        echo script_js('vendors/dropbox/zxcvbn/zxcvbn.js', TEXTPATTERN_SCRIPT_URL, array(array('admin', 'admin'), array('new_pass_form', 'change_pass'))).
+            script_js('vendors/PrismJS/prism/prism.js', TEXTPATTERN_SCRIPT_URL).
+            script_js('textpattern.textarray = '.json_encode($textarray_script)).
+            n.'</footer><!-- /txp-footer -->'.n.'</body>'.n.'</html>';
+    }
+}
 
 /**
- * Render a link invoking an admin-side "add" action while taking up to two additional URL parameters.
+ * Renders the user interface for one head cell of columnar data.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	string	$thing	URL parameter key #1
- * @param	string	$value	URL parameter value #1
- * @param	string	$thing2	URL parameter key #2
- * @param	string	$value2	URL parameter value #2
- * @return			string 	HTML
+ * @param  string $value   Element text
+ * @param  string $sort    Sort criterion
+ * @param  string $event   Event name
+ * @param  bool   $is_link Include link to admin action in user interface according to the other params
+ * @param  string $dir     Sort direction, either "asc" or "desc"
+ * @param  string $crit    Search criterion
+ * @param  string $method  Search method
+ * @param  string $class   HTML "class" attribute applied to the resulting element
+ * @param  string $step    Step name
+ * @return string HTML
  */
 
-	function aLink($event,$step,$thing,$value,$thing2,$value2)
-	{
-		$o = '<a href="?event='.$event.a.'step='.$step.a.'_txp_token='.form_token().
-			a.$thing.'='.urlencode($value).a.$thing2.'='.urlencode($value2).'"';
-		$o.= ' class="alink">+</a>';
-		return $o;
-	}
-
+function column_head($value, $sort = '', $event = '', $is_link = '', $dir = '', $crit = '', $method = '', $class = '', $step = 'list')
+{
+    return column_multi_head(array(array(
+        'value'   => $value,
+        'sort'    => $sort,
+        'event'   => $event,
+        'step'    => $step,
+        'is_link' => $is_link,
+        'dir'     => $dir,
+        'crit'    => $crit,
+        'method'  => $method,
+    )), $class);
+}
 
 /**
- * Render a link invoking an admin-side "previous/next article" action.
+ * Renders the user interface for multiple head cells of columnar data.
  *
- * @param	string	$name	Link text
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	integer	$id	ID of target Textpattern object (article,...)
- * @param	string	$titling	HTML title attribute
- * @param	string	$rel	HTML rel attribute
- * @return	string	HTML
+ * @param  array  $head_items An array of hashed elements. Valid keys: 'value', 'sort', 'event', 'is_link', 'dir', 'crit', 'method'
+ * @param  string $class      HTML "class" attribute applied to the resulting element
+ * @return string HTML
  */
 
-	function prevnext_link($name,$event,$step,$id,$titling='',$rel='')
-	{
-		return '<a href="?event='.$event.a.'step='.$step.a.'ID='.$id.
-			'" class="navlink"'.($titling ? ' title="'.$titling.'"' : '').($rel ? ' rel="'.$rel.'"' : '').'>'.$name.'</a>';
-	}
+function column_multi_head($head_items, $class = '')
+{
+    $o = '';
+    $first_item = true;
 
+    foreach ($head_items as $item) {
+        if (empty($item)) {
+            continue;
+        }
+
+        extract(lAtts(array(
+            'value'   => '',
+            'sort'    => '',
+            'event'   => '',
+            'step'    => 'list',
+            'is_link' => '',
+            'dir'     => '',
+            'crit'    => '',
+            'method'  => '',
+        ), $item));
+
+        $o .= ($first_item) ? '' : ', ';
+        $first_item = false;
+
+        if ($is_link) {
+            $o .= href(gTxt($value), array(
+                'event'         => $event,
+                'step'          => $step,
+                'sort'          => $sort,
+                'dir'           => $dir,
+                'crit'          => $crit,
+                'search_method' => $method,
+            ), array());
+        } else {
+            $o .= gTxt($value);
+        }
+    }
+
+    return hCell($o, '', array(
+        'class' => $class,
+        'scope' => 'col',
+    ));
+}
 
 /**
- * Render a link invoking an admin-side "previous/next page" action.
+ * Renders a &lt;th&gt; element.
  *
- * @param	string	$event	Event
- * @param	integer	$page	Target page number
- * @param	string	$label	Link text
- * @param	string	$type	Direction, either "prev" or "next" ['next']
- * @param	string	$sort	Sort field ['']
- * @param	string	$dir	Sort direction, either "asc" or "desc" ['']
- * @param	string	$crit	Search criterion ['']
- * @param	string	$search_method	Search method ['']
- * @param	string	$step	Step
+ * @param  string       $text    Cell text
+ * @param  string       $caption Is not used
+ * @param  string|array $atts    HTML attributes
+ * @return string HTML
  */
 
-	function PrevNextLink($event, $page, $label, $type, $sort = '', $dir = '', $crit = '', $search_method = '', $step = 'list')
-	{
-		return '<a href="?event='.$event.a.'step='.$step.a.'page='.$page.
-			($sort ? a.'sort='.$sort : '').
-			($dir ? a.'dir='.$dir : '').
-			(($crit != '') ? a.'crit='.$crit : '').
-			($search_method ? a.'search_method='.$search_method : '').
-			'" class="navlink" rel="'.$type.'">'.
-			$label.
-			'</a>';
-	}
+function hCell($text = '', $caption = '', $atts = '')
+{
+    $text = ('' === $text) ? sp : $text;
 
+    return n.tag($text, 'th', $atts);
+}
 
 /**
- * Render a page navigation form.
+ * Renders a link invoking an admin-side action.
  *
- * @param	string	$event	Event
- * @param	integer	$page	Current page number
- * @param	integer	$numPages	Total pages
- * @param	string	$sort	Sort criterion
- * @param	string	$dir	Sort direction, either "asc" or "desc"
- * @param	string	$crit	Search criterion
- * @param	string	$search_method	Search method
- * @param	integer	$total	Total search term hit count [0]
- * @param	integer	$limit	First visible search term hit number [0]
- * @param	string	$step	Step
- * @return	string	HTML
+ * @param  string $event    Event
+ * @param  string $step     Step
+ * @param  string $linktext Link text
+ * @param  string $class    HTML class attribute for link
+ * @return string HTML
  */
 
-	function nav_form($event, $page, $numPages, $sort, $dir, $crit, $search_method, $total=0, $limit=0, $step='list')
-	{
-		global $theme;
-		if ($crit != '' && $total > 1)
-		{
-			$out[] = $theme->announce(
-				gTxt('showing_search_results',
-					array(
-						'{from}'  => (($page - 1) * $limit) + 1,
-						'{to}'    => min($total, $page * $limit),
-						'{total}' => $total
-						)
-					)
-				);
-		}
+function sLink($event, $step, $linktext, $class = '')
+{
+    if ($linktext === '') {
+        $linktext = null;
+    }
 
-		if ($numPages > 1)
-		{
-			$option_list = array();
-
-			for ($i = 1; $i <= $numPages; $i++)
-			{
-				if ($i == $page)
-				{
-					$option_list[] = '<option value="'.$i.'" selected="selected">'."$i/$numPages".'</option>';
-				}
-
-				else
-				{
-					$option_list[] = '<option value="'.$i.'">'."$i/$numPages".'</option>';
-				}
-			}
-
-			$nav = array();
-
-			$nav[] = ($page > 1) ?
-				PrevNextLink($event, $page - 1, gTxt('prev'), 'prev', $sort, $dir, $crit, $search_method, $step).sp :
-				tag(gTxt('prev'), 'span', ' class="navlink-disabled"').sp;
-
-			$nav[] = '<select name="page" onchange="submit(this.form);">';
-			$nav[] = n.join(n, $option_list);
-			$nav[] = n.'</select>';
-
-			$nav[] = ($page != $numPages) ?
-				sp.PrevNextLink($event, $page + 1, gTxt('next'), 'next', $sort, $dir, $crit, $search_method, $step) :
-				sp.tag(gTxt('next'), 'span', ' class="navlink-disabled"');
-
-			$out[] = '<form class="nav-form" method="get" action="index.php">'.
-				n.eInput($event).
-				n.sInput($step).
-				( $sort ? n.hInput('sort', $sort).n.hInput('dir', $dir) : '' ).
-				( ($crit != '') ? n.hInput('crit', $crit).n.hInput('search_method', $search_method) : '' ).
-				'<p class="prev-next">'.
-				join('', $nav).
-				'</p>'.
-				n.tInput().
-				n.'</form>';
-		}
-		else
-		{
-			$out[] = graf($page.'/'.$numPages, ' class="prev-next"');
-		}
-
-		return join(n, $out);
-	}
-
+    return href($linktext, array(
+        'event' => $event,
+        'step'  => $step,
+    ), array('class' => $class));
+}
 
 /**
- * Render start of a layout &lt;table&gt; element.
+ * Renders a link with two additional URL parameters.
  *
- * @deprecated
- * @return	string	HTML
+ * Renders a link invoking an admin-side action while taking up to two
+ * additional URL parameters.
+ *
+ * @param  string $event    Event
+ * @param  string $step     Step
+ * @param  string $thing    URL parameter key #1
+ * @param  string $value    URL parameter value #1
+ * @param  string $linktext Link text
+ * @param  string $thing2   URL parameter key #2
+ * @param  string $val2     URL parameter value #2
+ * @param  string $title    Anchor title
+ * @param  string $class    HTML class attribute
+ * @return string HTML
  */
 
-	function startSkelTable()
-	{
-		return
-		'<table width="300" cellpadding="0" cellspacing="0" style="border:1px #ccc solid">';
-	}
+function eLink($event, $step, $thing, $value, $linktext, $thing2 = '', $val2 = '', $title = '', $class = '')
+{
+    if ($title) {
+        $title = gTxt($title);
+    }
 
+    if ($linktext === '') {
+        $linktext = null;
+    } else {
+        $linktext = escape_title($linktext);
+    }
+
+    return href($linktext, array(
+        'event'      => $event,
+        'step'       => $step,
+        $thing       => $value,
+        $thing2      => $val2,
+        '_txp_token' => form_token(),
+    ), array(
+        'class' => $class,
+        'title' => $title,
+    ));
+}
 
 /**
- * Render start of a layout &lt;table&gt; element.
+ * Renders a link with one additional URL parameter.
  *
- * @param	string	$type	HTML id attribute
- * @param	string	$align	HTML align attribute ['']
- * @param	string	$class	HTML class attribute ['']
- * @param	integer	$p	HTML cellpadding attribute
- * @param	integer	$w	HTML width atttribute
- * @return		string	HTML
+ * Renders an link invoking an admin-side action while taking up to one
+ * additional URL parameter.
+ *
+ * @param  string $event Event
+ * @param  string $step  Step
+ * @param  string $thing URL parameter key
+ * @param  string $value URL parameter value
+ * @param  string $class HTML class attribute
+ * @return string HTML
  */
 
-	function startTable($id='',$align='',$class='',$p='',$w='')
-	{
-		$id = ($id) ? ' id="'.$id.'"' : '';
-		$align = ($align) ? ' align="'.$align.'"' : '';
-		$class = ($class) ? ' class="'.$class.'"' : '';
-		$width = ($w) ? ' width="'.$w.'"' : '';
-		$padding = ($p) ? ' cellpadding="'.$p.'"' : '';
-		return '<table'.$id.$class.$width.$padding.$align.'>'.n;
-	}
-
+function wLink($event, $step = '', $thing = '', $value = '', $class = '')
+{
+    return href(sp.'!'.sp, array(
+        'event'      => $event,
+        'step'       => $step,
+        $thing       => $value,
+        '_txp_token' => form_token(),
+    ), array('class' => $class));
+}
 
 /**
- * Render &lt;/table&gt; tag
+ * Renders a delete link.
  *
- * @return	string	HTML
+ * Renders a link invoking an admin-side "delete" action while taking up to two
+ * additional URL parameters.
+ *
+ * @param  string $event     Event
+ * @param  string $step      Step
+ * @param  string $thing     URL parameter key #1
+ * @param  string $value     URL parameter value #1
+ * @param  string $verify    Show an "Are you sure?" dialogue with this text
+ * @param  string $thing2    URL parameter key #2
+ * @param  string $thing2val URL parameter value #2
+ * @param  bool   $get       If TRUE, uses GET request
+ * @param  array  $remember  Convey URL parameters for page state. Member sequence is $page, $sort, $dir, $crit, $search_method
+ * @return string HTML
  */
 
-	function endTable ()
-	{
-		return n.'</table>'.n;
-	}
+function dLink($event, $step, $thing, $value, $verify = '', $thing2 = '', $thing2val = '', $get = '', $remember = null)
+{
+    if ($remember) {
+        list($page, $sort, $dir, $crit, $search_method) = $remember;
+    }
 
+    if ($get) {
+        if ($verify) {
+            $verify = gTxt($verify);
+        } else {
+            $verify = gTxt('confirm_delete_popup');
+        }
+
+        if ($remember) {
+            return href('×', array(
+                'event'         => $event,
+                'step'          => $step,
+                $thing          => $value,
+                $thing2         => $thing2val,
+                '_txp_token'    => form_token(),
+                'page'          => $page,
+                'sort'          => $sort,
+                'dir'           => $dir,
+                'crit'          => $crit,
+                'search_method' => $search_method,
+            ), array(
+                'class'       => 'dlink destroy',
+                'title'       => gTxt('delete'),
+                'data-verify' => $verify,
+            ));
+        }
+
+        return href('×', array(
+            'event'         => $event,
+            'step'          => $step,
+            $thing          => $value,
+            $thing2         => $thing2val,
+            '_txp_token'    => form_token(),
+        ), array(
+            'class'       => 'dlink destroy',
+            'title'       => gTxt('delete'),
+            'data-verify' => $verify,
+        ));
+    }
+
+    return join('', array(
+        n.'<form method="post" action="index.php" data-verify="'.gTxt('confirm_delete_popup').'">',
+        tag(
+            span(gTxt('delete'), array('class' => 'ui-icon ui-icon-close')),
+            'button',
+            array(
+                'class'      => 'destroy',
+                'type'       => 'submit',
+                'title'      => gTxt('delete'),
+                'aria-label' => gTxt('delete'),
+            )
+        ),
+        eInput($event).
+        sInput($step),
+        hInput($thing, $value),
+        ($thing2) ? hInput($thing2, $thing2val) : '',
+        ($remember) ? hInput('page', $page) : '',
+        ($remember) ? hInput('sort', $sort) : '',
+        ($remember) ? hInput('dir', $dir) : '',
+        ($remember) ? hInput('crit', $crit) : '',
+        ($remember) ? hInput('search_method', $search_method) : '',
+        tInput(),
+        n.'</form>',
+    ));
+}
 
 /**
- * Render &lt;tr&gt; elements from input parameters.
+ * Renders an add link.
  *
- * @param	mixed,...	$rows	Row contents [null]
- * @return	string	HTML
+ * This function can be used for invoking an admin-side "add" action while
+ * taking up to two additional URL parameters.
+ *
+ * @param  string $event  Event
+ * @param  string $step   Step
+ * @param  string $thing  URL parameter key #1
+ * @param  string $value  URL parameter value #1
+ * @param  string $thing2 URL parameter key #2
+ * @param  string $value2 URL parameter value #2
+ * @return string HTML
  */
 
-	function stackRows()
-	{
-		foreach(func_get_args() as $a) { $o[] = tr($a); }
-		return join('',$o);
-	}
-
+function aLink($event, $step, $thing = '', $value = '', $thing2 = '', $value2 = '')
+{
+    return href('+', array(
+        'event'      => $event,
+        'step'       => $step,
+        $thing       => $value,
+        $thing2      => $value2,
+        '_txp_token' => form_token(),
+    ), array('class' => 'alink'));
+}
 
 /**
- * Render a &lt;td&gt; element.
+ * Renders a link invoking an admin-side "previous/next article" action.
  *
- * @param	string	$content	Cell content ['']
- * @param	integer	$width	HTML width attribute ['']
- * @param	string	$class	HTML class attribute ['']
- * @param	string	$id	HTML id attribute ['']
- * @return	string	HTML
+ * @param  string $name  Link text
+ * @param  string $event Event
+ * @param  string $step  Step
+ * @param  int    $id    ID of target Textpattern object (article,...)
+ * @param  string $title HTML title attribute
+ * @param  string $rel   HTML rel attribute
+ * @return string HTML
  */
 
-	function td($content='',$width='',$class='',$id='')
-	{
-		$content = ('' === $content) ? '&#160;' : $content;
-		$atts[] = ($width)  ? ' width="'.$width.'"' : '';
-		$atts[] = ($class)  ? ' class="'.$class.'"' : '';
-		$atts[] = ($id)  ? ' id="'.$id.'"' : '';
-		return t.tag($content,'td',join('',$atts)).n;
-	}
-
+function prevnext_link($name, $event, $step, $id, $title = '', $rel = '')
+{
+    return href($name, array(
+        'event' => $event,
+        'step'  => $step,
+        'ID'    => $id,
+    ), array(
+        'class' => 'navlink',
+        'title' => $title,
+        'rel'   => $rel,
+    ));
+}
 
 /**
- * Render a &lt;td&gt; element with attributes.
+ * Renders a link invoking an admin-side "previous/next page" action.
  *
- * @param	string	$content	Cell content
- * @param	string	$atts	Cell attributes ['']
- * @return	string	HTML
+ * @param  string $event         Event
+ * @param  int    $page          Target page number
+ * @param  string $label         Link text
+ * @param  string $type          Direction, either "prev" or "next"
+ * @param  string $sort          Sort field
+ * @param  string $dir           Sort direction, either "asc" or "desc"
+ * @param  string $crit          Search criterion
+ * @param  string $search_method Search method
+ * @param  string $step          Step
+ * @return string HTML
  */
 
-	function tda($content,$atts='')
-	{
-		return tag($content,'td',$atts);
-	}
-
+function PrevNextLink($event, $page, $label, $type, $sort = '', $dir = '', $crit = '', $search_method = '', $step = 'list')
+{
+    $theClass = ($type === 'next') ? 'ui-icon-arrowthick-1-e' : 'ui-icon-arrowthick-1-w';
+    return href(span(
+            $label, array('class' => 'ui-icon '.$theClass)
+        ),
+        array(
+        'event'         => $event,
+        'step'          => $step,
+        'page'          => (int) $page,
+        'dir'           => $dir,
+        'crit'          => $crit,
+        'search_method' => $search_method,
+    ), array(
+        'rel'        => $type,
+        'title'      => $label,
+        'aria-label' => $label,
+    ));
+}
 
 /**
- * Render a &lt;td&gt; element with top/left text orientation and other attributes.
+ * Renders a page navigation form.
  *
- * @param	string	$content	Cell content
- * @param	string	$atts	Cell attributes ['']
- * @return	string	HTML
+ * @param  string $event         Event
+ * @param  int    $page          Current page number
+ * @param  int    $numPages         Total pages
+ * @param  string $sort          Sort criterion
+ * @param  string $dir           Sort direction, either "asc" or "desc"
+ * @param  string $crit          Search criterion
+ * @param  string $search_method Search method
+ * @param  int    $total         Total search term hit count [0]
+ * @param  int    $limit         First visible search term hit number [0]
+ * @param  string $step             Step
+ * @param  int    $list          Number of displayed page links discounting jump links, previous and next
+ * @return string HTML
  */
 
-	function tdtl($content,$atts='')
-	{
-		return tag($content,'td',$atts);
-	}
+function nav_form($event, $page, $numPages, $sort = '', $dir = '', $crit = '', $search_method = '', $total = 0, $limit = 0, $step = 'list', $list = 5)
+{
+    $out = array();
 
+    if ($crit != '' && $total > 1) {
+        $out[] = announce(
+            gTxt('showing_search_results', array(
+                '{from}'  => (($page - 1) * $limit) + 1,
+                '{to}'    => min($total, $page * $limit),
+                '{total}' => $total,
+            )),
+            TEXTPATTERN_ANNOUNCE_REGULAR
+        );
+    }
+
+    if ($numPages > 1) {
+        $nav = array();
+        $list--;
+        $page = max(min($page, $numPages), 1);
+        $start = max(1, min($numPages - $list, $page - floor($list/2)));
+        $end = min($numPages, $start + $list);
+
+        $parameters = array(
+            'event'         => $event,
+            'step'          => $step,
+            'dir'           => $dir,
+            'crit'          => $crit,
+            'search_method' => $search_method,
+        );
+
+        // Previous page.
+        if ($page > 1) {
+            $nav[] = n.PrevNextLink($event, $page - 1, gTxt('prev'), 'prev', $sort, $dir, $crit, $search_method, $step);
+        } else {
+            $nav[] = n.span(
+                span(gTxt('prev'), array(
+                    'class' => 'ui-icon ui-icon-arrowthick-1-w',
+                )),
+                array(
+                    'class'         => 'disabled',
+                    'aria-disabled' => 'true',
+                    'aria-label'    => gTxt('prev'),
+                )
+            );
+        }
+
+
+        $nav[] = form(
+                n.tag(gTxt('page'), 'label', array(
+                    'for' => 'current-page',
+                )).
+                n.tag_void('input', array(
+                    'class'     => 'current-page',
+                    'id'        => 'current-page',
+                    'name'      => 'page',
+                    'type'      => 'text',
+                    'size'      => INPUT_XSMALL,
+                    'inputmode' => 'numeric',
+                    'pattern'   => '[0-9]+',
+                    'value'     => $page,
+                )).
+                n.gTxt('of').
+                n.span($numPages, array('class' => 'total-pages')).
+                eInput($event).
+                hInput('sort', $sort).
+                hInput('dir', $dir).
+                hInput('crit', $crit).
+                hInput('search_method', $search_method),
+                '',
+                '',
+                'get'
+            );
+
+        // Next page.
+        if ($page < $numPages) {
+            $nav[] = n.PrevNextLink($event, $page + 1, gTxt('next'), 'next', $sort, $dir, $crit, $search_method, $step);
+        } else {
+            $nav[] = n.span(
+                span(gTxt('next'), array(
+                    'class' => 'ui-icon ui-icon-arrowthick-1-e',
+                )),
+                array(
+                    'class'         => 'disabled',
+                    'aria-disabled' => 'true',
+                    'aria-label'    => gTxt('next'),
+                )
+            );
+        }
+
+        $out[] = n.tag(join($nav).n, 'nav', array('class' => 'prev-next'));
+    }
+
+    return join('', $out);
+}
 
 /**
- * Render a &lt;tr&gt; element with attributes.
+ * Wraps a collapsible region and group structure around content.
  *
- * @param	string	$content	Cell content
- * @param	string	$atts	Cell attributes ['']
- * @return	string	HTML
+ * @param  string $id        HTML id attribute for the region wrapper and ARIA label
+ * @param  string $content   Content to wrap. If empty, only the outer wrapper will be rendered
+ * @param  string $anchor_id HTML id attribute for the collapsible wrapper
+ * @param  string $label     L10n label name
+ * @param  string $pane      Pane reference for maintaining toggle state in prefs. Prefixed with 'pane_', suffixed with '_visible'
+ * @param  string $class     CSS class name to apply to wrapper
+ * @param  string $help      Help text item
+ * @return string HTML
+ * @since  4.6.0
  */
 
-	function tr($content,$atts='')
-	{
-		return tag($content,'tr',$atts);
-	}
+function wrapRegion($id, $content = '', $anchor_id = '', $label = '', $pane = '', $class = '', $help = '')
+{
+    global $event;
+    $label = $label ? gTxt($label) : null;
 
+    if ($anchor_id && $pane) {
+        $visible = get_pref('pane_'.$pane.'_visible');
+        $heading_class = 'txp-summary'.($visible ? ' expanded' : '');
+        $display_state = array(
+            'class' => 'toggle',
+            'id'    => $anchor_id,
+            'role'  => 'group',
+            'style' => $visible ? 'display: block' : 'display: none',
+        );
+
+        $label = href($label, '#'.$anchor_id, array(
+            'role'           => 'button',
+            'data-txp-token' => md5($pane.$event.form_token().get_pref('blog_uid')),
+            'data-txp-pane'  => $pane,
+        ));
+
+        $help = '';
+    } else {
+        $heading_class = '';
+        $display_state = array('role' => 'group');
+    }
+
+    if ($content) {
+        $content =
+            hed($label.popHelp($help), 3, array(
+                'class' => $heading_class,
+                'id'    => $id.'-label',
+            )).
+            n.tag($content.n, 'div', $display_state).n;
+    }
+
+    return n.tag($content, 'section', array(
+        'class'           => trim('txp-details '.$class),
+        'id'              => $id,
+        'aria-labelledby' => $content ? $id.'-label' : '',
+    ));
+}
 
 /**
- * Render a &lt;td&gt; element with top/left text orientation, colspan and other attributes.
+ * Wraps a region and group structure around content.
  *
- * @param	string	$content	Cell content
- * @param	integer	$span	Cell colspan attribute
- * @param	integer	$width	Cell width attribute ['']
- * @param	string	$class	Cell class attribute ['']
- * @return	string	HTML
+ * @param  string $name    HTML id attribute for the group wrapper and ARIA label
+ * @param  string $content Content to wrap
+ * @param  string $label   L10n label name
+ * @param  string $class   CSS class name to apply to wrapper
+ * @param  string $help    Help text item
+ * @return string HTML
+ * @see    wrapRegion()
+ * @since  4.6.0
  */
 
-	function tdcs($content,$span,$width="",$class='')
-	{
-		return join('',array(
-			t.'<td colspan="'.$span.'"',
-			($width) ? ' width="'.$width.'"' : '',
-			($class) ? ' class="'.$class.'"' : '',
-			">$content</td>\n"
-		));
-	}
-
+function wrapGroup($id, $content, $label, $class = '', $help = '')
+{
+    return wrapRegion($id, $content, '', $label, '', $class, $help);
+}
 
 /**
- * Render a &lt;td&gt; element with top/left text orientation, rowspan and other attributes.
+ * Renders start of a layout &lt;table&gt; element.
  *
- * @param	string	$content	Cell content
- * @param	integer	$span	Cell rowspan attribute
- * @param	integer	$width	Cell width attribute
- * @return	string	HTML
+ * @return     string HTML
+ * @deprecated in 4.4.0
  */
 
-	function tdrs($content,$span,$width="")
-	{
-		return join('',array(
-			t.'<td rowspan="'.$span.'"',
-			($width) ? ' width="'.$width.'"' : '',">$content</td>".n
-		));
-	}
-
+function startSkelTable()
+{
+    return
+    '<table width="300" cellpadding="0" cellspacing="0" style="border:1px #ccc solid">';
+}
 
 /**
- * Render a form label inside a table cell
+ * Renders start of a layout &lt;table&gt; element.
  *
- * @param	string	$text	Label text
- * @param	string	$help	Help text ['']
- * @param	string	$label_id	HTML "for" attribute, i.e. id of corresponding form element
- * @return	string	HTML
+ * @param  string $id    HTML id attribute
+ * @param  string $align HTML align attribute
+ * @param  string $class HTML class attribute
+ * @param  int    $p     HTML cellpadding attribute
+ * @param  int    $w     HTML width atttribute
+ * @return string HTML
+ * @example
+ * startTable().
+ * tr(td('column') . td('column')).
+ * tr(td('column') . td('column')).
+ * endTable();
  */
 
-	function fLabelCell($text, $help = '', $label_id = '')
-	{
-		$help = ($help) ? popHelp($help) : '';
+function startTable($id = '', $align = '', $class = '', $p = 0, $w = 0)
+{
+    $atts = join_atts(array(
+        'class'       => $class,
+        'id'          => $id,
+        'cellpadding' => (int) $p,
+        'width'       => (int) $w,
+        'align'       => $align,
+    ), TEXTPATTERN_STRIP_EMPTY);
 
-		$cell = gTxt($text).' '.$help;
-
-		if ($label_id)
-		{
-			$cell = '<label for="'.$label_id.'">'.$cell.'</label>';
-		}
-
-		return tda($cell,' class="cell-label"');
-	}
-
+    return n.'<table'.$atts.'>';
+}
 
 /**
- * Render a form input inside a table cell.
+ * Renders closing &lt;/table&gt; tag.
  *
- * @param	string	$name	HTML name attribute
- * @param	string	$var	Input value ['']
- * @param	integer	$tabindex	HTML tabindex attribute ['']
- * @param	integer	$size	HTML size attribute ['']
- * @param	string	$help	Help text ['']
- * @param	string	$id	HTML id attribute
- * @return		string	HTML
+ * @return string HTML
  */
 
-	function fInputCell($name, $var = '', $tabindex = '', $size = '', $help = '', $id = '')
-	{
-		$pop = ($help) ? sp.popHelp($name) : '';
-
-		return tda(fInput('text', $name, $var, '', '', '', $size, $tabindex, $id).$pop);
-	}
-
+function endTable()
+{
+    return n.'</table>';
+}
 
 /**
- * Render a name-value input control with label
+ * Renders &lt;tr&gt; elements from input parameters.
  *
- * @param	string	$name	HTML id / name attribute
- * @param	string	$input	complete input control widget (result of fInput(), yesnoRadio(), etc)
- * @param	string	$label	Label ['']
- * @param	string	$help	pophelp text item ['']
- * @param	string	$class	CSS class name to apply to wrapper ['edit-' + $name with underscores replaced with hyphens]
- * @param	string	$wraptag_val	Tag to wrap the value in. If set to '', no wrapper is used (useful for textareas) ['span']
- * @return		string	HTML
+ * Takes a list of arguments containing each making a row.
+ *
+ * @return string HTML
+ * @example
+ * stackRows(
+ *     td('cell') . td('cell'),
+ *  td('cell') . td('cell')
+ * );
  */
 
-	function inputLabel($name, $input, $label = '', $help = '', $class = '', $wraptag_val='span')
-	{
-		$help = ($help) ? sp.popHelp($help) : '';
-		$class = ($class) ? $class : 'edit-'.str_replace('_', '-', $name);
-		$label_open = ($label) ? '<label for="'.$name.'">' : '';
-		$label_close = ($label) ? '</label>' : '';
-		$label = ($label) ? $label : $name;
-		$wrapval_open = ($wraptag_val) ? '<'.$wraptag_val.' class="edit-value">' : '';
-		$wrapval_close = ($wraptag_val) ? '</'.$wraptag_val.'>' : '';
+function stackRows()
+{
+    foreach (func_get_args() as $a) {
+        $o[] = tr($a);
+    }
 
-		return graf(
-			'<span class="edit-label">'.$label_open.gTxt($label).$label_close.$help.'</span>'.n.
-			$wrapval_open.$input.$wrapval_close
-		, ' class="'.$class.'"');
-	}
-
+    return join('', $o);
+}
 
 /**
- * Render anything as a XML element.
+ * Renders a &lt;td&gt; element.
  *
- * @param	string	$content	Enclosed content
- * @param	string	$tag	The tag without brackets
- * @param	string	$atts	The element's HTML attributes ['']
- * @return	string	HTML
+ * @param  string $content Cell content
+ * @param  int    $width   HTML width attribute
+ * @param  string $class   HTML class attribute
+ * @param  string $id      HTML id attribute
+ * @return string HTML
  */
 
-	function tag($content,$tag,$atts='')
-	{
-		return ('' !== $content) ? '<'.$tag.$atts.'>'.$content.'</'.$tag.'>' : '';
-	}
+function td($content = '', $width = null, $class = '', $id = '')
+{
+    $opts = array(
+        'class' => $class,
+        'id'    => $id,
+    );
 
+    if (is_numeric($width)) {
+        $opts['width'] = (int) $width;
+    }
+
+    return tda($content, $opts);
+}
 
 /**
- * Render a &lt;p&gt; element.
+ * Renders a &lt;td&gt; element with attributes.
  *
- * @param	string	$item	Enclosed content
- * @param	string	$atts	HTML attributes ['']
- * @return	string	HTML
+ * @param  string       $content Cell content
+ * @param  string|array $atts    Cell attributes
+ * @return string HTML
  */
 
-	function graf ($item,$atts='')
-	{
-		return tag($item,'p',$atts);
-	}
+function tda($content, $atts = '')
+{
+    $content = ($content === '') ? sp : $content;
 
+    return n.tag($content, 'td', $atts);
+}
 
 /**
- * Render a &lt;hx&gt; element.
+ * Renders a &lt;td&gt; element with attributes.
  *
- * @param	string	$item	Enclosed content
- * @param	integer	$level	Heading level 1...6
- * @param	string	$atts	HTML attributes ['']
- * @return	string	HTML
+ * This function is identical to tda().
+ *
+ * @param  string       $content Cell content
+ * @param  string|array $atts    Cell attributes
+ * @return string HTML
+ * @access private
+ * @see    tda()
  */
 
-	function hed($item,$level,$atts='')
-	{
-		return tag($item,'h'.$level,$atts);
-	}
-
+function tdtl($content, $atts = '')
+{
+    return tda($content, $atts);
+}
 
 /**
- * Render an &lt;a&gt; element.
+ * Renders a &lt;tr&gt; element with attributes.
  *
- * @param	string	$item	Enclosed content
- * @param	integer	$level	Heading level 1...6
- * @param	string	$atts	HTML attributes ['']
- * @return	string	HTML
+ * @param  string       $content Row content
+ * @param  string|array $atts    Row attributes
+ * @return string HTML
  */
 
-	function href($item,$href,$atts='')
-	{
-		return tag($item,'a',$atts.' href="'.$href.'"');
-	}
-
+function tr($content, $atts = '')
+{
+    return n.tag($content, 'tr', $atts);
+}
 
 /**
- * Render a &lt;strong&gt; element.
+ * Renders a &lt;td&gt; element with top/left text orientation, colspan and
+ * other attributes.
  *
- * @param	string	$item	Enclosed content
- * @return		string	HTML
+ * @param  string $content Cell content
+ * @param  int    $span    Cell colspan attribute
+ * @param  int    $width   Cell width attribute
+ * @param  string $class   Cell class attribute
+ * @return string HTML
  */
 
-	function strong($item)
-	{
-		return tag($item,'strong');
-	}
+function tdcs($content, $span, $width = null, $class = '')
+{
+    $opts = array(
+        'class'   => $class,
+        'colspan' => (int) $span,
+    );
 
+    if (is_numeric($width)) {
+        $opts['width'] = (int) $width;
+    }
+
+    return tda($content, $opts);
+}
 
 /**
- * Render a &lt;span&gt; element.
+ * Renders a &lt;td&gt; element with a rowspan attribute.
  *
- * @param	string	$item	Enclosed content
- * @return	string	HTML
+ * @param  string $content Cell content
+ * @param  int    $span    Cell rowspan attribute
+ * @param  int    $width   Cell width attribute
+ * @param  string $class   Cell class attribute
+ * @return string HTML
  */
 
-	function span($item)
-	{
-		return tag($item,'span');
-	}
+function tdrs($content, $span, $width = null, $class = '')
+{
+    $opts = array(
+        'class'   => $class,
+        'rowspan' => (int) $span,
+    );
 
+    if (is_numeric($width)) {
+        $opts['width'] = (int) $width;
+    }
+
+    return tda($content, $opts);
+}
 
 /**
- * Render a &lt;pre&gt; element.
+ * Renders a form label inside a table cell.
  *
- * @param	string	$item	Enclosed content
- * @return	string	HTML
+ * @param  string $text     Label text
+ * @param  string $help     Help text
+ * @param  string $label_id HTML "for" attribute, i.e. id of corresponding form element
+ * @return string HTML
  */
 
-	function htmlPre($item)
-	{
-		return '<pre>'.tag($item,'code').'</pre>';
-	}
+function fLabelCell($text, $help = '', $label_id = '')
+{
+    $cell = gTxt($text).' '.popHelp($help);
 
+    if ($label_id) {
+        $cell = tag($cell, 'label', array('for' => $label_id));
+    }
+
+    return tda($cell, array('class' => 'cell-label'));
+}
 
 /**
- * Render a HTML comment (&lt;!-- --&gt;) element.
+ * Renders a form input inside a table cell.
  *
- * @param	string	$item	Enclosed content
- * @return	string	HTML
+ * @param  string $name     HTML name attribute
+ * @param  string $var      Input value
+ * @param  int    $tabindex HTML tabindex attribute
+ * @param  int    $size     HTML size attribute
+ * @param  bool   $help     TRUE to display help link
+ * @param  string $id       HTML id attribute
+ * @return string HTML
  */
 
-	function comment($item)
-	{
-		return '<!-- '.$item.' -->';
-	}
+function fInputCell($name, $var = '', $tabindex = 0, $size = 0, $help = false, $id = '')
+{
+    $pop = ($help) ? popHelp($name) : '';
 
+    return tda(fInput('text', $name, $var, '', '', '', $size, $tabindex, $id).$pop);
+}
 
 /**
- * Render a &lt;small&gt element.
+ * Renders a name-value input control with label.
  *
- * @param	string	$item	Enclosed content
- * @return	string	HTML
+ * The rendered input can be customised via the
+ * '{$event}_ui > inputlabel.{$name}' pluggable UI callback event.
+ *
+ * @param  string       $name        Input name
+ * @param  string       $input       Complete input control widget
+ * @param  string|array $label       Label text | array (label text, HTML block to append to label)
+ * @param  string|array $help        Help text item | array(help text item, inline help text)
+ * @param  string|array $atts        Class name | attribute pairs to assign to container div
+ * @param  string|array $wraptag_val Tag to wrap the value / label in, or empty to omit
+ * @return string HTML
+ * @example
+ * echo inputLabel('active', yesnoRadio('active'), 'Keep active?');
  */
 
-	function small($item)
-	{
-		return tag($item,'small');
-	}
+function inputLabel($name, $input, $label = '', $help = array(), $atts = array(), $wraptag_val = array('div', 'div'))
+{
+    global $event;
 
+    $arguments = compact('name', 'input', 'label', 'help', 'atts', 'wraptag_val');
+
+    $fallback_class = 'txp-form-field edit-'.str_replace('_', '-', $name);
+    $tools = '';
+
+    if ($atts && is_string($atts)) {
+        $atts = array('class' => $atts);
+    } elseif (!$atts) {
+        $atts = array('class' => $fallback_class);
+    } elseif (is_array($atts) && !array_key_exists('class', $atts)) {
+        $atts['class'] = $fallback_class;
+    }
+
+    if (!is_array($help)) {
+        $help = array($help);
+    }
+
+    if (is_array($label)) {
+        if (isset($label[1])) {
+            $tools = (string) $label[1];
+        }
+
+        $label = (string) $label[0];
+    }
+
+    if (empty($help)) {
+        $help = array(
+            0 => '',
+            1 => ''
+        );
+    }
+
+    $inlineHelp = (isset($help[1])) ? $help[1] : '';
+
+    if ($label) {
+        $labelContent = tag(gTxt($label).popHelp($help[0]), 'label', array('for' => $name)).$tools;
+    } else {
+        $labelContent = gTxt($name).popHelp($help[0]).$tools;
+    }
+
+    if (!is_array($wraptag_val)) {
+        $wraptag_val = array($wraptag_val, $wraptag_val);
+    }
+
+    if ($wraptag_val[0]) {
+        $input = n.tag($input, $wraptag_val[0], array('class' => 'txp-form-field-value'));
+    }
+
+    if (isset($wraptag_val[1]) && $wraptag_val[1]) {
+        $labeltag = n.tag($labelContent, $wraptag_val[1], array('class' => 'txp-form-field-label'));
+    } else {
+        $labeltag = $labelContent;
+    }
+
+    $out = n.tag(
+        $labeltag.
+        fieldHelp($inlineHelp).
+        $input.n, 'div', $atts);
+
+    return pluggable_ui($event.'_ui', 'inputlabel.'.$name, $out, $arguments);
+}
 
 /**
- * Render a table data row from an array of content => width pairs.
+ * Renders anything as an XML element.
  *
- * @param	array	$array	Array of content => width pairs
- * @param	string	$atts	Table row atrributes
- * @return	string	HTML
+ * @param  string       $content Enclosed content
+ * @param  string       $tag     The tag without brackets
+ * @param  string|array $atts    The element's HTML attributes
+ * @return string HTML
+ * @example
+ * echo tag('Link text', 'a', array('href' => '#', 'class' => 'warning'));
  */
 
-	function assRow($array, $atts ='')
-	{
-		foreach($array as $a => $b) $o[] = tda($a,' width="'.$b.'"');
-		return tr(join(n.t,$o), $atts);
-	}
-
+function tag($content, $tag, $atts = '')
+{
+    return empty($tag) || $content === '' ? $content : '<'.$tag.join_atts($atts).'>'.$content.'</'.$tag.'>';
+}
 
 /**
- * Render a table head row from an array of strings.
+ * Renders anything as a HTML void element.
  *
- * @param	array	$value,...	Array of head text strings. L10n is applied to the strings.
- * @return	string	HTML
+ * @param  string $tag  The tag without brackets
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ * @since  4.6.0
+ * @example
+ * echo tag_void('input', array('name' => 'name', 'type' => 'text'));
  */
 
-	function assHead()
-	{
-		$array = func_get_args();
-		foreach($array as $a) $o[] = hCell(gTxt($a));
-		return tr(join('',$o));
-	}
-
+function tag_void($tag, $atts = '')
+{
+    return '<'.$tag.join_atts($atts).' />';
+}
 
 /**
- * Render the ubiquitious popup help button.
+ * Renders anything as a HTML start tag.
  *
- * @param	string	$help_var	Help topic
- * @param	integer	$width	Popup window width
- * @param	integer	$height	Popup window height
- * @return	string	HTML
+ * @param  string $tag The tag without brackets
+ * @param  string|array $atts HTML attributes
+ * @return string A HTML start tag
+ * @since  4.6.0
+ * @example
+ * echo tag_start('section', array('class' => 'myClass'));
  */
 
-	function popHelp($help_var, $width = '', $height = '')
-	{
-		return '<a rel="help" target="_blank"'.
-			' href="'.HELP_URL.'?item='.$help_var.a.'language='.LANG.'"'.
-			' onclick="popWin(this.href'.
-			($width ? ', '.$width : '').
-			($height ? ', '.$height : '').
-			'); return false;" class="pophelp">?</a>';
-	}
-
+function tag_start($tag, $atts = '')
+{
+    return '<'.$tag.join_atts($atts).'>';
+}
 
 /**
- * Render the ubiquitious popup help button with a little less visual noise.
+ * Renders anything as a HTML end tag.
  *
- * @param	string	$help_var	Help topic
- * @param	integer	$width	Popup window width ['']
- * @param	integer	$height	Popup window height ['']
- * @return	string	HTML
+ * @param  string $tag The tag without brackets
+ * @return string A HTML end tag
+ * @since  4.6.0
+ * @example
+ * echo tag_end('section');
  */
 
-	function popHelpSubtle($help_var, $width = '', $height = '')
-	{
-		return '<a rel="help" target="_blank"'.
-			' href="http://rpc.textpattern.com/help/?item='.$help_var.a.'language='.LANG.'"'.
-			' onclick="popWin(this.href'.
-			($width ? ', '.$width : '').
-			($height ? ', '.$height : '').
-			'); return false;" class="pophelpsubtle">?</a>';
-	}
-
+function tag_end($tag)
+{
+    return '</'.$tag.'>';
+}
 
 /**
- * Popup tag help window.
+ * Renders a &lt;p&gt; element.
  *
- * @param	string	$var	Tag name
- * @param	string	$text	Link text
- * @param	integer	$width	Popup window width
- * @param	integer	$height	Popup window height
- * @return	string	HTML
+ * @param  string       $item Enclosed content
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ * @example
+ * echo graf('This a paragraph.');
  */
 
-	function popTag($var, $text, $width = '', $height = '')
-	{
-		return '<a target="_blank"'.
-			' href="?event=tag'.a.'tag_name='.$var.'"'.
-			' onclick="popWin(this.href'.
-			($width ? ', '.$width : '').
-			($height ? ', '.$height : '').
-			'); return false;">'.$text.'</a>';
-	}
-
+function graf($item, $atts = '')
+{
+    return n.tag($item, 'p', $atts);
+}
 
 /**
- * Render tag builder links.
+ * Renders a &lt;hx&gt; element.
  *
- * @param	string	$type	Tag type
- * @return	string	HTML
+ * @param  string       $item  The Enclosed content
+ * @param  int          $level Heading level 1...6
+ * @param  string|array $atts  HTML attributes
+ * @return string HTML
+ * @example
+ * echo hed('Heading', 2);
  */
 
-	function popTagLinks($type)
-	{
-		include txpath.'/lib/taglib.php';
-
-		$arname = $type.'_tags';
-
-		$out = array();
-
-		$out[] = n.'<ul class="plain-list">';
-
-		foreach ($$arname as $a)
-		{
-			$out[] = n.t.tag(popTag($a,gTxt('tag_'.$a)), 'li');
-		}
-
-		$out[] = n.'</ul>';
-
-		return join('', $out);
-	}
-
+function hed($item, $level, $atts = '')
+{
+    return n.tag($item, 'h'.$level, $atts).n;
+}
 
 /**
- * Render admin-side message text.
+ * Renders an &lt;a&gt; element.
  *
- * @param	string	$thing	Subject
- * @param	string	$thething	Predicate (strong)
- * @param	string	$action	Object
- * @return	string	HTML
+ * @param  string       $item Enclosed content
+ * @param  string|array $href The link target
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
  */
 
-	function messenger($thing, $thething='', $action='')
-	{
-		return gTxt($thing).' '.strong($thething).' '.gTxt($action);
-	}
+function href($item, $href, $atts = '')
+{
+    if (is_array($atts)) {
+        $atts['href'] = $href;
+    } else {
+        if (is_array($href)) {
+            $href = join_qs($href);
+        }
 
+        $atts .= ' href="'.$href.'"';
+    }
+
+    return tag($item, 'a', $atts);
+}
 
 /**
- * Render a multi-edit form listing editing methods
+ * Renders a &lt;strong&gt; element.
  *
- * @param  array   $options array('value' => array( 'label' => '', 'html' => '' ),...)
- * @param  string  $event Event
- * @param  string  $step Step
- * @param  integer $page Page number
- * @param  string  $sort Column sorted by
- * @param  string  $dir Sorting direction
- * @param  string  $crit Search criterion
+ * @param  string       $item Enclosed content
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ */
+
+function strong($item, $atts = '')
+{
+    return tag($item, 'strong', $atts);
+}
+
+/**
+ * Renders a &lt;span&gt; element.
+ *
+ * @param  string       $item Enclosed content
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ */
+
+function span($item, $atts = '')
+{
+    return tag($item, 'span', $atts);
+}
+
+/**
+ * Renders a &lt;pre&gt; element.
+ *
+ * @param  string       $item The input string
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ * @example
+ * echo htmlPre('&lt;?php echo "Hello World"; ?&gt;');
+ */
+
+function htmlPre($item, $atts = '')
+{
+    if (($item = tag($item, 'code')) === '') {
+        $item = null;
+    }
+
+    return tag($item, 'pre', $atts);
+}
+
+/**
+ * Renders a HTML comment (&lt;!-- --&gt;) element.
+ *
+ * @param  string $item The input string
+ * @return string HTML
+ * @example
+ * echo comment('Some HTML comment.');
+ */
+
+function comment($item)
+{
+    return '<!-- '.str_replace('--', '- - ', $item).' -->';
+}
+
+/**
+ * Renders a &lt;small&gt element.
+ *
+ * @param  string       $item The input string
+ * @param  string|array $atts HTML attributes
+ * @return string HTML
+ */
+
+function small($item, $atts = '')
+{
+    return tag($item, 'small', $atts);
+}
+
+/**
+ * Renders a table data row from an array of content => width pairs.
+ *
+ * @param  array        $array Array of content => width pairs
+ * @param  string|array $atts  Table row atrributes
+ * @return string A HTML table row
+ */
+
+function assRow($array, $atts = '')
+{
+    $out = array();
+
+    foreach ($array as $value => $width) {
+        $out[] = tda($value, array('width' => (int) $width));
+    }
+
+    return tr(join('', $out), $atts);
+}
+
+/**
+ * Renders a table head row from an array of strings.
+ *
+ * Takes an argument list of head text strings. i18n is applied to the strings.
+ *
+ * @return string HTML
+ */
+
+function assHead()
+{
+    $array = func_get_args();
+    $o = array();
+
+    foreach ($array as $a) {
+        $o[] = hCell(gTxt($a), '', ' scope="col"');
+    }
+
+    return tr(join('', $o));
+}
+
+/**
+ * Renders the ubiquitious popup help button.
+ *
+ * The rendered link can be customised via a 'admin_help > {$help_var}'
+ * pluggable UI callback event.
+ *
+ * @param  string $help_var Help topic
+ * @param  int    $width    Popup window width
+ * @param  int    $height   Popup window height
+ * @param  string $class    HTML class
+ * @return string HTML
+ */
+
+function popHelp($help_var, $width = 0, $height = 0, $class = 'pophelp')
+{
+    if (!$help_var) {
+        return '';
+    }
+
+    $ui = sp.href('i', HELP_URL.'?item='.urlencode($help_var).'&language='.urlencode(LANG), array(
+        'class'      => $class,
+        'rel'        => 'help',
+        'target'     => '_blank',
+        'title'      => gTxt('help'),
+        'aria-label' => gTxt('help'),
+        'role'       => 'button',
+        'onclick'    => 'popWin(this.href, '.intval($width).', '.intval($height).'); return false;',
+    ));
+
+    return pluggable_ui('admin_help', $help_var, $ui, compact('help_var', 'width', 'height', 'class'));
+}
+
+/**
+ * Renders inline help text.
+ *
+ * The help topic is the name of a string that can be found in txp_lang.
+ *
+ * The rendered link can be customised via a 'admin_help_field > {$help_var}'
+ * pluggable UI callback event.
+ *
+ * @param  string $help_var   Help topic
+ * @return string HTML
+ */
+
+function fieldHelp($help_var)
+{
+    if (!$help_var) {
+        return '';
+    }
+
+    $help_text = gTxt($help_var);
+
+    // If rendered string is the same as the input string, either the l10n
+    // doesn't exist or the string is missing from txp_lang.
+    // Either way, no instruction text, no render.
+    if ($help_var === $help_text) {
+        return '';
+    }
+
+    $ui = n.tag($help_text, 'div', array('class' => 'txp-form-field-instructions'));
+
+    return pluggable_ui('admin_help_field', $help_var, $ui, compact('help_var', 'textile'));
+}
+
+/**
+ * Renders the ubiquitious popup help button with a little less visual noise.
+ *
+ * The rendered link can be customised via a 'admin_help > {$help_var}'
+ * pluggable UI callback event.
+ *
+ * @param  string $help_var Help topic
+ * @param  int    $width    Popup window width
+ * @param  int    $height   Popup window height
+ * @return string HTML
+ */
+
+function popHelpSubtle($help_var, $width = 0, $height = 0)
+{
+    return popHelp($help_var, $width, $height, 'pophelpsubtle');
+}
+
+/**
+ * Renders a link that opens a popup tag area.
+ *
+ * @param  string $var   Tag name
+ * @param  string $text  Link text
+ * @param  array  $atts  Attributes to add to the link
+ * @return string HTML
+ */
+
+function popTag($var, $text, $atts = array())
+{
+    $opts = array(
+        'event'    => 'tag',
+        'tag_name' => $var,
+    ) + $atts;
+
+    return href($text, $opts, array(
+        'class'  => 'txp-tagbuilder-link',
+    ));
+}
+
+/**
+ * Renders a list of tag builder links.
+ *
+ * @param  string $type Tag type
+ * @return string HTML
+ */
+
+function popTagLinks($type)
+{
+    global $event;
+
+    include txpath.'/lib/taglib.php';
+
+    $arname = $type.'_tags';
+
+    $out = array();
+
+    foreach ($$arname as $a) {
+        $out[] = tag(popTag($a, gTxt('tag_'.$a), array('panel' => $event, 'step' => 'build')), 'li');
+    }
+
+    return n.tag(n.join(n, $out).n, 'ul', array('class' => 'plain-list'));
+}
+
+/**
+ * Renders an admin-side message text.
+ *
+ * @param  string $thing    Subject
+ * @param  string $thething Predicate (strong)
+ * @param  string $action   Object
+ * @return string HTML
+ */
+
+function messenger($thing, $thething = '', $action = '')
+{
+    return gTxt($thing).' '.strong($thething).' '.gTxt($action);
+}
+
+/**
+ * Renders a multi-edit form listing editing methods.
+ *
+ * @param  array   $options       array('value' => array( 'label' => '', 'html' => '' ),...)
+ * @param  string  $event         Event
+ * @param  string  $step          Step
+ * @param  int     $page          Page number
+ * @param  string  $sort          Column sorted by
+ * @param  string  $dir           Sorting direction
+ * @param  string  $crit          Search criterion
  * @param  string  $search_method Search method
  * @return string  HTML
+ * @example
+ * echo form(
+ *     multi_edit(array(
+ *         'feature' => array('label' => 'Feature', 'html' => yesnoRadio('is_featured', 1)),
+ *         'delete'  => array('label' => 'Delete'),
+ *     ))
+ * );
  */
 
-	function multi_edit($options, $event=null, $step=null, $page='', $sort='', $dir='', $crit='', $search_method='')
-	{
-		$html = $methods = array();
-		$methods[''] = gTxt('with_selected_option');
+function multi_edit($options, $event = null, $step = null, $page = '', $sort = '', $dir = '', $crit = '', $search_method = '')
+{
+    $html = $methods = array();
+    $methods[''] = gTxt('with_selected_option');
 
-		if ($event === null)
-		{
-			global $event;
-		}
+    if ($event === null) {
+        global $event;
+    }
 
-		if ($step === null)
-		{
-			$step = $event.'_multi_edit';
-		}
+    if ($step === null) {
+        $step = $event.'_multi_edit';
+    }
 
-		callback_event_ref($event.'_ui', 'multi_edit_options', 0, $options);
+    callback_event_ref($event.'_ui', 'multi_edit_options', 0, $options);
 
-		foreach($options as $value => $option)
-		{
-			if (is_array($option))
-			{
-				$methods[$value] = $option['label'];
+    foreach ($options as $value => $option) {
+        if (is_array($option)) {
+            $methods[$value] = $option['label'];
 
-				if (isset($option['html']))
-				{
-					$html[$value] = '<div class="multi-option multi-option-'.txpspecialchars($value).'">'.$option['html'].'</div>';
-				}
-			}
-			else
-			{
-				$methods[$value] = $option;
-			}
-		}
+            if (isset($option['html'])) {
+                $html[$value] = n.tag($option['html'], 'div', array(
+                    'class'             => 'multi-option',
+                    'data-multi-option' => $value,
+                ));
+            }
+        } else {
+            $methods[$value] = $option;
+        }
+    }
 
-		return '<div class="multi-edit">'.
-			n.selectInput('edit_method', $methods, '').
-			n.eInput($event).
-			n.sInput($step).
-			n.hInput('page', $page).
-			($sort ? n.hInput('sort', $sort).n.hInput('dir', $dir) : '' ).
-			($crit !== '' ? n.hInput('crit', $crit).n.hInput('search_method', $search_method) : '').
-			n.implode('', $html).
-			n.fInput('submit', '', gTxt('go')).
-			n.'</div>';
-	}
-
+    return n.tag(
+        selectInput('edit_method', $methods, '').
+        eInput($event).
+        sInput($step).
+        hInput('page', $page).
+        ($sort ? hInput('sort', $sort).hInput('dir', $dir) : '').
+        ($crit !== '' ? hInput('crit', $crit).hInput('search_method', $search_method) : '').
+        join('', $html).
+        fInput('submit', '', gTxt('go')), 'div', array('class' => 'multi-edit'));
+}
 
 /**
- * Render a form to select various amounts to page lists by.
+ * Renders a widget to select various amounts to page lists by.
  *
- * @param	string	$event	Event
- * @param	integer	$val	Current setting
- * @return	string	HTML
+ * The rendered options can be changed via a '{$event}_ui > pageby_values'
+ * callback event.
+ *
+ * @param  string      $event Event
+ * @param  int         $val   Current setting
+ * @param  string|null $step  Step
+ * @return string HTML
  */
 
-	function pageby_form($event, $val)
-	{
-		$vals = array(
-			15  => 15,
-			25  => 25,
-			50  => 50,
-			100 => 100
-		);
+function pageby_form($event, $val, $step = null)
+{
+    $vals = array(15, 25, 50, 100);
+    callback_event_ref($event.'_ui', 'pageby_values', 0, $vals);
 
-		$select_page = selectInput('qty', $vals, $val,'', 1);
+    if ($step === null) {
+        $step = $event.'_change_pageby';
+    }
 
-		// proper localisation
-		$page = str_replace('{page}', $select_page, gTxt('view_per_page'));
+    if (empty($val)) {
+        $val = $vals[0];
+    }
 
-		return form(
-			'<p>'.
-				$page.
-				eInput($event).
-				sInput($event.'_change_pageby').
-			'</p>'
-		, '', '', 'post', 'pageby');
-	}
+    $out = array();
 
+    foreach ($vals as $qty) {
+        if ($qty == $val) {
+            $class = 'navlink-active';
+            $aria_pressed = 'true';
+        } else {
+            $class = 'navlink';
+            $aria_pressed = 'false';
+        }
+
+        $out[] = href($qty, array(
+            'event'      => $event,
+            'step'       => $step,
+            'qty'        => $qty,
+            '_txp_token' => form_token(),
+        ), array(
+            'class'        => $class,
+            'title'        => gTxt('view_per_page', array('{page}' => $qty)),
+            'aria-pressed' => $aria_pressed,
+            'role'         => 'button',
+        ));
+    }
+
+    return n.tag(join('', $out), 'div', array('class' => 'nav-tertiary pageby'));
+}
 
 /**
- * Render a file upload form via the "$event_ui" > "upload_form" pluggable UI.
+ * Renders an upload form.
  *
- * @param	string	$label	File name label. May be empty
- * @param	string	$pophelp	Help item ['']
- * @param	string	$step	Step
- * @param	string	$event	Event
- * @param	string	$id	File id
- * @param	integer	$max_file_size	Maximum allowed file size
- * @param	string	$label_id	HTML id attribute for the filename input element
- * @param	string	$class	HTML class attribute for the form element
+ * The rendered form can be customised via the '{$event}_ui > upload_form'
+ * pluggable UI callback event.
+ *
+ * @param  string       $label         File name label. May be empty
+ * @param  string       $pophelp       Help item
+ * @param  string       $step          Step
+ * @param  string       $event         Event
+ * @param  string       $id            File id
+ * @param  int          $max_file_size Maximum allowed file size
+ * @param  string       $label_id      HTML id attribute for the filename input element
+ * @param  string       $class         HTML class attribute for the form element
+ * @param  string|array $wraptag_val   Tag to wrap the value / label in, or empty to omit
+ * @return string HTML
  */
 
-	function upload_form($label, $pophelp = '', $step, $event, $id = '', $max_file_size = '1000000', $label_id = '', $class = 'upload-form')
-	{
-		global $sort, $dir, $page, $search_method, $crit;
+function upload_form($label, $pophelp = '', $step, $event, $id = '', $max_file_size = 1000000, $label_id = '', $class = '', $wraptag_val = array('div', 'div'))
+{
+    extract(gpsa(array(
+        'page',
+        'sort',
+        'dir',
+        'crit',
+        'search_method',
+    )));
 
-		extract(gpsa(array('page', 'sort', 'dir', 'crit', 'search_method')));
+    if (is_array($search_method)) {
+        $search_method = join(',', $search_method);
+    }
 
-		$class = ($class) ? ' class="'.$class.'"' : '';
-		$p_class = 'edit-'. (($label_id) ? str_replace('_', '-', $label_id) : $event.'-upload');
-		$label_id = ($label_id) ? $label_id : $event.'-upload';
+    if (!$label_id) {
+        $label_id = $event.'-upload';
+    }
 
-		$argv = func_get_args();
-		return pluggable_ui($event.'_ui', 'upload_form',
-			n.n.'<form'.$class.' method="post" enctype="multipart/form-data" action="index.php">'.
+    if ($wraptag_val) {
+        $wraptag_class = 'txp-form-field file-uploader';
+    } else {
+        $wraptag_class = 'inline-file-uploader';
+    }
 
-			(!empty($max_file_size)? n.hInput('MAX_FILE_SIZE', $max_file_size): '').
-			n.eInput($event).
-			n.sInput($step).
-			n.hInput('id', $id).
+    $argv = func_get_args();
 
-			n.hInput('sort', $sort).
-			n.hInput('dir', $dir).
-			n.hInput('page', $page).
-			n.hInput('search_method', $search_method).
-			n.hInput('crit', $crit).
-
-			n.graf(
-				(($label) ? '<label for="'.$label_id.'">'.$label.'</label>' : '').(($pophelp) ? sp.popHelp($pophelp) : '').n.
-					fInput('file', 'thefile', '', '', '', '', '', '', $label_id).n.
-					fInput('submit', '', gTxt('upload'))
-			, ' class="'.$p_class.'"').
-
-			n.tInput().
-			n.'</form>',
-			$argv);
-	}
-
+    return pluggable_ui($event.'_ui', 'upload_form',
+        n.tag(
+            (!empty($max_file_size) ? hInput('MAX_FILE_SIZE', $max_file_size) : '').
+            eInput($event).
+            sInput($step).
+            hInput('id', $id).
+            hInput('sort', $sort).
+            hInput('dir', $dir).
+            hInput('page', $page).
+            hInput('search_method', $search_method).
+            hInput('crit', $crit).
+            inputLabel(
+                $label_id,
+                fInput('file', 'thefile', '', '', '', '', '', '', $label_id).
+                fInput('submit', '', gTxt('upload')),
+                $label,
+                array($pophelp, 'instructions_'.$pophelp),
+                $wraptag_class,
+                $wraptag_val
+            ).
+            tInput().n,
+            'form', array(
+                'class'   => 'upload-form'.($class ? ' '.trim($class) : ''),
+                'method'  => 'post',
+                'enctype' => 'multipart/form-data',
+                'action'  => 'index.php',
+            )
+        ),
+        $argv);
+}
 
 /**
- * Render a admin-side search form.
+ * Renders an admin-side search form.
  *
- * @param	string	$event	Event
- * @param	string	$step	Step
- * @param	string	$crit	Search criterion
- * @param	array	$methods	Valid search methods
- * @param	string	$method	Actual search method
- * @param	string	$default_method	Default search method
- * @return	string	HTML
+ * @param  string $event          Event
+ * @param  string $step           Step
+ * @param  string $crit           Search criterion
+ * @param  array  $methods        Valid search methods
+ * @param  string $method         Actual search method
+ * @param  string $default_method Default search method
+ * @return string HTML
  */
 
-	function search_form($event, $step, $crit, $methods, $method, $default_method)
-	{
-		$method = ($method) ? $method : $default_method;
+function search_form($event, $step, $crit, $methods, $method, $default_method)
+{
+    $method = ($method) ? $method : $default_method;
 
-		return n.n.form(
-			graf(
-				'<label for="'.$event.'-search">'.gTxt('search').'</label>'.
-				n.selectInput('search_method', $methods, $method, '', '', $event.'-search').
-				n.fInput('text', 'crit', $crit, 'input-medium', '', '', INPUT_MEDIUM).
-				n.eInput($event).
-				n.sInput($step).
-				n.fInput('submit', 'search', gTxt('go'))
-			)
-		, '', '', 'get', 'search-form');
-	}
+    return form(
+        graf(
+            tag(gTxt('search'), 'label', array('for' => $event.'-search')).
+            selectInput('search_method', $methods, $method, '', '', $event.'-search').
+            fInput('text', 'crit', $crit, 'input-medium', '', '', INPUT_MEDIUM).
+            eInput($event).
+            sInput($step).
+            fInput('submit', 'search', gTxt('go'))
+        ), '', '', 'get', 'search-form');
+}
 
 /**
- * Render a dropdown for selecting text filter method preferences.
+ * Renders a dropdown for selecting Textfilter method preferences.
  *
- * @param	string	$name	Element name
- * @param	string	$val	Current value
- * @param	string	$id	HTML id attribute for the select input element
- * @return	string	HTML
+ * @param  string $name Element name
+ * @param  string $val  Current value
+ * @param  string $id   HTML id attribute for the select input element
+ * @return string HTML
  */
 
-	function pref_text($name, $val, $id = '')
-	{
-		$id = ($id) ? $id : $name;
+function pref_text($name, $val, $id = '')
+{
+    $id = ($id) ? $id : $name;
+    $vals = Txp::get('\Textpattern\Textfilter\Registry')->getMap();
 
-		$vals = array(
-			USE_TEXTILE          => gTxt('use_textile'),
-			CONVERT_LINEBREAKS   => gTxt('convert_linebreaks'),
-			LEAVE_TEXT_UNTOUCHED => gTxt('leave_text_untouched')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $id);
-	}
-
+    return selectInput($name, $vals, $val, '', '', $id);
+}
 
 /**
- * Attach a HTML fragment to a DOM node.
+ * Attaches a HTML fragment to a DOM node.
  *
- * @param	string	$id	Target DMO node's id
- * @param	string	$content	HTML fragment
- * @param	string	$noscript	noscript alternative	fragment ['']
- * @param	string	$wraptag	Wrapping HTML element
- * @param	string	$wraptagid	Wrapping element's HTML id
- * @return	string	HTML/JS
+ * @param  string $id        Target DOM node's id
+ * @param  string $content   HTML fragment
+ * @param  string $noscript  Noscript alternative
+ * @param  string $wraptag   Wrapping HTML element
+ * @param  string $wraptagid Wrapping element's HTML id
+ * @return string HTML/JS
  */
 
-	function dom_attach($id, $content, $noscript='', $wraptag='div', $wraptagid='')
-	{
-		$content = escape_js($content);
+function dom_attach($id, $content, $noscript = '', $wraptag = 'div', $wraptagid = '')
+{
+    $id = escape_js($id);
+    $content = escape_js($content);
+    $wraptag = escape_js($wraptag);
+    $wraptagid = escape_js($wraptagid);
 
-		$js = <<<EOF
-			$(document).ready(function() {
-				$('#{$id}').append($('<{$wraptag} />').attr('id', '{$wraptagid}').html('{$content}'));
-			});
+    $js = <<<EOF
+        $(function ()
+        {
+            $('#{$id}').append($('<{$wraptag} />').attr('id', '{$wraptagid}').html('{$content}'));
+        });
 EOF;
 
-		return script_js($js, $noscript);
-	}
-
-
-/**
- * Render a &lt:script&gt; element.
- *
- * @param	string	$js	JavaScript code
- * @param	string	$noscript	noscript alternative
- * @return	string	HTML with embedded script element
- */
-
-	function script_js($js, $noscript='')
-	{
-		$js = preg_replace('#<(/?)script#', '\\x3c$1script', $js);
-
-		$out = '<script type="text/javascript">'.n.
-			trim($js).n.
-			'</script>'.n;
-		if ($noscript)
-			$out .= '<noscript>'.n.
-				trim($noscript).n.
-				'</noscript>'.n;
-		return $out;
-	}
-
+    return script_js($js, (string) $noscript);
+}
 
 /**
- * Render a "Details" toggle checkbox.
+ * Renders a &lt:script&gt; element.
  *
- * @param	string	$classname	Unique identfier. The cookie's name will be derived from this value.
- * @param	boolean	$form		Create as a stand-along &lt;form&gt; element [false]
- * @return	string	HTML
+ * The $route parameter allows script_js() to be included in fixed page
+ * locations (e.g. prior to the &lt;/body&gt; tag) but to only render
+ * its content if the event / step match.
+ *
+ * @param  string     $js    JavaScript code
+ * @param  int|string $flags Flags TEXTPATTERN_SCRIPT_URL | TEXTPATTERN_SCRIPT_ATTACH_VERSION, or noscript alternative if a string
+ * @param  array      $route Optional events/steps upon which to add the script
+ * @return string HTML with embedded script element
+ * @example
+ * echo script_js('/js/script.js', TEXTPATTERN_SCRIPT_URL);
  */
 
-	function toggle_box($classname, $form=0) {
+function script_js($js, $flags = '', $route = array())
+{
+    global $event, $step;
 
-		$name = 'cb_toggle_'.$classname;
-		$i =
-			'<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.
-			(cs('toggle_'.$classname) ? 'checked="checked" ' : '').
-			'class="checkbox" onclick="toggleClassRemember(\''.$classname.'\');" />'.
-			' <label for="'.$name.'">'.gTxt('detail_toggle').'</label> '.
-			script_js("setClassRemember('".$classname."');addEvent(window, 'load', function(){setClassRemember('".$classname."');});");
-		if ($form)
-			return n.form($i);
-		else
-			return n.$i;
-	}
+    $targetEvent = empty($route[0]) ? null : (array)$route[0];
+    $targetStep = empty($route[1]) ? null : (array)$route[1];
 
+    if (($targetEvent === null || in_array($event, $targetEvent)) && ($targetStep === null || in_array($step, $targetStep))) {
+        if (is_int($flags)) {
+            if ($flags & TEXTPATTERN_SCRIPT_URL) {
+                if ($flags & TEXTPATTERN_SCRIPT_ATTACH_VERSION && strpos(txp_version, '-dev') === false) {
+                    $ext = pathinfo($js, PATHINFO_EXTENSION);
+
+                    if ($ext) {
+                        $js = substr($js, 0, (strlen($ext) + 1) * -1);
+                        $ext = '.'.$ext;
+                    }
+
+                    $js .= '.v'.txp_version.$ext;
+                }
+
+                return n.tag(null, 'script', array('src' => $js));
+            }
+        }
+
+        $js = preg_replace('#<(/?)(script)#i', '\\x3c$1$2', $js);
+
+        $out = n.tag(n.trim($js).n, 'script');
+
+        if ($flags) {
+            $out .= n.tag(n.trim($flags).n, 'noscript');
+        }
+
+        return $out;
+    }
+
+    return '';
+}
 
 /**
- * Render a checkbox to set/unset a browser cookie.
+ * Renders a "Details" toggle checkbox.
  *
- * @param	string	$classname	Label text. The cookie's name will be derived from this value.
- * @param	boolean	$form		Create as a stand-along &lt;form&gt; element [true]
- * @return	string	HTML
+ * @param  string $classname Unique identfier. The cookie's name will be derived from this value
+ * @param  bool   $form      Create as a stand-along &lt;form&gt; element
+ * @return string HTML
  */
 
-	function cookie_box($classname, $form=1) {
+function toggle_box($classname, $form = false)
+{
+    $name = 'cb_toggle_'.$classname;
+    $id = escape_js($name);
+    $class = escape_js($classname);
 
-		$name = 'cb_'.$classname;
-		$val = cs('toggle_'.$classname) ? 1 : 0;
+    $out = checkbox($name, 1, cs('toggle_'.$classname), 0, $name).
+        n.tag(gTxt('detail_toggle'), 'label', array('for' => $name));
 
-		$i =
-			'<input type="checkbox" name="'.$name.'" id="'.$name.'" value="1" '.
-			($val ? 'checked="checked" ' : '').
-			'class="checkbox" onclick="setClassRemember(\''.$classname.'\','.(1-$val).');submit(this.form);" />'.
-			' <label for="'.$name.'">'.gTxt($classname).'</label> ';
+    $js = <<<EOF
+        $(function ()
+        {
+            $('input')
+                .filter(function () {
+                    if ($(this).attr('id') === '{$id}') {
+                        setClassDisplay('{$class}', $(this).is(':checked'));
+                        return true;
+                    }
+                })
+                .change(function () {
+                    toggleClassRemember('{$class}');
+                });
+        });
+EOF;
 
-		if ($form) {
-			$args = empty($_SERVER['QUERY_STRING']) ? '' : '?'.txpspecialchars($_SERVER['QUERY_STRING']);
-			return '<form class="'.$name.'" method="post" action="index.php'.$args.'">'.$i.eInput(gps('event')).n.tInput().'</form>';
-		} else {
-			return n.$i;
-		}
-	}
+    $out .= script_js($js);
 
+    if ($form) {
+        return form($out);
+    }
+
+    return $out;
+}
 
 /**
- * Render a &lt;fieldset&gt; element.
+ * Renders a checkbox to set/unset a browser cookie.
  *
- * @param	string	$content	Enclosed content
- * @param	string	$legend	Legend text ['']
- * @param	string	$id		HTML id attribute ['']
- * @return	string	HTML
+ * @param  string $classname Label text. The cookie's name will be derived from this value
+ * @param  bool   $form      Create as a stand-along &lt;form&gt; element
+ * @return string HTML
  */
 
-	function fieldset($content, $legend='', $id='') {
-		$a_id = ($id ? ' id="'.$id.'"' : '');
-		return tag(trim(tag($legend, 'legend').n.$content), 'fieldset', $a_id);
-	}
+function cookie_box($classname, $form = true)
+{
+    $name = 'cb_'.$classname;
+    $id = escape_js($name);
+    $class = escape_js($classname);
 
+    if (cs('toggle_'.$classname)) {
+        $value = 1;
+    } else {
+        $value = 0;
+    }
+
+    $newvalue = 1 - $value;
+
+    $out = checkbox($name, 1, (bool) $value, 0, $name).
+        n.tag(gTxt($classname), 'label', array('for' => $name));
+
+    $js = <<<EOF
+        $(function ()
+        {
+            $('input')
+                .filter(function () {
+                    if ($(this).attr('id') === '{$id}') {
+                        return true;
+                    }
+                })
+                .change(function () {
+                    setClassRemember('{$class}', $newvalue);
+                    $(this).parents('form').submit();
+                });
+        });
+EOF;
+
+    $out .= script_js($js);
+
+    if ($form) {
+        if (serverSet('QUERY_STRING')) {
+            $action = 'index.php?'.serverSet('QUERY_STRING');
+        } else {
+            $action = 'index.php';
+        }
+
+        $out .= eInput(gps('event')).tInput();
+
+        return tag($out, 'form', array(
+            'class'  => $name,
+            'method' => 'post',
+            'action' => $action,
+        ));
+    }
+
+    return $out;
+}
 
 /**
- * Render a link element to hook up txpAsyncHref() with request parameters
+ * Renders a &lt;fieldset&gt; element.
  *
- * @param 	string 	$item	Link text
- * @param 	array	$parms	Request parameters; array keys are 'event', 'step', 'thing', 'property'
- * @param 	string 	$atts	HTML attributes
- * @return 	string 	HTML
- * @since 4.5.0
- * @see textpattern.js: txpAsyncHref
+ * @param  string $content Enclosed content
+ * @param  string $legend  Legend text
+ * @param  string $id      HTML id attribute
+ * @return string HTML
  */
 
-	function asyncHref($item,$parms,$atts='')
-	{
-		extract(doSpecial(lAtts(array(
-			'event'    => $GLOBALS['event'],
-			'step'     => $GLOBALS['step'],
-			'thing'    => '',
-			'property' => '',
-		), $parms)));
+function fieldset($content, $legend = '', $id = '')
+{
+    return tag(trim(tag($legend, 'legend').n.$content), 'fieldset', array('id' => $id));
+}
 
-		$class = "$step async";
-		$href = "?event=$event&amp;step=$step&amp;thing=$thing&amp;property=$property";
-		if (AJAXALLY_CHALLENGED) {
-			$href .= '&amp;value='.txpspecialchars($item).'&amp;_txp_token='.form_token();
-		}
-		return href($item, $href, $atts." class=\"$class\"");
-	}
+/**
+ * Renders a link element to hook up txpAsyncHref() with request parameters.
+ *
+ * See this function's JavaScript companion, txpAsyncHref(), in textpattern.js.
+ *
+ * @param  string       $item  Link text
+ * @param  array        $parms Request parameters; array keys are 'event', 'step', 'thing', 'property'
+ * @param  string|array $atts  HTML attributes
+ * @return string HTML
+ * @since  4.5.0
+ * @example
+ * echo asyncHref('Disable', array(
+ *     'event'    => 'myEvent',
+ *     'step'     => 'myStep',
+ *     'thing'    => 'status',
+ *     'property' => 'disable',
+ * ));
+ */
 
-?>
+function asyncHref($item, $parms, $atts = '')
+{
+    global $event, $step;
+
+    $parms = lAtts(array(
+        'event'    => $event,
+        'step'     => $step,
+        'thing'    => '',
+        'property' => '',
+    ), $parms);
+
+    $class = $parms['step'].' async';
+
+    if (is_array($atts)) {
+        $atts['class'] = $class;
+    } else {
+        $atts .= ' class="'.txpspecialchars($class).'"';
+    }
+
+    return href($item, join_qs($parms), $atts);
+}
+
+/**
+ * Renders an array of items as a HTML list.
+ *
+ * This function is used for tag handler functions. Creates a HTML list markup
+ * from an array of items.
+ *
+ * @param   array  $list
+ * @param   string $wraptag    The HTML element
+ * @param   string $break      The HTML break element
+ * @param   string $class      Class applied to the wraptag
+ * @param   string $breakclass Class applied to break tag
+ * @param   string $atts       HTML attributes applied to the wraptag
+ * @param   string $breakatts  HTML attributes applied to the break tag
+ * @param   string $id         HTML id applied to the wraptag
+ * @return  string HTML
+ * @package HTML
+ * @example
+ * echo doWrap(array('item1', 'item2'), 'div', 'p');
+ */
+
+function doWrap($list, $wraptag, $break, $class = '', $breakclass = '', $atts = '', $breakatts = '', $id = '')
+{
+    if (!$list) {
+        return '';
+    }
+
+    if ($id) {
+        $atts .= ' id="'.txpspecialchars($id).'"';
+    }
+
+    if ($class) {
+        $atts .= ' class="'.txpspecialchars($class).'"';
+    }
+
+    if ($breakclass) {
+        $breakatts .= ' class="'.txpspecialchars($breakclass).'"';
+    }
+
+    // Non-enclosing breaks.
+    if (!preg_match('/^\w+$/', $break) or $break == 'br' or $break == 'hr') {
+        if ($break == 'br' or $break == 'hr') {
+            $break = "<$break $breakatts/>".n;
+        }
+
+        return ($wraptag) ?    tag(join($break, $list), $wraptag, $atts) :    join($break, $list);
+    }
+
+    return ($wraptag)
+        ? tag(n.tag(join("</$break>".n."<{$break}{$breakatts}>", $list), $break, $breakatts).n, $wraptag, $atts)
+        : tag(n.join("</$break>".n."<{$break}{$breakatts}>".n, $list).n, $break, $breakatts);
+}
+
+/**
+ * Renders anything as a HTML tag.
+ *
+ * Used for tag handler functions.
+ *
+ * If $content is empty, renders a self-closing tag.
+ *
+ * @param   string $content The wrapped item
+ * @param   string $tag     The HTML tag
+ * @param   string $class   HTML class
+ * @param   string $atts    HTML attributes
+ * @param   string $id      HTML id
+ * @return  string HTML
+ * @package HTML
+ * @example
+ * echo doTag('', 'meta', '', 'name="description" content="Some content"');
+ */
+
+function doTag($content, $tag, $class = '', $atts = '', $id = '')
+{
+    if ($id) {
+        $atts .= ' id="'.txpspecialchars($id).'"';
+    }
+
+    if ($class) {
+        $atts .= ' class="'.txpspecialchars($class).'"';
+    }
+
+    if (!$tag) {
+        return $content;
+    }
+
+    return ($content) ? tag($content, $tag, $atts) : "<$tag $atts />";
+}
+
+/**
+ * Renders a label.
+ *
+ * This function is mostly used for rendering headings in tag handler functions.
+ *
+ * If no $labeltag is given, label is separated from the content with
+ * a &lt;br&gt;.
+ *
+ * @param   string $label    The label
+ * @param   string $labeltag The HTML element
+ * @return  string HTML
+ * @package HTML
+ * @example
+ * echo doLabel('My label', 'h3');
+ */
+
+function doLabel($label = '', $labeltag = '')
+{
+    if ($label) {
+        return (empty($labeltag) ? $label.'<br />' : tag($label, $labeltag));
+    }
+
+    return '';
+}

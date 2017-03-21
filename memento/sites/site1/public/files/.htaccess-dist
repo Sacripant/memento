@@ -1,5 +1,3 @@
-# $HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/sites/site1/public/files/.htaccess-dist $
-# $LastChangedRevision: 3786 $
 # Inhibit directory listing
 Options -Indexes
 # Inhibit direct file downloads

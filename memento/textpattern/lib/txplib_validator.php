@@ -1,252 +1,139 @@
 <?php
 
 /*
-This is Textpattern
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-Copyright 2012 The Textpattern Development Team
-textpattern.com
-All rights reserved.
-
-Use of this software indicates acceptance of the Textpattern license agreement
-
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_validator.php $
-$LastChangedRevision: 3802 $
-*/
+/*
+ * Deprecation warning: This file serves merely as a compatibility layer for \Textpattern\Validator\*.
+ * Use the respective base classes for new and updated code.
+ * TODO: Remove in v4.next.0
+ */
 
 /**
- * Validator
+ * Main Validator class.
  *
- * Manages and evaluates a collection of constraints
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class Validator
+
+class Validator extends \Textpattern\Validator\Validator
 {
-	protected $constraints;
-	protected $messages;
-
-	/**
-	 * Construct a validator
-	 * @param array $constraints Array of constraint objects to validate over
-	 */
-	function __construct($constraints = array())
-	{
-		$this->setConstraints($constraints);
-	}
-
-	/**
-	 * Validate all constraints and collect messages on violations
-	 * @return boolean true: value obeys constraints
-	 */
-	function validate()
-	{
-		foreach ($this->constraints as $c) {
-			if (!$c->validate()) {
-				$this->messages[] = $c->getMessage();
-			}
-		}
-		return empty($this->messages);
-	}
-
-	/**
-	 * @return array An array of message strings with constraint-violation details collected from Validator::validate() (if any)
-	 */
-	function getMessages()
-	{
-		return $this->messages;
-	}
-
-	/**
-	 * Set new constraints
-	 */
-	function setConstraints($constraints)
-	{
-		$this->constraints = $constraints;
-		$this->messages = array();
-	}
 }
 
 /**
- * Constraint
+ * Constraint.
  *
- * Defines a single validation rule
- * @since 4.5.0
+ * Defines a single validation rule.
+ *
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class Constraint
+
+class Constraint extends \Textpattern\Validator\Constraint
 {
-    protected $value;
-    protected $options;
-
-	/**
-	 * Construct a constraint
-	 * @param mixed $value	The validee
-	 * @param array $options Key/value pairs of class-specific options
-	 */
-	function __construct($value, $options = array())
-	{
-		if (empty($options['message'])) {
-			$options['message'] = 'undefined_constraint_violation';
-		}
-		$this->value = $value;
-		$this->options = $options;
-	}
-
-	/**
-	 * Validate a given value against this constraint
-	 * @return boolean true: value obeys constraint
-	 */
-	function validate()
-	{
-		return true;
-	}
-
-	/**
-	 *
-	 */
-	function getMessage()
-	{
-		return $this->options['message'];
-	}
 }
 
 /**
- * ChoiceConstraint
+ * Tests against a list of values.
  *
- * Tests against a list of values
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class ChoiceConstraint extends Constraint
-{
-	function __construct($value, $options = array())
-	{
-		$options = lAtts(array('choices' => array(), 'allow_blank' => false, 'message' => 'unknown_choice'), $options, false);
-		parent::__construct($value, $options);
-	}
 
-	function validate()
-	{
-		return ($this->options['allow_blank'] && ('' === $this->value)) ||
-		in_array($this->value, $this->options['choices']);
-	}
+class ChoiceConstraint extends \Textpattern\Validator\Constraint
+{
 }
 
 /**
- * SectionConstraint
+ * Tests against existing section names.
  *
- * Tests against existing section names
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class SectionConstraint extends ChoiceConstraint
+
+class SectionConstraint extends \Textpattern\Validator\ChoiceConstraint
 {
-	function __construct($value, $options = array())
-	{
-		static $choices = null;
-		if (null === $choices) {
-			$choices = safe_column('name', 'txp_section', '1=1');
-		}
-		$options['choices'] = $choices;
-		$options['message'] = 'unknown_section';
-        parent::__construct($value, $options);
-	}
 }
 
 /**
- * CategoryConstraint
+ * Tests against existing or blank category names.
  *
- * Tests against existing or a blank category names
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class CategoryConstraint extends ChoiceConstraint
+
+class CategoryConstraint extends \Textpattern\Validator\ChoiceConstraint
 {
-	function __construct($value, $options = array())
-	{
-		static $choices = null;
-		$options = lAtts(array('allow_blank' => true, 'type' => '', 'message' => 'unknown_category'), $options, false);
-		if (null === $choices) {
-			$choices = safe_column('name', 'txp_category', $options['type'] !== '' ? 'type=\''.doSlash($options['type']).'\'' : '1=1');
-		}
-		$options['choices'] = $choices;
-        parent::__construct($value, $options);
-	}
 }
 
 /**
- * FormConstraint
+ * Tests against existing form names.
  *
- * Tests against existing form names
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class FormConstraint extends ChoiceConstraint
-{
-	function __construct($value, $options = array())
-	{
-		static $choices = null;
-		$options = lAtts(array('allow_blank' => true, 'type' => '', 'message' => 'unknown_form'), $options, false);
 
-		if (null === $choices) {
-			$choices = safe_column('name', 'txp_form', $options['type'] !== '' ? 'type=\''.doSlash($options['type']).'\'' : '1=1');
-		}
-		$options['choices'] = $choices;
-		parent::__construct($value, $options);
-	}
+class FormConstraint extends \Textpattern\Validator\ChoiceConstraint
+{
 }
 
 /**
- * BlankConstraint
+ * Validates that a value is blank, defined as equal to a blank string or equal
+ * to null.
  *
- * Validates that a value is blank, defined as equal to a blank string or equal to null.
- * @since 4.5.0
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class BlankConstraint extends Constraint
-{
-	function __construct($value, $options = array())
-	{
-		$options = lAtts(array('message' => 'should_be_blank'), $options, false);
-		parent::__construct($value, $options);
-	}
 
-	function validate()
-	{
-		return $this->value === '' || $this->value === null;
-	}
+class BlankConstraint extends \Textpattern\Validator\Constraint
+{
 }
 
 /**
- * TrueConstraint
- *
  * Validates that a value is true.
- * @since 4.5.0
+ *
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class TrueConstraint extends Constraint
-{
-	function __construct($value, $options = array())
-	{
-		$options = lAtts(array('message' => 'should_be_true'), $options, false);
-		parent::__construct($value, $options);
-	}
 
-	function validate()
-	{
-		return (boolean)$this->value;
-	}
+class TrueConstraint extends \Textpattern\Validator\Constraint
+{
 }
 
 /**
- * FalseConstraint
- *
  * Validates that a value is false.
- * @since 4.5.0
+ *
+ * @since   4.5.0
+ * @deprecated in 4.6.0
+ * @package Validator
  */
-class FalseConstraint extends Constraint
-{
-	function __construct($value, $options = array())
-	{
-		$options = lAtts(array('message' => 'should_be_false'), $options, false);
-		parent::__construct($value, $options);
-	}
 
-	function validate()
-	{
-		return !(boolean)$this->value;
-	}
+class FalseConstraint extends \Textpattern\Validator\Constraint
+{
 }
-?>

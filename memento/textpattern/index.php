@@ -1,195 +1,229 @@
 <?php
 
 /*
-	This is Textpattern
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2005 Dean Allen
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-	Copyright 2005 by Dean Allen
-	www.textpattern.com
-	All rights reserved
+if (@ini_get('register_globals')) {
+    if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS'])) {
+        die('GLOBALS overwrite attempt detected. Please consider turning register_globals off.');
+    }
 
-	Use of this software indicates acceptance of the Textpattern license agreement
+    // Collect and unset all registered variables from globals.
+    $_txpg = array_merge(
+        isset($_SESSION) ? (array) $_SESSION : array(),
+        (array) $_ENV,
+        (array) $_GET,
+        (array) $_POST,
+        (array) $_COOKIE,
+        (array) $_FILES,
+        (array) $_SERVER);
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/index.php $
-$LastChangedRevision: 5900 $
+    // As the deliberately awkward-named local variable $_txpfoo MUST NOT be unset to avoid notices further
+    // down, we must remove any potentially identical-named global from the list of global names here.
+    unset($_txpg['_txpfoo']);
+    foreach ($_txpg as $_txpfoo => $value) {
+        if (!in_array($_txpfoo, array(
+            'GLOBALS',
+            '_SERVER',
+            '_GET',
+            '_POST',
+            '_FILES',
+            '_COOKIE',
+            '_SESSION',
+            '_REQUEST',
+            '_ENV',
+        ))) {
+            unset($GLOBALS[$_txpfoo], $$_txpfoo);
+        }
+    }
+}
 
-*/
+if (!defined('txpath')) {
+    define("txpath", dirname(__FILE__));
+}
 
-	if (@ini_get('register_globals')) {
-		if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS'])) {
-			die('GLOBALS overwrite attempt detected. Please consider turning register_globals off.');
-		}
+define("txpinterface", "admin");
 
-		// Collect and unset all registered variables from globals
-		$_txpg = array_merge(
-			isset($_SESSION) ? (array) $_SESSION : array(),
-			(array) $_ENV,
-			(array) $_GET,
-			(array) $_POST,
-			(array) $_COOKIE,
-			(array) $_FILES,
-			(array) $_SERVER);
+$thisversion = '4.6.2';
+$txp_using_svn = false; // Set false for releases.
 
-		// As the deliberately awkward-named local variable $_txpfoo MUST NOT be unset to avoid notices further down
-		// we must remove any potentially identical-named global from the list of global names here.
-		unset($_txpg['_txpfoo']);
-		foreach ($_txpg as $_txpfoo => $value) {
-			if (!in_array($_txpfoo, array(
-				'GLOBALS',
-				'_SERVER',
-				'_GET',
-				'_POST',
-				'_FILES',
-				'_COOKIE',
-				'_SESSION',
-				'_REQUEST',
-				'_ENV',
-			))) {
-				unset($GLOBALS[$_txpfoo], $$_txpfoo);
-			}
-		}
-	}
+ob_start(null, 2048);
 
-	if (!defined('txpath'))
-	{
-		define("txpath", dirname(__FILE__));
-	}
+if (!isset($txpcfg['table_prefix']) && !@include './config.php') {
+    ob_end_clean();
+    header('HTTP/1.1 503 Service Unavailable');
+    exit('config.php is missing or corrupt. To install Textpattern, visit <a href="./setup/">setup</a>.');
+} else {
+    ob_end_clean();
+}
 
-	define("txpinterface", "admin");
+header("Content-type: text/html; charset=utf-8");
 
-	$thisversion = '4.5.7';
-	$txp_using_svn = false; // set false for releases
+error_reporting(E_ALL | E_STRICT);
+@ini_set("display_errors", "1");
+include txpath.'/lib/class.trace.php';
+$trace = new Trace();
+$trace->start('[PHP includes]');
+include_once txpath.'/lib/constants.php';
+include txpath.'/lib/txplib_misc.php';
 
-	ob_start(NULL, 2048);
-	if (!isset($txpcfg['table_prefix']) && !@include './config.php') {
-		ob_end_clean();
-		header('HTTP/1.1 503 Service Unavailable');
-		exit('config.php is missing or corrupt.  To install Textpattern, visit <a href="./setup/">setup</a>.');
-	} else ob_end_clean();
+include txpath.'/vendors/Textpattern/Loader.php';
 
-	header("Content-type: text/html; charset=utf-8");
+$loader = new \Textpattern\Loader(txpath.'/vendors');
+$loader->register();
 
-	// We need to violate/disable E_STRICT for PHP 4.x compatibility
-	// E_STRICT bitmask calculation stems from the variations for E_ALL in PHP 4.x, 5.3, and 5.4
-	error_reporting(E_ALL & ~(defined('E_STRICT') ? E_STRICT : 0));
-	@ini_set("display_errors","1");
+$loader = new \Textpattern\Loader(txpath.'/lib');
+$loader->register();
 
-	include_once txpath.'/lib/constants.php';
-	include txpath.'/lib/txplib_misc.php';
-	include txpath.'/lib/txplib_db.php';
-	include txpath.'/lib/txplib_forms.php';
-	include txpath.'/lib/txplib_html.php';
-	include txpath.'/lib/txplib_theme.php';
-	include txpath.'/lib/txplib_validator.php';
-	include txpath.'/lib/admin_config.php';
+include txpath.'/lib/txplib_db.php';
+include txpath.'/lib/txplib_forms.php';
+include txpath.'/lib/txplib_html.php';
+include txpath.'/lib/admin_config.php';
+$trace->stop();
 
-	set_error_handler('adminErrorHandler', error_reporting());
-	$microstart = getmicrotime();
+set_error_handler('adminErrorHandler', error_reporting());
 
-	 if ($connected && safe_query("describe `".PFX."textpattern`")) {
+if ($connected && numRows(safe_query("SHOW TABLES LIKE '".PFX."textpattern'"))) {
+    // Global site preferences.
+    $prefs = get_prefs();
+    extract($prefs);
 
-		$dbversion = safe_field('val','txp_prefs',"name = 'version'");
+    $dbversion = $version;
 
-		// global site prefs
-		$prefs = get_prefs();
-		extract($prefs);
+    if (empty($siteurl)) {
+        $httphost = preg_replace('/[^-_a-zA-Z0-9.:]/', '', $_SERVER['HTTP_HOST']);
+        $prefs['siteurl'] = $siteurl = $httphost.rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), DS);
+    }
 
-		if (empty($siteurl)) {
-			$httphost = preg_replace('/[^-_a-zA-Z0-9.:]/', '', $_SERVER['HTTP_HOST']);
-			$prefs['siteurl'] = $siteurl = $httphost . rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
-		}
-		if (empty($path_to_site))
-			updateSitePath(dirname(dirname(__FILE__)));
+    if (empty($path_to_site)) {
+        updateSitePath(dirname(dirname(__FILE__)));
+    }
 
-		define("LANG",$language);
-		//i18n: define("LANG","en-gb");
-		define('txp_version', $thisversion);
+    define("LANG", $language);
+    define('txp_version', $thisversion);
 
-		if (!defined('PROTOCOL')) {
-			switch (serverSet('HTTPS')) {
-				case '':
-				case 'off': // ISAPI with IIS
-					define('PROTOCOL', 'http://');
-				break;
+    if (!defined('PROTOCOL')) {
+        switch (serverSet('HTTPS')) {
+            case '':
+            case 'off': // ISAPI with IIS.
+                define('PROTOCOL', 'http://');
+                break;
+            default:
+                define('PROTOCOL', 'https://');
+                break;
+        }
+    }
 
-				default:
-					define('PROTOCOL', 'https://');
-				break;
-			}
-		}
+    define('hu', PROTOCOL.$siteurl.'/');
 
-		define('hu', PROTOCOL.$siteurl.'/');
-		// relative url global
-		define('rhu', preg_replace('|^https?://[^/]+|', '', hu));
-		// http address of the site serving images
-		if (!defined('ihu')) define('ihu', hu);
+    // Relative URL global.
+    define('rhu', preg_replace('|^https?://[^/]+|', '', hu));
 
-		if (!empty($locale)) setlocale(LC_ALL, $locale);
-		$textarray = load_lang(LANG);
+    // HTTP address of the site serving images.
+    if (!defined('ihu')) {
+        define('ihu', hu);
+    }
 
-		// init global theme
-		$theme = theme::init();
+    if (!empty($locale)) {
+        setlocale(LC_ALL, $locale);
+    }
 
-		include txpath.'/include/txp_auth.php';
-		doAuth();
+    $textarray = load_lang(LANG);
 
-		// once more for global plus private prefs
-		$prefs = get_prefs();
-		extract($prefs);
+    // Initialise global theme.
+    $theme = \Textpattern\Admin\Theme::init();
 
-		$event = (gps('event') ? trim(gps('event')) : (!empty($default_event) && has_privs($default_event) ? $default_event : 'article'));
-		$step = trim(gps('step'));
-		$app_mode = trim(gps('app_mode'));
+    include txpath.'/include/txp_auth.php';
+    doAuth();
 
-		if (!$dbversion or ($dbversion != $thisversion) or $txp_using_svn)
-		{
-			define('TXP_UPDATE', 1);
-			include txpath.'/update/_update.php';
-		}
+    // Add private preferences.
+    $prefs = array_merge(get_prefs($txp_user), $prefs);
+    extract($prefs);
 
-		janitor();
+    /**
+     * @ignore
+     */
 
-		// article or form preview
-		if (isset($_POST['form_preview']) || isset($_GET['txpreview'])) {
-			include txpath.'/publish.php';
-			textpattern();
-			exit;
-		}
+    define('SITE_HOST', (string) @parse_url(hu, PHP_URL_HOST));
 
-		if (!empty($admin_side_plugins) and gps('event') != 'plugin')
-			load_plugins(1);
+    /**
+     * @ignore
+     */
 
-		// plugins may have altered privilege settings
-		if (!defined('TXP_UPDATE_DONE') && !gps('event') && !empty($default_event) && has_privs($default_event))
-		{
-			 $event = $default_event;
-		}
+    define('IMPATH', $path_to_site.DS.$img_dir.DS);
 
-		// init private theme
-		$theme = theme::init();
+    $event = (gps('event') ? trim(gps('event')) : (!empty($default_event) && has_privs($default_event) ? $default_event : 'article'));
+    $step = trim(gps('step'));
+    $app_mode = trim(gps('app_mode'));
 
-		include txpath.'/lib/txplib_head.php';
+    if (!$dbversion or ($dbversion != $thisversion) or $txp_using_svn) {
+        define('TXP_UPDATE', 1);
+        include txpath.'/update/_update.php';
+    }
 
-		require_privs($event);
-		callback_event($event, $step, 1);
-		$inc = txpath . '/include/txp_'.$event.'.php';
-		if (is_readable($inc))
-			include($inc);
-		callback_event($event, $step, 0);
+    janitor();
 
-		end_page();
+    // Article or form preview.
+    if (isset($_GET['txpreview'])) {
+        include txpath.'/publish.php';
+        textpattern();
+        exit;
+    }
 
-		$microdiff = substr(getmicrotime() - $microstart,0,6);
-		$memory_peak = is_callable('memory_get_peak_usage') ? ceil(memory_get_peak_usage(true)/1024) : '-';
+    if (!empty($admin_side_plugins) and gps('event') != 'plugin') {
+        load_plugins(1);
+    }
 
-		if ($app_mode != 'async') {
-			echo n.comment(gTxt('runtime').': '.$microdiff);
-			echo n.comment(sprintf('Memory: %sKb', $memory_peak));
-		} else {
-			header("X-Textpattern-Runtime: $microdiff");
-			header("X-Textpattern-Memory: $memory_peak");
-		}
-	} else {
-		txp_die('DB-Connect was successful, but the textpattern-table was not found.',
-				'503 Service Unavailable');
-	}
-?>
+    // Plugins may have altered privilege settings.
+    if (!defined('TXP_UPDATE_DONE') && !gps('event') && !empty($default_event) && has_privs($default_event)) {
+        $event = $default_event;
+    }
+
+    // Initialise private theme.
+    $theme = \Textpattern\Admin\Theme::init();
+
+    include txpath.'/lib/txplib_head.php';
+
+    require_privs($event);
+    callback_event($event, $step, 1);
+    $inc = txpath.'/include/txp_'.$event.'.php';
+
+    if (is_readable($inc)) {
+        include($inc);
+    }
+
+    callback_event($event, $step, 0);
+
+    end_page();
+
+    if ($app_mode != 'async') {
+        echo $trace->summary();
+        echo $trace->result();
+    } else {
+        foreach ($trace->summary(true) as $key => $value) {
+            header('X-Textpattern-'.preg_replace('/[^\w]+/', '', $key).': '.$value);
+        }
+    }
+} else {
+    txp_die('Database connection was successful, but the <code>textpattern</code> table was not found.',
+        '503 Service Unavailable');
+}

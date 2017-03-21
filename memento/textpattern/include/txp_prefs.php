@@ -1,977 +1,833 @@
 <?php
 
 /*
-	This is Textpattern
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2005 Dean Allen
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-	Copyright 2005 by Dean Allen
-	www.textpattern.com
-	All rights reserved
+/**
+ * Preferences panel user interface and interaction.
+ *
+ * @package Admin\Prefs
+ */
 
-	Use of this software indicates acceptance of the Textpattern license agreement
+if (!defined('txpinterface')) {
+    die('txpinterface is undefined.');
+}
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_prefs.php $
-$LastChangedRevision: 4062 $
+if ($event == 'prefs') {
+    require_privs('prefs');
 
-*/
-	if (!defined('txpinterface')) die('txpinterface is undefined.');
+    bouncer($step, array(
+        'prefs_save' => true,
+        'prefs_list' => false,
+    ));
 
-//-------------------------------------------------------------
+    switch (strtolower($step)) {
+        case '':
+        case 'prefs_list':
+            prefs_list();
+            break;
+        case 'prefs_save':
+            prefs_save();
+            break;
+    }
+}
 
-	include_once txpath.'/lib/txplib_update.php';
+/**
+ * Commits prefs to the database.
+ */
 
-	if ($event == 'prefs') {
-		require_privs('prefs');
+function prefs_save()
+{
+    global $prefs, $gmtoffset, $is_dst, $auto_dst, $timezone_key, $txp_user;
 
-		$available_steps = array(
-			'advanced_prefs'      => false,
-			'prefs_save'          => true,
-			'advanced_prefs_save' => true,
-			'get_language'        => true,
-			'get_textpack'        => true,
-			'remove_language'     => true,
-			'list_languages'      => false,
-			'prefs_list'          => false
-		);
+    // Update custom fields count from database schema and cache it as a hidden pref.
+    // TODO: move this when custom fields are refactored.
+    $max_custom_fields = count(preg_grep('/^custom_\d+/', getThings("DESCRIBE ".safe_pfx('textpattern'))));
+    set_pref('max_custom_fields', $max_custom_fields, 'publish', 2);
 
-		if ($step && bouncer($step, $available_steps)) {
-			$step();
-		} else {
-			prefs_list();
-		}
-	}
+    $sql = array();
+    $sql[] = "prefs_id = 1 AND event != '' AND type IN (".PREF_CORE.", ".PREF_PLUGIN.", ".PREF_HIDDEN.")";
+    $sql[] = "(user_name = '' OR (user_name = '".doSlash($txp_user)."' AND name NOT IN (
+            SELECT name FROM ".safe_pfx('txp_prefs')." WHERE user_name = ''
+        )))";
 
-// -------------------------------------------------------------
-	function prefs_save()
-	{
-		global $prefs, $gmtoffset, $is_dst, $auto_dst, $timezone_key;
+    if (!get_pref('use_comments', 1, 1)) {
+        $sql[] = "event != 'comments'";
+    }
 
-		$prefnames = safe_column("name", "txp_prefs", "prefs_id = 1");
+    $prefnames = safe_rows_start(
+        "name, event, user_name, val",
+        'txp_prefs',
+        join(" AND ", $sql)
+    );
 
-		$post = doSlash(stripPost());
+    $post = stripPost();
 
-		// Forge $auto_dst for (in-)capable servers
-		if (!timezone::is_supported())
-		{
-			$post['auto_dst'] = false;
-		}
-		$prefs['auto_dst'] = $auto_dst = $post['auto_dst'];
+    if (isset($post['tempdir']) && empty($post['tempdir'])) {
+        $post['tempdir'] = find_temp_dir();
+    }
 
-		if (!$post['auto_dst'])
-		{
-			$is_dst = $post['is_dst'];
-		}
+    if (!empty($post['file_max_upload_size'])) {
+        $post['file_max_upload_size'] = real_max_upload_size($post['file_max_upload_size']);
+    }
 
-		// Forge $gmtoffset and $is_dst from $timezone_key if present
-		if (isset($post['timezone_key']))
-		{
-			$key = $post['timezone_key'];
-			$tz = new timezone;
-			$tzd = $tz->details();
-			if (isset($tzd[$key]))
-			{
-				$prefs['timezone_key'] = $timezone_key = $key;
-				$post['gmtoffset'] = $prefs['gmtoffset'] = $gmtoffset = $tzd[$key]['offset'];
-				$post['is_dst'] = $prefs['is_dst'] = $is_dst = timezone::is_dst(time(), $key);
-			}
+    if (isset($post['auto_dst'])) {
+        $prefs['auto_dst'] = $auto_dst = $post['auto_dst'];
 
-		}
+        if (isset($post['is_dst']) && !$post['auto_dst']) {
+            $is_dst = $post['is_dst'];
+        }
+    }
 
-		foreach($prefnames as $prefname) {
-			if (isset($post[$prefname])) {
-				if ($prefname == 'siteurl')
-				{
-					$post[$prefname] = str_replace("http://",'',$post[$prefname]);
-					$post[$prefname] = rtrim($post[$prefname],"/ ");
-				}
+    // Forge $gmtoffset and $is_dst from $timezone_key if present.
+    if (!empty($post['timezone_key'])) {
+        $key = $post['timezone_key'];
+        $tzd = Txp::get('\Textpattern\Date\Timezone')->getTimeZones();
 
-				safe_update(
-					"txp_prefs",
-					"val = '".$post[$prefname]."'",
-					"name = '".doSlash($prefname)."' and prefs_id = 1"
-				);
-			}
-		}
+        if (isset($tzd[$key])) {
+            $prefs['timezone_key'] = $timezone_key = $key;
 
-		update_lastmod();
+            if ($auto_dst) {
+                $post['gmtoffset'] = $prefs['gmtoffset'] = $gmtoffset = $tzd[$key]['offset'];
+                $post['is_dst'] = $prefs['is_dst'] = $is_dst = (int)Txp::get('\Textpattern\Date\Timezone')->isDst(null, $key);
+            }
+        }
+    }
 
-		prefs_list(gTxt('preferences_saved'));
-	}
+    if (isset($post['siteurl'])) {
+        $post['siteurl'] = preg_replace('#^https?://#', '', rtrim($post['siteurl'], '/ '));
+    }
 
-// -------------------------------------------------------------
+    while ($a = nextRow($prefnames)) {
+        extract($a);
 
-	function prefs_list($message = '')
-	{
-		global $prefs;
-		extract($prefs);
+        if (!isset($post[$name]) || !has_privs('prefs.'.$event)) {
+            continue;
+        }
 
-		// Read real DB value instead of potentially 'stale' $prefs array when value has just changed
-		$use_comments = safe_field('val', 'txp_prefs', "name='use_comments'");
+        if (is_array($post[$name])) {
+            $post[$name] = implode(',', array_diff($post[$name], array('')));
+        }
 
-		echo pagetop(gTxt('tab_preferences'), $message);
+        if ($name === 'logging' && $post[$name] === 'none' && $post[$name] !== $val) {
+            safe_truncate('txp_log');
+        }
 
-		$locale = setlocale(LC_ALL, $locale);
+        if ($name === 'expire_logs_after' && (int) $post[$name] !== (int) $val) {
+            safe_delete('txp_log', "time < DATE_SUB(NOW(), INTERVAL ".intval($post[$name])." DAY)");
+        }
 
-		echo '<h1 class="txp-heading">'.gTxt('tab_preferences').'</h1>';
-		echo n.'<div id="prefs_container" class="txp-container">'.
-			n.n.'<form method="post" class="prefs-form basic" action="index.php">'.
+        update_pref($name, (string) $post[$name], null, null, null, null, (string) $user_name);
+    }
 
-			n.'<p class="nav-tertiary">'.
-				sLink('prefs', 'prefs_list', gTxt('site_prefs'), 'navlink-active').
-				sLink('prefs', 'advanced_prefs', gTxt('advanced_preferences'), 'navlink').
-				sLink('prefs', 'list_languages', gTxt('manage_languages'), 'navlink').
-			n.'</p>'.
+    update_lastmod('preferences_saved');
 
-			n.n.startTable('', '', 'txp-list')
-			.'<tbody>';
+    prefs_list(gTxt('preferences_saved'));
+}
 
-		$evt_list = safe_column('event', 'txp_prefs', "type = 0 and prefs_id = 1 group by event order by event desc");
+/**
+ * Renders the list of preferences.
+ *
+ * Plugins may add their own prefs, for example by using plugin lifecycle events
+ * or raising a (pre) callback on event=admin / step=prefs_list so they are
+ * installed or updated when accessing the Preferences panel. Access to the
+ * prefs can be controlled by using add_privs() on 'prefs.your-prefs-event-name'.
+ *
+ * @param string $message The feedback / error string to display
+ */
 
-		foreach ($evt_list as $event)
-		{
-			$rs = safe_rows_start('*', 'txp_prefs', "type = 0 and prefs_id = 1 and event = '".doSlash($event)."' order by position");
+function prefs_list($message = '')
+{
+    global $prefs, $txp_user;
 
-			$cur_evt = '';
+    extract($prefs);
 
-			while ($a = nextRow($rs))
-			{
-				if ($a['event'] != $cur_evt)
-				{
-					$cur_evt = $a['event'];
+    pagetop(gTxt('tab_preferences'), $message);
 
-					if ($cur_evt == 'comments' && !$use_comments)
-					{
-						continue;
-					}
+    $locale = setlocale(LC_ALL, $locale);
 
-					echo n.n.tr(
-						tdcs(
-							hed(gTxt($a['event']), 3, ' class="'.$a['event'].'-prefs"')
-						, 2)
-					, ' class="pref-heading"');
-				}
+    echo n.'<form class="prefs-form" id="prefs_form" method="post" action="index.php">';
 
-				if ($cur_evt == 'comments' && !$use_comments)
-				{
-					continue;
-				}
+    // TODO: remove 'custom' when custom fields are refactored.
+    $core_events = array('site', 'admin', 'publish', 'feeds', 'comments', 'custom');
+    $joined_core = join(',', quote_list($core_events));
 
-				$label = (!in_array($a['html'], array('yesnoradio', 'is_dst'))) ?
-					'<label for="'.$a['name'].'">'.gTxt($a['name']).'</label>' :
-					gTxt($a['name']);
+    $sql = array();
+    $sql[] = 'prefs_id = 1 and event != "" and type in('.PREF_CORE.', '.PREF_PLUGIN.')';
+    $sql[] = "(user_name = '' OR (user_name = '".doSlash($txp_user)."' AND name NOT IN (
+            SELECT name FROM ".safe_pfx('txp_prefs')." WHERE user_name = ''
+        )))";
 
-				$out = tda($label.n.popHelp($a['name']), ' class="pref-label"');
-				$out.= td(pref_func($a['html'], $a['name'], $a['val'], ($a['html'] == 'text_input' ? INPUT_REGULAR : '')), '', 'pref-value');
+    if (!get_pref('use_comments', 1, 1)) {
+        $sql[] = "event != 'comments'";
+    }
 
-				echo tr($out, " id='prefs-{$a['name']}' class='{$a['event']}-prefs'");
-			}
-		}
+    $rs = safe_rows_start(
+        "*, FIELD(event, $joined_core) AS sort_value",
+        'txp_prefs',
+        join(" AND ", $sql)." ORDER BY sort_value = 0, sort_value, event, position"
+    );
 
-		echo n.'</tbody>'.n.endTable().
-			graf(
-				fInput('submit', 'Submit', gTxt('save'), 'publish').
-				n.sInput('prefs_save').
-				n.eInput('prefs').
-				n.hInput('prefs_id', '1').
-				n.tInput()
-			).
-			n.n.'</form>'.
-			n.'</div>';
-	}
+    $last_event = null;
+    $out = array();
+    $build = array();
+    $groupOut = array();
+    $tabCount = $tabActive = 0;
+    $selected = get_pref('pane_prefs_visible');
 
-//-------------------------------------------------------------
+    if (numRows($rs)) {
+        while ($a = nextRow($rs)) {
+            if (!has_privs('prefs.'.$a['event'])) {
+                continue;
+            }
 
-	function pref_func($func, $name, $val, $size = '')
-	{
-		$func = (is_callable('pref_'.$func) ? 'pref_'.$func : (is_callable($func) ? $func : 'text_input'));
-		return call_user_func($func, $name, $val, $size);
-	}
+            if ($a['event'] !== $last_event) {
+                if ($last_event !== null) {
+                    $build[] = tag(
+                        hed(gTxt($last_event), 2, array('id' => 'prefs_group_'.$last_event.'-label')).
+                        join(n, $out), 'section', array(
+                            'class'           => 'txp-prefs-group',
+                            'id'              => 'prefs_group_'.$last_event,
+                            'aria-labelledby' => 'prefs_group_'.$last_event.'-label',
+                        )
+                    );
 
-//-------------------------------------------------------------
+                    $groupOut[] = n.tag(href(
+                            gTxt($last_event),
+                            '#prefs_group_'.$last_event,
+                            array(
+                                'data-txp-pane'  => $last_event,
+                                'data-txp-token' => md5($last_event.'prefs'.form_token().get_pref('blog_uid')),
+                            )),
+                        'li', array(
+                            'class' => (($last_event === $selected) ? 'ui-tabs-active ui-state-active' : '')
+                            ));
+                }
 
-	function text_input($name, $val, $size = '')
-	{
-		$class = '';
-		switch ($size) {
-			case INPUT_MEDIUM: $class = 'input-medium'; break;
-			case INPUT_SMALL: $class = 'input-small'; break;
-			case INPUT_XSMALL: $class = 'input-xsmall'; break;
-		}
-		return fInput('text', $name, $val, $class, '', '', $size, '', $name);
-	}
+                if ($last_event === $selected) {
+                    $tabActive = $tabCount - 1;
+                }
 
-//-------------------------------------------------------------
+                $last_event = $a['event'];
+                $out = array();
+                $tabCount++;
+            }
 
-	function pref_longtext_input($name, $val, $size = '')
-	{
-		return text_area($name, '', '', $val, '', $size);
-	}
+            $label = '';
 
-//-------------------------------------------------------------
+            if (!in_array($a['html'], array('yesnoradio', 'is_dst'))) {
+                $label = $a['name'];
+            }
 
-	function gmtoffset_select($name, $val)
-	{
-		// Fetch *hidden* pref
-		$key = safe_field('val', 'txp_prefs', "name='timezone_key'");
-		$tz = new timezone;
-		$ui = $tz->selectInput('timezone_key', $key, true, '', 'gmtoffset');
-		return pluggable_ui('prefs_ui', 'gmtoffset', $ui, $name, $val);
-	}
+            // TODO: remove exception when custom fields move to meta store.
+            $help = '';
+            if (strpos($a['name'], 'custom_') === false) {
+                $help = $a['name'];
+            }
 
+            if ($a['html'] == 'text_input') {
+                $size = INPUT_REGULAR;
+            } else {
+                $size = '';
+            }
 
-//-------------------------------------------------------------
+            $out[] = inputLabel(
+                $a['name'],
+                pref_func($a['html'], $a['name'], $a['val'], $size),
+                $label,
+                $help,
+                array(
+                    'class' => 'txp-form-field',
+                    'id'    => 'prefs-'.$a['name'],
+                )
+            );
+        }
+    }
 
-	function is_dst($name, $val)
-	{
-		$ui = yesnoRadio ($name, $val).n.
-		script_js ("textpattern.timezone_is_supported = ".(int)timezone::is_supported().";").
-		script_js (<<<EOS
-			$(document).ready(function(){
-				var radio = $("#prefs-is_dst input");
-				if (radio) {
-					if ($("#auto_dst-1").prop("checked") && textpattern.timezone_is_supported) {
-						radio.prop("disabled","disabled");
-					}
-					$("#auto_dst-0").click(
-						function(){
-							radio.removeProp("disabled");
-						});
-				   	$("#auto_dst-1").click(
-						function(){
-							radio.prop("disabled","disabled");
-					  	});
-			   	}
-				if (!textpattern.timezone_is_supported) {
-					$("#prefs-auto_dst input").prop("disabled","disabled");
-				}
-	});
+    if ($last_event === null) {
+        echo graf(
+            span(null, array('class' => 'ui-icon ui-icon-info')).' '.
+            gTxt('no_preferences'),
+            array('class' => 'alert-block information')
+        );
+    } else {
+        $build[] = tag(
+            hed(gTxt($last_event), 2, array('id' => 'prefs_group_'.$last_event.'-label')).
+            join(n, $out), 'section', array(
+                'class'           => 'txp-prefs-group',
+                'id'              => 'prefs_group_'.$last_event,
+                'aria-labelledby' => 'prefs_group_'.$last_event.'-label',
+            )
+        );
+
+        $groupOut[] = n.tag(href(
+                gTxt($last_event),
+                '#prefs_group_'.$last_event,
+                array(
+                    'data-txp-pane'  => $last_event,
+                    'data-txp-token' => md5($last_event.'prefs'.form_token().get_pref('blog_uid')),
+                )),
+            'li', array(
+                'class' => (($last_event === $selected) ? 'ui-tabs-active ui-state-active' : '')
+                )).n;
+
+        if ($last_event === $selected) {
+            $tabActive = $tabCount - 1;
+        }
+
+        echo n.'<div class="txp-layout">'.
+            n.tag(
+                hed(gTxt('tab_preferences'), 1, array('class' => 'txp-heading')),
+                'div', array('class' => 'txp-layout-1col')
+            ).
+            n.tag_start('div', array('class' => 'txp-layout-4col-alt')).
+            wrapGroup(
+                'all_preferences',
+                n.tag(join($groupOut), 'ul', array('class' => 'switcher-list')),
+                'all_preferences'
+            );
+
+        if ($last_event !== null) {
+            echo graf(fInput('submit', 'Submit', gTxt('save'), 'publish'), array('class' => 'txp-save'));
+        }
+
+        echo n.tag_end('div'). // End of .txp-layout-4col-alt.
+            n.tag_start('div', array('class' => 'txp-layout-4col-3span')).
+            join(n, $build).
+            n.tag_end('div'). // End of .txp-layout-4col-3span.
+            sInput('prefs_save').
+            eInput('prefs').
+            hInput('prefs_id', '1').
+            tInput();
+    }
+
+    echo n.'</div>'. // End of .txp-layout.
+        n.'</form>'.
+        script_js('var selectedTab = "' . $tabActive . '";');
+}
+
+/**
+ * Calls a core or custom function to render a preference input widget.
+ *
+ * @param  string $func Callable in a string presentation
+ * @param  string $name HTML name/id of the input control
+ * @param  string $val  Initial (or current) value of the input control
+ * @param  int    $size Size of the input control (width or depth, dependent on control)
+ * @return string HTML
+ */
+
+function pref_func($func, $name, $val, $size = '')
+{
+    if ($func != 'func' && is_callable('pref_'.$func)) {
+        $func = 'pref_'.$func;
+    } else {
+        $string = new \Textpattern\Type\StringType($func);
+        $func = $string->toCallback();
+
+        if (!is_callable($func)) {
+            $func = 'text_input';
+        }
+    }
+
+    return call_user_func($func, $name, $val, $size);
+}
+
+/**
+ * Renders a HTML &lt;input&gt; element.
+ *
+ * @param  string $name HTML name and id of the text box
+ * @param  string $val  Initial (or current) content of the text box
+ * @param  int    $size Width of the textbox. Options are INPUT_MEDIUM | INPUT_SMALL | INPUT_XSMALL
+ * @return string HTML
+ */
+
+function text_input($name, $val, $size = 0)
+{
+    $class = '';
+    switch ($size) {
+        case INPUT_MEDIUM:
+            $class = 'input-medium';
+            break;
+        case INPUT_SMALL:
+            $class = 'input-small';
+            break;
+        case INPUT_XSMALL:
+            $class = 'input-xsmall';
+            break;
+    }
+
+    return fInput('text', $name, $val, $class, '', '', $size, '', $name);
+}
+
+/**
+ * Renders a HTML &lt;textarea&gt; element.
+ *
+ * @param  string $name HTML name of the textarea
+ * @param  string $val  Initial (or current) content of the textarea
+ * @param  int    $size Number of rows the textarea has
+ * @return string HTML
+ */
+
+function pref_longtext_input($name, $val, $size = '')
+{
+    return text_area($name, '', '', $val, '', $size);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of cities for timezone selection.
+ *
+ * Can be altered by plugins via the 'prefs_ui > gmtoffset'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name of the list
+ * @param  string $val  Initial (or current) selected option
+ * @return string HTML
+ */
+
+function gmtoffset_select($name, $val)
+{
+    // Fetch *hidden* pref
+    $key = get_pref('timezone_key', '', true);
+
+    if ($key === '') {
+        $key = (string) Txp::get('\Textpattern\Date\Timezone')->getTimezone();
+    }
+
+    $tz = new timezone;
+    $ui = $tz->selectInput('timezone_key', $key, false, '', 'gmtoffset');
+
+    return pluggable_ui('prefs_ui', 'gmtoffset', $ui, $name, $val);
+}
+
+/**
+ * Renders a HTML choice for whether Daylight Savings Time is in effect.
+ *
+ * Can be altered by plugins via the 'prefs_ui > is_dst'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function is_dst($name, $val)
+{
+    global $timezone_key, $auto_dst;
+
+    if ($auto_dst) {
+        $val = (int)Txp::get('\Textpattern\Date\Timezone')->isDst(null, $timezone_key);
+    }
+
+    $ui = yesnoRadio($name, $val).
+    script_js(<<<EOS
+        $(document).ready(function ()
+        {
+            var radio = $("#prefs-is_dst");
+            var radioInput = radio.find('input');
+            var radioLabel = radio.find('.txp-form-field-label');
+            var dstOn = $("#auto_dst-1");
+            var dstOff = $("#auto_dst-0");
+
+            if (radio) {
+                if (dstOn.prop("checked")) {
+                    radioInput.prop("disabled", "disabled");
+                    radioLabel.addClass('disabled');
+                }
+
+                dstOff.click(function () {
+                    radioInput.removeProp("disabled");
+                    radioLabel.removeClass('disabled');
+                });
+
+                dstOn.click(function () {
+                    radioInput.prop("disabled", "disabled");
+                    radioLabel.addClass('disabled');
+                });
+            }
+        });
 EOS
-		);
-		return pluggable_ui('prefs_ui', 'is_dst', $ui, $name, $val);
-	}
-
-//-------------------------------------------------------------
-
-	function logging($name, $val)
-	{
-		$vals = array(
-			'all'   => gTxt('all_hits'),
-			'refer' => gTxt('referrers_only'),
-			'none'  => gTxt('none')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-
-	function permlinkmodes($name, $val)
-	{
-		$vals = array(
-			'messy'                => gTxt('messy'),
-			'id_title'             => gTxt('id_title'),
-			'section_id_title'     => gTxt('section_id_title'),
-			'year_month_day_title' => gTxt('year_month_day_title'),
-			'section_title'        => gTxt('section_title'),
-			'title_only'           => gTxt('title_only'),
-			// 'category_subcategory' => gTxt('category_subcategory')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-// Deprecated; permlinkmodes is used instead now
-	function urlmodes($name, $val)
-	{
-		$vals = array(
-			'0' => gTxt('messy'),
-			'1' => gTxt('clean')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-
-	function commentmode($name, $val)
-	{
-		$vals = array(
-			'0' => gTxt('nopopup'),
-			'1' => gTxt('popup')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-
-	function weeks($name, $val)
-	{
-		$weeks = gTxt('weeks');
-
-		$vals = array(
-			'0' => gTxt('never'),
-			7   => '1 '.gTxt('week'),
-			14  => '2 '.$weeks,
-			21  => '3 '.$weeks,
-			28  => '4 '.$weeks,
-			35  => '5 '.$weeks,
-			42  => '6 '.$weeks
-		);
-
-		return pluggable_ui('prefs_ui', 'weeks', selectInput($name, $vals, $val, '', '', $name), $name, $val);
-	}
-
-//-------------------------------------------------------------
-
-	function languages($name, $val)
-	{
-		$installed_langs = safe_column('lang', 'txp_lang', "1 = 1 group by lang");
-
-		$vals = array();
-
-		foreach ($installed_langs as $lang)
-		{
-			$vals[$lang] = safe_field('data', 'txp_lang', "name = '".doSlash($lang)."' AND lang = '".doSlash($lang)."'");
-
-			if (trim($vals[$lang]) == '')
-			{
-				$vals[$lang] = $lang;
-			}
-		}
-
-		asort($vals);
-		reset($vals);
-
-		$out = n.'<select id="'.$name.'" name="'.$name.'" class="languages">';
-
-		foreach ($vals as $avalue => $alabel)
-		{
-			$selected = ($avalue == $val || $alabel == $val) ?
-				' selected="selected"' :
-				'';
-
-			$out .= n.t.'<option value="'.txpspecialchars($avalue).'"'.$selected.'>'.txpspecialchars($alabel).'</option>'.n;
-		}
-
-		$out .= n.'</select>';
-
-		return $out;
-	}
-
-// -------------------------------------------------------------
-
-	function dateformats($name, $val)
-	{
-		$dayname = '%A';
-		$dayshort = '%a';
-		$daynum = is_numeric(@strftime('%e')) ? '%e' : '%d';
-		$daynumlead = '%d';
-		$daynumord = is_numeric(substr(trim(@strftime('%Oe')), 0, 1)) ? '%Oe' : $daynum;
-		$monthname = '%B';
-		$monthshort = '%b';
-		$monthnum = '%m';
-		$year = '%Y';
-		$yearshort = '%y';
-		$time24 = '%H:%M';
-		$time12 = @strftime('%p') ? '%I:%M %p' : $time24;
-		$date = @strftime('%x') ? '%x' : '%Y-%m-%d';
-
-		$formats = array(
-			"$monthshort $daynumord, $time12",
-			"$daynum.$monthnum.$yearshort",
-			"$daynumord $monthname, $time12",
-			"$yearshort.$monthnum.$daynumlead, $time12",
-			"$dayshort $monthshort $daynumord, $time12",
-			"$dayname $monthname $daynumord, $year",
-			"$monthshort $daynumord",
-			"$daynumord $monthname $yearshort",
-			"$daynumord $monthnum $year - $time24",
-			"$daynumord $monthname $year",
-			"$daynumord $monthname $year, $time24",
-			"$daynumord. $monthname $year",
-			"$daynumord. $monthname $year, $time24",
-			"$year-$monthnum-$daynumlead",
-			"$year-$daynumlead-$monthnum",
-			"$date $time12",
-			"$date",
-			"$time24",
-			"$time12",
-			"$year-$monthnum-$daynumlead $time24",
-		);
-
-		$ts = time();
-
-		$vals = array();
-
-		foreach ($formats as $f)
-		{
-			if ($d = safe_strftime($f, $ts))
-			{
-				$vals[$f] = $d;
-			}
-		}
-
-		$vals['since'] = gTxt('hours_days_ago');
-
-		return selectInput($name, array_unique($vals), $val, '', '', $name);
-	}
-//-------------------------------------------------------------
-
-	function prod_levels($name, $val)
-	{
-		$vals = array(
-			'debug'   => gTxt('production_debug'),
-			'testing' => gTxt('production_test'),
-			'live'    => gTxt('production_live'),
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-	function default_event($name, $val)
-	{
-		$vals = areas();
-
-		$out = array();
-
-		foreach ($vals as $a => $b)
-		{
-			if (count($b) > 0)
-			{
-				$out[] = n.t.'<optgroup label="'.gTxt('tab_'.$a).'">';
-
-				foreach ($b as $c => $d)
-				{
-					$out[] = n.t.t.'<option value="'.$d.'"'.( $val == $d ? ' selected="selected"' : '' ).'>'.$c.'</option>';
-				}
-
-				$out[] = n.t.'</optgroup>';
-			}
-		}
-
-		return n.'<select id="default_event" name="'.$name.'" class="default-events">'.
-			join('', $out).
-			n.'</select>';
-	}
-
-//-------------------------------------------------------------
-	function commentsendmail($name, $val)
-	{
-		$vals = array(
-			'1' => gTxt('all'),
-			'0' => gTxt('none'),
-			'2' => gTxt('ham')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-	function custom_set($name, $val)
-	{
-		return pluggable_ui('prefs_ui', 'custom_set', text_input($name, $val, INPUT_REGULAR), $name, $val);
-	}
-
-//-------------------------------------------------------------
-	function themename($name, $val)
-	{
-		$themes = theme::names();
-		foreach ($themes as $t)
-		{
-			$theme = theme::factory($t);
-			if ($theme) {
-				$m = $theme->manifest();
-				$title = empty($m['title']) ? ucwords($theme->name) : $m['title'];
-				$vals[$t] = $title;
-				unset($theme);
-			}
-		}
-		asort($vals, SORT_STRING);
-
-		return pluggable_ui('prefs_ui', 'theme_name',
-			selectInput($name, $vals, $val, '', '', $name));
-	}
-
-//-------------------------------------------------------------
-	function doctypes($name, $val)
-	{
-		$vals = array(
-			'xhtml' => gTxt('XHTML'),
-			'html5' => gTxt('HTML5')
-		);
-
-		return selectInput($name, $vals, $val, '', '', $name);
-	}
-
-//-------------------------------------------------------------
-	function advanced_prefs($message = '')
-	{
-		echo pagetop(gTxt('advanced_preferences'), $message).
-
-			n.'<h1 class="txp-heading">'.gTxt('tab_preferences').'</h1>'.
-			n.'<div id="prefs_container" class="txp-container">'.
-			n.n.'<form method="post" class="prefs-form advanced" action="index.php">'.
-
-			n.'<p class="nav-tertiary">'.
-				sLink('prefs', 'prefs_list', gTxt('site_prefs'), 'navlink').
-				sLink('prefs', 'advanced_prefs', gTxt('advanced_preferences'), 'navlink-active').
-				sLink('prefs', 'list_languages', gTxt('manage_languages'), 'navlink').
-			n.'</p>'.
-
-			n.n.startTable('', '', 'txp-list')
-			.'<tbody>';
-
-		$rs = safe_rows_start('*', 'txp_prefs', "type = 1 and prefs_id = 1 order by event, position");
-
-		$cur_evt = '';
-
-		while ($a = nextRow($rs))
-		{
-			$headingPopHelp = (strpos($a['name'], 'custom_') !== false);
-
-			if ($a['event']!= $cur_evt)
-			{
-				$cur_evt = $a['event'];
-
-				echo n.n.tr(
-					tdcs(
-						hed(gTxt($a['event']) . ($headingPopHelp ? n.popHelp($a['name']) : ''), 3, ' class="'.$a['event'].'-prefs"')
-					, 2)
-				, ' class="pref-heading"');
-			}
-
-			$label = (!in_array($a['html'], array('yesnoradio', 'is_dst')))
-				? '<label for="'.$a['name'].'">'.gTxt($a['name']).'</label>'
-				: gTxt($a['name']);
-
-			$out = tda($label. (($headingPopHelp) ? '' : n.popHelp($a['name'])), ' class="pref-label"');
-
-			if ($a['html'] == 'text_input')
-			{
-				$look_for = array('expire_logs_after', 'max_url_len', 'time_offset', 'rss_how_many', 'logs_expire');
-
-				$size = in_array($a['name'], $look_for) ? INPUT_XSMALL : INPUT_REGULAR;
-
-				$out.= td(
-					pref_func('text_input', $a['name'], $a['val'], $size)
-				, '', 'pref-value');
-			}
-
-			else
-			{
-				$out.= td(
-					pref_func($a['html'], $a['name'], $a['val'])
-				, '', 'pref-value');
-			}
-
-			echo n.n.tr($out, " id='prefs-{$a['name']}' class='{$a['event']}-prefs'");
-		}
-
-		echo n.'</tbody>'.n.endTable().
-			graf(
-				fInput('submit', 'Submit', gTxt('save'), 'publish').
-				n.sInput('advanced_prefs_save').
-				n.eInput('prefs').
-				n.hInput('prefs_id', '1').
-				n.tInput()
-			).
-			n.n.'</form>'.
-			n.'</div>';
-	}
-
-//-------------------------------------------------------------
-	function real_max_upload_size($user_max)
-	{
-		// The minimum of the candidates, is the real max. possible size
-		$candidates = array($user_max,
-							ini_get('post_max_size'),
-							ini_get('upload_max_filesize'));
-		$real_max = null;
-		foreach ($candidates as $item)
-		{
-			$val = trim($item);
-			$modifier = strtolower( substr($val, -1) );
-			switch($modifier) {
-				// The 'G' modifier is available since PHP 5.1.0
-				case 'g': $val *= 1024;
-				case 'm': $val *= 1024;
-				case 'k': $val *= 1024;
-			}
-			if ($val > 1) {
-				if (is_null($real_max))
-					$real_max = $val;
-				elseif ($val < $real_max)
-					$real_max = $val;
-			}
-		}
-		return $real_max;
-	}
-
-//-------------------------------------------------------------
-	function advanced_prefs_save()
-	{
-		// update custom fields count from database schema and cache it as a hidden pref
-		$max_custom_fields = count(preg_grep('/^custom_\d+/', getThings('describe `'.PFX.'textpattern`')));
-		set_pref('max_custom_fields', $max_custom_fields, 'publish', 2);
-
-		// safe all regular advanced prefs
-		$prefnames = safe_column("name", "txp_prefs", "prefs_id = 1 AND type = 1");
-
-		$post = doSlash(stripPost());
-
-		if (empty($post['tempdir']))
-			$post['tempdir'] = doSlash(find_temp_dir());
-
-		if (!empty($post['file_max_upload_size']))
-			$post['file_max_upload_size'] = real_max_upload_size($post['file_max_upload_size']);
-
-		foreach($prefnames as $prefname) {
-			if (isset($post[$prefname])) {
-					safe_update(
-						"txp_prefs",
-						"val = '".$post[$prefname]."'",
-						"name = '".doSlash($prefname)."' and prefs_id = 1"
-					);
-			}
-		}
-
-		update_lastmod();
-
-		advanced_prefs(gTxt('preferences_saved'));
-	}
-
-//-------------------------------------------------------------
-// install/update/remove languages
-	function list_languages($message='')
-	{
-		global $prefs, $locale, $textarray;
-		require_once txpath.'/lib/IXRClass.php';
-
-		// Select and save active language
-		if (!$message && ps('step')=='list_languages' && ps('language'))
-		{
-				$locale = doSlash(getlocale(ps('language')));
-				safe_update("txp_prefs","val='".doSlash(ps('language'))."'", "name='language'");
-				safe_update("txp_prefs","val='". $locale ."'", "name='locale'");
-				$textarray = load_lang(doSlash(ps('language')));
-				$locale = setlocale(LC_ALL, $locale);
-				$message = gTxt('preferences_saved');
-		}
-		$active_lang = safe_field('val','txp_prefs',"name='language'");
-		$lang_form = '<div id="language_control" class="txp-control-panel">'.
-								form(
-									graf(
-										gTxt('active_language').
-										languages('language',$active_lang).n.
-										fInput('submit','Submit',gTxt('save'),'publish').
-										eInput('prefs').sInput('list_languages')
-									)
-								).'</div>';
-
-		$client = new IXR_Client(RPC_SERVER);
-		//$client->debug = true;
-
-		$available_lang = array();
-		$rpc_connect = false;
-		$show_files = false;
-
-		// Get items from RPC
-		@set_time_limit(90);
-		if ($client->query('tups.listLanguages',$prefs['blog_uid']))
-		{
-			$rpc_connect = true;
-			$response = $client->getResponse();
-			foreach ($response as $language)
-				$available_lang[$language['language']]['rpc_lastmod'] = gmmktime($language['lastmodified']->hour,$language['lastmodified']->minute,$language['lastmodified']->second,$language['lastmodified']->month,$language['lastmodified']->day,$language['lastmodified']->year);
-		}
-		elseif (gps('force') != 'file')
-		{
-			$msg = gTxt('rpc_connect_error')."<!--".$client->getErrorCode().' '.$client->getErrorMessage()."-->";
-		}
-
-		// Get items from Filesystem
-		$files = get_lang_files();
-
-		if ( is_array($files) && !empty($files) )
-		{
-			foreach ($files as $file)
-			{
-				if ($fp = @fopen(txpath.DS.'lang'.DS.$file,'r'))
-				{
-					$name = str_replace('.txt','',$file);
-					$firstline = fgets($fp, 4069);
-					fclose($fp);
-					if (strpos($firstline,'#@version') !== false)
-						@list($fversion,$ftime) = explode(';',trim(substr($firstline,strpos($firstline,' ',1))));
-					else
-						$fversion = $ftime = NULL;
-
-					$available_lang[$name]['file_note'] = (isset($fversion)) ? $fversion : 0;
-					$available_lang[$name]['file_lastmod'] = (isset($ftime)) ? $ftime : 0;
-				}
-			}
-		}
-
-		// Get installed items from the database
-		// We need a value here for the language itself, not for each one of the rows
-		$rows = safe_rows('lang, UNIX_TIMESTAMP(MAX(lastmod)) as lastmod','txp_lang',"1 GROUP BY lang ORDER BY lastmod DESC");
-		$installed_lang = array();
-		foreach ($rows as $language)
-		{
-			$available_lang[$language['lang']]['db_lastmod'] = $language['lastmod'];
-			if ($language['lang'] != $active_lang) {
-				$installed_lang[] = $language['lang'];
-			}
-		}
-
-		$list = '';
-
-		// Show the language table
-		foreach ($available_lang as $langname => $langdat)
-		{
-			$file_updated = ( isset($langdat['db_lastmod']) && @$langdat['file_lastmod'] > $langdat['db_lastmod']);
-			$rpc_updated = ( @$langdat['rpc_lastmod'] > @$langdat['db_lastmod']);
-
-			$rpc_install = tda(
-								($rpc_updated)
-								? strong(
-										eLink(
-											'prefs',
-											'get_language',
-											'lang_code',
-											$langname,
-											(isset($langdat['db_lastmod'])
-												? gTxt('update')
-												: gTxt('install')
-											),
-											'updating',
-											isset($langdat['db_lastmod']),
-											''
-										)
-									).
-									n.'<span class="date modified">'.safe_strftime('%d %b %Y %X',@$langdat['rpc_lastmod']).'</span>'
-								: (
-										(isset($langdat['rpc_lastmod'])
-											? gTxt('updated')
-											: '-'
-										).
-										(isset($langdat['db_lastmod'])
-											? n.'<span class="date modified">'.safe_strftime('%d %b %Y %X',$langdat['db_lastmod']).'</span>'
-											: ''
-										)
-									)
-								,(isset($langdat['db_lastmod']) && $rpc_updated)
-									? ' class="highlight lang-value"'
-									: ' class="lang-value"'
-								);
-
-			$lang_file = tda(
-								(isset($langdat['file_lastmod']))
-								? strong(
-									eLink(
-										'prefs',
-										'get_language',
-										'lang_code',
-										$langname,
-										(
-											($file_updated)
-											? gTxt('update')
-											: gTxt('install')
-										),
-										'force',
-										'file',
-										''
-									)
-								).
-								n.'<span class="date '.($file_updated ? 'created' : 'modified').'">'.safe_strftime($prefs['archive_dateformat'],$langdat['file_lastmod']).'</span>'
-
-								: '-'
-							, ' class="lang-value languages_detail'.((isset($langdat['db_lastmod']) && $rpc_updated) ? ' highlight' : '').'"'
-							);
-			$list .= tr (
-				// Lang-Name & Date
-				tda(gTxt($langname)
-					, (isset($langdat['db_lastmod']) && $rpc_updated)
-							? ' class="highlight lang-label"'
-							: ' class="lang-label"' ).n.
-				$rpc_install.n.
-				$lang_file.n.
-				tda( (in_array($langname, $installed_lang) ? dLink('prefs', 'remove_language', 'lang_code', $langname, 1) : '-'), ' class="languages_detail'.((isset($langdat['db_lastmod']) && $rpc_updated) ? ' highlight' : '').'"')
-			).n.n;
-		}
-
-
-		// Output Table + Content
-		// TODO: tab_languages when this panel is moved to its own tab
-		pagetop(gTxt('update_languages'),$message);
-
-		//TODO: tab_languages when this panel is moved to its own tab
-		echo '<h1 class="txp-heading">'.gTxt('update_languages').'</h1>';
-		echo n.'<div id="language_container" class="txp-container">';
-
-		if (isset($msg) && $msg)
-			echo tag ($msg,'p',' class="error lang-msg"' );
-
-		echo n.'<p class="nav-tertiary">'.
-				sLink('prefs', 'prefs_list', gTxt('site_prefs'), 'navlink').
-				sLink('prefs', 'advanced_prefs', gTxt('advanced_preferences'), 'navlink').
-				sLink('prefs', 'list_languages', gTxt('manage_languages'), 'navlink-active').
-			n.'</p>';
-
-		echo $lang_form;
-
-		echo n, '<div class="txp-listtables">',
-			startTable('', '', 'txp-list'),
-			'<thead>',
-			tr(
-				hCell(gTxt('language')).
-				hCell(gTxt('from_server').n.popHelp('install_lang_from_server')).
-				hCell(gTxt('from_file').n.popHelp('install_lang_from_file'), '', ' class="languages_detail"').
-				hCell(gTxt('remove_lang').n.popHelp('remove_lang'), '', ' class="languages_detail"')
-			),
-			'</thead>';
-
-		echo '<tbody>'.$list.'</tbody>',
-			endTable(),
-			n, '</div>';
-
-		echo
-			graf(
-				toggle_box('languages_detail'),
-				' class="detail-toggle"'
-			);
-
-		echo
-			hed(gTxt('install_from_textpack'), 3).n
-				.form(
-					graf(
-						'<label for="textpack-install">'.gTxt('install_textpack').'</label>'.n.
-						popHelp('get_textpack').n.
-						'<textarea id="textpack-install" class="code" name="textpack" cols="'.INPUT_LARGE.'" rows="'.INPUT_XSMALL.'"></textarea>'.n.
-						fInput('submit', 'install_new', gTxt('upload')).
-						eInput('prefs').
-						sInput('get_textpack')
-					)
-				, '', '', 'post', 'edit-form', '', 'text_uploader');
-
-		echo '</div>'; // end language_container
-	}
-
-//-------------------------------------------------------------
-	function get_language()
-	{
-		global $prefs, $textarray;
-		require_once txpath.'/lib/IXRClass.php';
-		$lang_code = gps('lang_code');
-
-		$client = new IXR_Client(RPC_SERVER);
-//		$client->debug = true;
-
-		@set_time_limit(90);
-		if (gps('force') == 'file' || !$client->query('tups.getLanguage',$prefs['blog_uid'],$lang_code))
-		{
-			if ( (gps('force') == 'file' || gps('updating') !== '1') && install_language_from_file($lang_code) )
-			{
-				if (defined('LANG'))
-					$textarray = load_lang(LANG);
-
-				return list_languages(gTxt($lang_code).sp.gTxt('updated'));
-			}
-			else
-			{
-				pagetop(gTxt('installing_language'));
-				echo tag( gTxt('rpc_connect_error')."<!--".$client->getErrorCode().' '.$client->getErrorMessage()."-->"
-						,'p',' class="error lang-msg"' );
-			}
-		}
-		else
-		{
-			$response = $client->getResponse();
-			$lang_struct = unserialize($response);
-			if ($lang_struct === false) {
-				$errors = $size = 1;
-			} else {
-				function install_lang_key(&$value, $key)
-				{
-					extract(gpsa(array('lang_code','updating')));
-					$exists = safe_field('name','txp_lang',"name='".doSlash($value['name'])."' AND lang='".doSlash($lang_code)."'");
-					$q = "name='".doSlash($value['name'])."', event='".doSlash($value['event'])."', data='".doSlash($value['data'])."', lastmod='".doSlash(strftime('%Y%m%d%H%M%S',$value['uLastmod']))."'";
-
-					if ($exists)
-					{
-						$value['ok'] = safe_update('txp_lang',$q,"lang='".doSlash($lang_code)."' AND name='".doSlash($value['name'])."'");
-					}
-					else
-					{
-						$value['ok'] = safe_insert('txp_lang',$q.", lang='".doSlash($lang_code)."'");
-					}
-				}
-
-				array_walk($lang_struct,'install_lang_key');
-				$size = count($lang_struct);
-				$errors = 0;
-				for($i=0; $i < $size ; $i++)
-				{
-					$errors += ( !$lang_struct[$i]['ok'] );
-				}
-
-				if (defined('LANG')) {
-					$textarray = load_lang(LANG);
-				}
-			}
-
-			$msg = gTxt($lang_code).sp.gTxt('updated');
-
-			if ($errors > 0) {
-				$msg = array($msg.sprintf(" (%s errors, %s ok)",$errors, ($size-$errors)), E_ERROR);
-			}
-
-			return list_languages($msg);
-		}
-	}
-
-//-------------------------------------------------------------
-	function get_textpack()
-	{
-		$textpack = ps('textpack');
-		$n = install_textpack($textpack, true);
-		return list_languages(gTxt('textpack_strings_installed', array('{count}' => $n)));
-	}
-
-//-------------------------------------------------------------
-	function remove_language()
-	{
-		$lang_code = ps('lang_code');
-		$ret = safe_delete('txp_lang', "lang='".doSlash($lang_code)."'");
-		if ($ret) {
-			$msg = gTxt($lang_code).sp.gTxt('deleted');
-		}
-		else
-		{
-			$msg = gTxt('cannot_delete', array('{thing}' => $lang_code));
-		}
-
-		return list_languages($msg);
-	}
-
-// ----------------------------------------------------------------------
-
-	function get_lang_files()
-	{
-		$lang_dir = txpath.DS.'lang'.DS;
-
-		if (!is_dir($lang_dir))
-		{
-			trigger_error('Lang directory is not a directory: '.$lang_dir, E_USER_WARNING);
-			return array();
-		}
-
-		if (chdir($lang_dir))
-		{
-			$files = glob('*.txt');
-		}
-		return (is_array($files)) ? $files : array();
-	}
-?>
+    );
+
+    return pluggable_ui('prefs_ui', 'is_dst', $ui, $name, $val);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of hit logging options.
+ *
+ * @param  string $name HTML name and id of the list
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function logging($name, $val)
+{
+    $vals = array(
+        'all'   => gTxt('all_hits'),
+        'refer' => gTxt('referrers_only'),
+        'none'  => gTxt('none'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of supported permanent link URL formats.
+ *
+ * @param  string $name HTML name and id of the list
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function permlinkmodes($name, $val)
+{
+    $vals = array(
+        'messy'                => gTxt('messy'),
+        'id_title'             => gTxt('id_title'),
+        'section_id_title'     => gTxt('section_id_title'),
+        'year_month_day_title' => gTxt('year_month_day_title'),
+        'section_title'        => gTxt('section_title'),
+        'title_only'           => gTxt('title_only'),
+        //'category_subcategory' => gTxt('category_subcategory'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML choice of comment popup modes.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function commentmode($name, $val)
+{
+    $vals = array(
+        '0' => gTxt('nopopup'),
+        '1' => gTxt('popup'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of comment popup modes.
+ *
+ * Can be altered by plugins via the 'prefs_ui > weeks'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function weeks($name, $val)
+{
+    $weeks = gTxt('weeks');
+
+    $vals = array(
+        '0' => gTxt('never'),
+        7   => '1 '.gTxt('week'),
+        14  => '2 '.$weeks,
+        21  => '3 '.$weeks,
+        28  => '4 '.$weeks,
+        35  => '5 '.$weeks,
+        42  => '6 '.$weeks,
+    );
+
+    return pluggable_ui('prefs_ui', 'weeks', selectInput($name, $vals, $val, '', '', $name), $name, $val);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of available ways to display the date.
+ *
+ * Can be altered by plugins via the 'prefs_ui > dateformats'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function dateformats($name, $val)
+{
+    $dayname = '%A';
+    $dayshort = '%a';
+    $daynum = is_numeric(@strftime('%e')) ? '%e' : '%d';
+    $daynumlead = '%d';
+    $daynumord = is_numeric(substr(trim(@strftime('%Oe')), 0, 1)) ? '%Oe' : $daynum;
+    $monthname = '%B';
+    $monthshort = '%b';
+    $monthnum = '%m';
+    $year = '%Y';
+    $yearshort = '%y';
+    $time24 = '%H:%M';
+    $time12 = @strftime('%p') ? '%I:%M %p' : $time24;
+    $date = @strftime('%x') ? '%x' : '%Y-%m-%d';
+
+    $formats = array(
+        "$monthshort $daynumord, $time12",
+        "$daynum.$monthnum.$yearshort",
+        "$daynumord $monthname, $time12",
+        "$yearshort.$monthnum.$daynumlead, $time12",
+        "$dayshort $monthshort $daynumord, $time12",
+        "$dayname $monthname $daynumord, $year",
+        "$monthshort $daynumord",
+        "$daynumord $monthname $yearshort",
+        "$daynumord $monthnum $year - $time24",
+        "$daynumord $monthname $year",
+        "$daynumord $monthname $year, $time24",
+        "$daynumord. $monthname $year",
+        "$daynumord. $monthname $year, $time24",
+        "$year-$monthnum-$daynumlead",
+        "$year-$daynumlead-$monthnum",
+        "$date $time12",
+        "$date",
+        "$time24",
+        "$time12",
+        "$year-$monthnum-$daynumlead $time24",
+    );
+
+    $ts = time();
+
+    $vals = array();
+
+    foreach ($formats as $f) {
+        if ($d = safe_strftime($f, $ts)) {
+            $vals[$f] = $d;
+        }
+    }
+
+    $vals['since'] = gTxt('hours_days_ago');
+
+    return pluggable_ui('prefs_ui', 'dateformats', selectInput($name, array_unique($vals), $val, '', '', $name), compact('vals', 'name', 'val', 'ts'));
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of content permlink options.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function permlink_format($name, $val)
+{
+    $vals = array(
+        '0'   => gTxt('permlink_intercapped'),
+        '1'   => gTxt('permlink_hyphenated'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of site production status.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function prod_levels($name, $val)
+{
+    $vals = array(
+        'debug'   => gTxt('production_debug'),
+        'testing' => gTxt('production_test'),
+        'live'    => gTxt('production_live'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of available panels to show immediately
+ * after login.
+ *
+ * @param  string $name HTML name of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function default_event($name, $val)
+{
+    $vals = areas();
+
+    $out = array();
+
+    foreach ($vals as $a => $b) {
+        if (count($b) > 0) {
+            $out[] = n.'<optgroup label="'.gTxt('tab_'.$a).'">';
+
+            foreach ($b as $c => $d) {
+                $out[] = n.'<option value="'.$d.'"'.($val == $d ? ' selected="selected"' : '').'>'.$c.'</option>';
+            }
+
+            $out[] = n.'</optgroup>';
+        }
+    }
+
+    return n.'<select class="default-events" id="default_event" name="'.$name.'">'.
+        join('', $out).
+        n.'</select>';
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of sendmail options.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function commentsendmail($name, $val)
+{
+    $vals = array(
+        '1' => gTxt('all'),
+        '0' => gTxt('none'),
+        '2' => gTxt('ham'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML custom field.
+ *
+ * Can be altered by plugins via the 'prefs_ui > custom_set'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name of the widget
+ * @param  string $val  Initial (or current) content
+ * @return string HTML
+ * @todo   deprecate or move this when CFs are migrated to the meta store
+ */
+
+function custom_set($name, $val)
+{
+    return pluggable_ui('prefs_ui', 'custom_set', text_input($name, $val, INPUT_REGULAR), $name, $val);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of installed admin-side themes.
+ *
+ * Can be altered by plugins via the 'prefs_ui > theme_name'
+ * pluggable UI callback event.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function themename($name, $val)
+{
+    $themes = \Textpattern\Admin\Theme::names();
+    foreach ($themes as $t) {
+        $theme = \Textpattern\Admin\Theme::factory($t);
+        if ($theme) {
+            $m = $theme->manifest();
+            $title = empty($m['title']) ? ucwords($theme->name) : $m['title'];
+            $vals[$t] = $title;
+            unset($theme);
+        }
+    }
+    asort($vals, SORT_STRING);
+
+    return pluggable_ui('prefs_ui', 'theme_name',
+        selectInput($name, $vals, $val, '', '', $name));
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of available public site markup schemes to
+ * adhere to.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function doctypes($name, $val)
+{
+    $vals = array(
+        'xhtml' => gTxt('XHTML'),
+        'html5' => gTxt('HTML5'),
+    );
+
+    return selectInput($name, $vals, $val, '', '', $name);
+}
+
+/**
+ * Renders a HTML &lt;select&gt; list of available publishing
+ * status values.
+ *
+ * @param  string $name HTML name and id of the widget
+ * @param  string $val  Initial (or current) selected item
+ * @return string HTML
+ */
+
+function defaultPublishStatus($name, $val)
+{
+    return selectInput($name, status_list(), $val, '', '', $name);
+}
+
+/**
+ * Gets the maximum allowed file upload size.
+ *
+ * Computes the maximum acceptable file size to the application if the
+ * user-selected value is larger than the maximum allowed by the current PHP
+ * configuration.
+ *
+ * @param  int $user_max Desired upload size supplied by the administrator
+ * @return int Actual value; the lower of user-supplied value or system-defined value
+ */
+
+function real_max_upload_size($user_max)
+{
+    // The minimum of the candidates, is the real max. possible size
+    $candidates = array($user_max,
+                        ini_get('post_max_size'),
+                        ini_get('upload_max_filesize'), );
+    $real_max = null;
+    foreach ($candidates as $item) {
+        $val = trim($item);
+        $modifier = strtolower(substr($val, -1));
+        switch ($modifier) {
+            // The 'G' modifier is available since PHP 5.1.0
+            case 'g':
+                $val *= 1024;
+            case 'm':
+                $val *= 1024;
+            case 'k':
+                $val *= 1024;
+        }
+        if ($val > 1) {
+            if (is_null($real_max)) {
+                $real_max = $val;
+            } elseif ($val < $real_max) {
+                $real_max = $val;
+            }
+        }
+    }
+
+    return $real_max;
+}

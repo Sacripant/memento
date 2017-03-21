@@ -1,278 +1,349 @@
 <?php
 
 /*
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/lib/txplib_head.php $
-$LastChangedRevision: 3989 $
-*/
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// -------------------------------------------------------------
-	function pagetop($pagetitle,$message="")
-	{
-		global $siteurl, $sitename, $txp_user, $event, $step, $app_mode, $theme;
+/**
+ * Used for generating admin-side headers.
+ *
+ * @package HTML
+ */
 
-		if ($app_mode == 'async') return;
+/**
+ * Creates and outputs an admin-side header.
+ *
+ * The output contains HTML &lt;head&gt; section and the main navigation.
+ * The results are echoed as opposed to returned.
+ *
+ * This function offers a way to invoke modal activity messages and set the
+ * page title.
+ *
+ * Output will automatically become silent on asynchronous script responses
+ * that do not want HTML headers.
+ *
+ * @param  string       $pagetitle The page title
+ * @param  string|array $message   A message show to the user
+ * @example
+ * pagetop('Title', array('My error message', E_ERROR));
+ * echo 'My page contents.';
+ */
 
-		$area = gps('area');
-		$event = (!$event) ? 'article' : $event;
-		$bm = gps('bm');
+function pagetop($pagetitle, $message = '')
+{
+    global $siteurl, $sitename, $txp_user, $event, $step, $app_mode, $theme;
 
-		$privs = safe_field("privs", "txp_users", "name = '".doSlash($txp_user)."'");
+    if ($app_mode == 'async') {
+        return;
+    }
 
-		$GLOBALS['privs'] = $privs;
+    $area = gps('area');
+    $event = (!$event) ? 'article' : $event;
+    $bm = gps('bm');
 
-		$areas = areas();
-		$area = false;
+    $areas = areas();
+    $area = false;
 
-		foreach ($areas as $k => $v)
-		{
-			if (in_array($event, $v))
-			{
-				$area = $k;
-				break;
-			}
-		}
+    foreach ($areas as $k => $v) {
+        if (in_array($event, $v)) {
+            $area = $k;
+            break;
+        }
+    }
 
-		if (gps('logout'))
-		{
-			$body_id = 'page-logout';
-		}
+    if (gps('logout')) {
+        $body_id = 'page-logout';
+        $area = 'login';
+    } elseif (!$txp_user) {
+        $body_id = 'page-login';
+        $area = 'login';
+    } else {
+        $body_id = 'page-'.txpspecialchars($event);
+    }
 
-		elseif (!$txp_user)
-		{
-			$body_id = 'page-login';
-		}
+    header('X-Frame-Options: '.X_FRAME_OPTIONS);
+    header('X-UA-Compatible: '.X_UA_COMPATIBLE);
 
-		else
-		{
-			$body_id = 'page-'.txpspecialchars($event);
-		}
+    $lang_direction = gTxt('lang_dir');
 
-		header('X-Frame-Options: '.X_FRAME_OPTIONS);
+    if (!in_array($lang_direction, array('ltr', 'rtl'))) {
+        // Apply biased default for missing translations.
+        $lang_direction = 'ltr';
+    } ?><!DOCTYPE html>
+<html lang="<?php echo txpspecialchars(LANG); ?>" dir="<?php echo $lang_direction; ?>">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title><?php echo admin_title($pagetitle)?></title><?php echo
+    script_js('vendors/jquery/jquery/jquery.js', TEXTPATTERN_SCRIPT_URL).
+    script_js('vendors/jquery/jquery-ui/jquery-ui.js', TEXTPATTERN_SCRIPT_URL).
+    script_js(
+        'var textpattern = '.json_encode(array(
+            'event' => $event,
+            'step' => $step,
+            '_txp_token' => form_token(),
+            'ajax_timeout' => (int) AJAX_TIMEOUT,
+            'textarray' => (object) null,
+            'do_spellcheck' => get_pref('do_spellcheck',
+                '#page-article #body, #page-article #title,'.
+                '#page-image #alt-text, #page-image #caption,'.
+                '#page-file #description,'.
+                '#page-link #link-title, #page-link #link-description'),
+            'production_status' => get_pref('production_status'),
+        )).';').
+    script_js('textpattern.js', TEXTPATTERN_SCRIPT_URL).n;
+    gTxtScript(array('form_submission_error', 'are_you_sure', 'cookies_must_be_enabled', 'ok', 'save', 'publish'));
+    // Mandatory un-themable Textpattern core styles ?>
+<style>
+.not-ready .doc-ready,
+.not-ready form.async input[type="submit"],
+.not-ready a.async
+{
+    visibility: hidden;
+}
+</style>
+<?php
+echo $theme->html_head();
+    callback_event('admin_side', 'head_end'); ?>
+</head>
+<body class="not-ready <?php echo $area; ?>" id="<?php echo $body_id; ?>">
+<header class="txp-header">
+<?php callback_event('admin_side', 'pagetop');
+    $theme->set_state($area, $event, $bm, $message);
+    echo pluggable_ui('admin_side', 'header', $theme->header());
+    callback_event('admin_side', 'pagetop_end');
+    echo n.'</header><!-- /txp-header -->'.
+        n.'<main class="txp-body" aria-label="'.gTxt('main_content').'">'.
+        n.'<div id="messagepane">'.$theme->announce($message).'</div>';
+    callback_event('admin_side', 'main_content');
+}
 
-	?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-	<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo LANG; ?>" lang="<?php echo LANG; ?>" dir="<?php echo txpspecialchars(gTxt('lang_dir')); ?>">
-	<head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<meta name="robots" content="noindex, nofollow" />
-	<title><?php echo escape_title($pagetitle) ?> - <?php echo txpspecialchars($sitename) ?> &#124; Textpattern CMS</title>
-	<script type="text/javascript" src="jquery.js"></script>
-	<?php
-	echo script_js(
-		'var textpattern = {
-		event: "'.txpspecialchars($event).'",
-		step: "'.txpspecialchars($step).'",
-		_txp_token: "'.txpspecialchars(form_token()).'",
-		ajax_timeout: '.txpspecialchars(AJAX_TIMEOUT).',
-		ajaxally_challenged: '.(AJAXALLY_CHALLENGED ? 'true' : 'false').',
-		textarray: {},
-		do_spellcheck: "'.txpspecialchars(
-							get_pref('do_spellcheck', '#page-article #body, #page-article #title,'.
-													'#page-image #alt-text, #page-image #caption,'.
-													'#page-file #description,'.
-													'#page-link #link-title, #page-link #link-description')
-							).'"};'
-	);
-	gTxtScript(array('form_submission_error', 'are_you_sure'));
-	?>
-	<script type="text/javascript" src="textpattern.js"></script>
-	<script type="text/javascript">
-	<!--
-		var cookieEnabled = checkCookies();
+/**
+ * Return the HTML &lt;title&gt; contents for an admin-side page.
+ *
+ * The rendered title can be customised via a 'admin_side > html_title'
+ * pluggable UI callback event.
+ *
+ * @param  string $pagetitle Specific page title part
+ * @return string
+ * @since  4.6.0
+ */
 
-		if (!cookieEnabled)
-		{
-			confirm('<?php echo trim(gTxt('cookies_must_be_enabled')); ?>');
-		}
+function admin_title($pagetitle)
+{
+    global $sitename;
 
-		function poweredit(elm)
-		{
-			var something = elm.options[elm.selectedIndex].value;
+    if ((string) $pagetitle === '') {
+        $title = gTxt('untitled');
+    } else {
+        $title = $pagetitle;
+    }
 
-			// Add another chunk of HTML
-			var pjs = document.getElementById('js');
+    $title = escape_title($title).' - '.txpspecialchars($sitename).' &#124; Textpattern CMS';
 
-			if (pjs == null)
-			{
-				var br = document.createElement('br');
-				elm.parentNode.appendChild(br);
+    return pluggable_ui('admin_side', 'html_title', $title, compact('pagetitle'));
+}
 
-				pjs = document.createElement('P');
-				pjs.setAttribute('id','js');
-				elm.parentNode.appendChild(pjs);
-			}
+/**
+ * Creates an area tab.
+ *
+ * This can be used to create table based navigation bars.
+ *
+ * @param      string $label
+ * @param      string $event
+ * @param      string $tarea
+ * @param      string $area
+ * @return     string HTML table column
+ * @deprecated in 4.6.0
+ */
 
-			if (pjs.style.display == 'none' || pjs.style.display == '')
-			{
-				pjs.style.display = 'block';
-			}
+function areatab($label, $event, $tarea, $area)
+{
+    $tc = ($area == $event) ? 'tabup' : 'tabdown';
+    $atts = ' class="'.$tc.'"';
+    $hatts = ' href="?event='.$tarea.'"';
 
-			if (something != '')
-			{
-				switch (something)
-				{
-					default:
-						pjs.style.display = 'none';
-						break;
-				}
-			}
+    return tda(tag($label, 'a', $hatts), $atts);
+}
 
-			return false;
-		}
+/**
+ * Creates a secondary area tab.
+ *
+ * This can be used to create table based navigation bars.
+ *
+ * @param      string $label
+ * @param      string $tabevent
+ * @param      string $event
+ * @return     string HTML table column
+ * @deprecated in 4.6.0
+ */
 
-		addEvent(window, 'load', cleanSelects);
-	-->
-	</script>
-	<?php // Mandatory un-themable Textpattern core styles ?>
-	<style type="text/css">
-		.not-ready .doc-ready, .not-ready form.async input[type="submit"], .not-ready a.async {
-			visibility: hidden;
-		}
-	</style>
-	<?php
-	echo $theme->html_head();
-	callback_event('admin_side', 'head_end');
-	?>
-	</head>
-	<body id="<?php echo $body_id; ?>" class="not-ready <?php echo $area; ?>">
-	<div class="txp-header">
-	<?php callback_event('admin_side', 'pagetop');
-		$theme->set_state($area, $event, $bm, $message);
-		echo pluggable_ui('admin_side', 'header', $theme->header());
-		callback_event('admin_side', 'pagetop_end');
-		echo '</div><!-- /txp-header --><div class="txp-body">';
-	}
+function tabber($label, $tabevent, $event)
+{
+    $tc = ($event == $tabevent) ? 'tabup' : 'tabdown2';
+    $out = '<td class="'.$tc.'"><a href="?event='.$tabevent.'">'.$label.'</a></td>';
 
-// -------------------------------------------------------------
-// Is this used any more?
-	function areatab($label,$event,$tarea,$area)
-	{
-		$tc = ($area == $event) ? 'tabup' : 'tabdown';
-		$atts=' class="'.$tc.'"';
-		$hatts=' href="?event='.$tarea.'"';
-		return tda(tag($label,'a',$hatts),$atts);
-	}
+    return $out;
+}
 
-// -------------------------------------------------------------
-	function tabber($label,$tabevent,$event)
-	{
-		$tc = ($event==$tabevent) ? 'tabup' : 'tabdown2';
-		$out = '<td class="'.$tc.'"><a href="?event='.$tabevent.'">'.$label.'</a></td>';
-		return $out;
-	}
+/**
+ * Creates a table based navigation bar row.
+ *
+ * This can be used to create table based navigation bars.
+ *
+ * @param      string $area
+ * @param      string $event
+ * @return     string HTML table columns
+ * @deprecated in 4.6.0
+ */
 
-// -------------------------------------------------------------
+function tabsort($area, $event)
+{
+    if ($area) {
+        $areas = areas();
 
-	function tabsort($area, $event)
-	{
-		if ($area)
-		{
-			$areas = areas();
+        $out = array();
 
-			$out = array();
+        foreach ($areas[$area] as $a => $b) {
+            if (has_privs($b)) {
+                $out[] = tabber($a, $b, $event, 2);
+            }
+        }
 
-			foreach ($areas[$area] as $a => $b)
-			{
-				if (has_privs($b))
-				{
-					$out[] = tabber($a, $b, $event, 2);
-				}
-			}
+        return ($out) ? join('', $out) : '';
+    }
 
-			return ($out) ? join('', $out) : '';
-		}
+    return '';
+}
 
-		return '';
-	}
+/**
+ * Gets the main menu structure as an array.
+ *
+ * @return array
+ * @example
+ * print_r(
+ *     areas()
+ * );
+ */
 
-// -------------------------------------------------------------
-	function areas()
-	{
-		global $privs, $plugin_areas;
+function areas()
+{
+    global $plugin_areas;
 
-		$areas['start'] = array(
-		);
+    $areas['start'] = array(
+    );
 
-		$areas['content'] = array(
-			gTxt('tab_organise') => 'category',
-			gTxt('tab_write')    => 'article',
-			gTxt('tab_list')     =>  'list',
-			gTxt('tab_image')    => 'image',
-			gTxt('tab_file')     => 'file',
-			gTxt('tab_link')     => 'link',
-			gTxt('tab_comments') => 'discuss'
-		);
+    $areas['content'] = array(
+        gTxt('tab_write')    => 'article',
+        gTxt('tab_list')     => 'list',
+        gTxt('tab_image')    => 'image',
+        gTxt('tab_file')     => 'file',
+        gTxt('tab_link')     => 'link',
+        gTxt('tab_organise') => 'category',
+    );
 
-		$areas['presentation'] = array(
-			gTxt('tab_sections') => 'section',
-			gTxt('tab_pages')    => 'page',
-			gTxt('tab_forms')    => 'form',
-			gTxt('tab_style')    => 'css'
-		);
+    $areas['presentation'] = array(
+        gTxt('tab_sections') => 'section',
+        gTxt('tab_pages')    => 'page',
+        gTxt('tab_forms')    => 'form',
+        gTxt('tab_style')    => 'css',
+    );
 
-		$areas['admin'] = array(
-			gTxt('tab_diagnostics') => 'diag',
-			gTxt('tab_preferences') => 'prefs',
-			gTxt('tab_site_admin')  => 'admin',
-			gTxt('tab_logs')        => 'log',
-			gTxt('tab_plugins')     => 'plugin',
-			gTxt('tab_import')      => 'import'
-		);
+    $areas['admin'] = array(
+        gTxt('tab_diagnostics') => 'diag',
+        gTxt('tab_preferences') => 'prefs',
+        gTxt('tab_languages')   => 'lang',
+        gTxt('tab_site_admin')  => 'admin',
+        gTxt('tab_plugins')     => 'plugin',
+    );
 
-		$areas['extensions'] = array(
-		);
+    $areas['extensions'] = array(
+    );
 
-		if (is_array($plugin_areas))
-			$areas = array_merge_recursive($areas, $plugin_areas);
+    if (get_pref('use_comments', 1)) {
+        $areas['content'][gTxt('tab_comments')] = 'discuss';
+    }
 
-		return $areas;
-	}
+    if (get_pref('logging') !== 'none' && get_pref('expire_logs_after')) {
+        $areas['admin'][gTxt('tab_logs')] = 'log';
+    }
 
-// -------------------------------------------------------------
+    if (is_array($plugin_areas)) {
+        $areas = array_merge_recursive($areas, $plugin_areas);
+    }
 
-	function navPop($inline = '')
-	{
-		$areas = areas();
+    return $areas;
+}
 
-		$out = array();
+/**
+ * Creates an admin-side main menu as a &lt;select&gt; dropdown.
+ *
+ * @param  mixed  $inline Is not used.
+ * @return string A HTML form
+ * @example
+ * echo navPop();
+ */
 
-		foreach ($areas as $a => $b)
-		{
-			if (!has_privs( 'tab.'.$a))
-			{
-				continue;
-			}
+function navPop($inline = '')
+{
+    $areas = areas();
 
-			if (count($b) > 0)
-			{
-				$out[] = n.t.'<optgroup label="'.gTxt('tab_'.$a).'">';
+    $out = array();
 
-				foreach ($b as $c => $d)
-				{
-					if (has_privs($d))
-					{
-						$out[] = n.t.t.'<option value="'.$d.'">'.$c.'</option>';
-					}
-				}
+    foreach ($areas as $a => $b) {
+        if (!has_privs('tab.'.$a)) {
+            continue;
+        }
 
-				$out[] = n.t.'</optgroup>';
-			}
-		}
+        if (count($b) > 0) {
+            $out[] = n.'<optgroup label="'.gTxt('tab_'.$a).'">';
 
-		if ($out)
-		{
-			return '<form method="get" action="index.php" class="navpop">'.
-				n.'<select name="event" onchange="submit(this.form);">'.
-				n.t.'<option>'.gTxt('go').'&#8230;</option>'.
-				join('', $out).
-				n.'</select>'.
-				n.'</form>';
-		}
-	}
+            foreach ($b as $c => $d) {
+                if (has_privs($d)) {
+                    $out[] = n.'<option value="'.txpspecialchars($d).'">'.strip_tags($c).'</option>';
+                }
+            }
 
-// -------------------------------------------------------------
-	# DEPRECATED?? Has this ever been used?
-	function button($label,$link)
-	{
-		return '<span style="margin-right:2em"><a href="?event='.$link.'">'.$label.'</a></span>';
-	}
-?>
+            $out[] = n.'</optgroup>';
+        }
+    }
+
+    if ($out) {
+        return n.'<form class="navpop" method="get" action="index.php">'.
+            n.'<select name="event" data-submit-on="change">'.
+            n.'<option>'.gTxt('go').'&#8230;</option>'.
+            join('', $out).
+            n.'</select>'.
+            n.'</form>';
+    }
+}
+
+/**
+ * Generates a button link.
+ *
+ * @param      string $label
+ * @param      string $link
+ * @deprecated in 4.6.0
+ */
+
+function button($label, $link)
+{
+    return '<span style="margin-right:2em"><a href="?event='.$link.'">'.$label.'</a></span>';
+}

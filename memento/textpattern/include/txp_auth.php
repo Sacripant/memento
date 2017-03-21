@@ -1,303 +1,365 @@
 <?php
 
 /*
-This is Textpattern
+ * Textpattern Content Management System
+ * http://textpattern.com
+ *
+ * Copyright (C) 2005 Dean Allen
+ * Copyright (C) 2016 The Textpattern Development Team
+ *
+ * This file is part of Textpattern.
+ *
+ * Textpattern is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, version 2.
+ *
+ * Textpattern is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Textpattern. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-Copyright 2005 by Dean Allen
-www.textpattern.com
-All rights reserved
+/**
+ * Login panel.
+ *
+ * @package Admin\Auth
+ */
 
-Use of this software indicates acceptance of the Textpattern license agreement
+if (!defined('txpinterface')) {
+    die('txpinterface is undefined.');
+}
 
-$HeadURL: https://textpattern.googlecode.com/svn/releases/4.5.7/source/textpattern/include/txp_auth.php $
-$LastChangedRevision: 3964 $
-
-*/
-
-if (!defined('txpinterface')) die('txpinterface is undefined.');
-
-include_once txpath.'/lib/PasswordHash.php';
+/**
+ * Renders a login panel if necessary.
+ *
+ * If the current visitor isn't authenticated,
+ * terminates the script and instead renders
+ * a login page.
+ *
+ * @access private
+ */
 
 function doAuth()
 {
-	global $txp_user;
+    global $txp_user;
 
-	$txp_user = NULL;
+    $txp_user = null;
 
-	$message = doTxpValidate();
+    $message = doTxpValidate();
 
-	if(!$txp_user)
-	{
-		doLoginForm($message);
-	}
+    if (!$txp_user) {
+        if (trim(ps('app_mode')) == 'async') {
+            echo script_js(
+                'alert("'.escape_js(gTxt('login_to_textpattern')).'"); 
+                window.location.assign("index.php")'
+            );
+            exit();
+        } else {
+            doLoginForm($message);
+        }
+    }
 
-	ob_start();
+    ob_start();
 }
 
-// -------------------------------------------------------------
-	function txp_validate($user,$password,$log=TRUE)
-	{
-		$safe_user = doSlash($user);
-		$name = FALSE;
+/**
+ * Renders and outputs a login form.
+ *
+ * This function outputs a full HTML document,
+ * including &lt;head&gt; and footer.
+ *
+ * @param string|array $message The activity message
+ */
 
-		$hash = safe_field('pass', 'txp_users', "name = '$safe_user'");
-		$phpass = new PasswordHash(PASSWORD_COMPLEXITY, PASSWORD_PORTABILITY);
+function doLoginForm($message)
+{
+    global $textarray_script, $event, $step;
 
-		// check post-4.3-style passwords
-		if ($phpass->CheckPassword($password, $hash)) {
-			if ($log) {
-				$name = safe_field("name", "txp_users",	"name = '$safe_user' and privs > 0");
-			} else {
-				$name = $user;
-			}
-		} else {
-			// no good password: check 4.3-style passwords
-			$passwords = array();
+    include txpath.'/lib/txplib_head.php';
 
-			$passwords[] = "password(lower('".doSlash($password)."'))";
-			$passwords[] = "password('".doSlash($password)."')";
+    $event = 'login';
 
-			if (version_compare(mysql_get_server_info(), '4.1.0', '>='))
-			{
-				$passwords[] = "old_password(lower('".doSlash($password)."'))";
-				$passwords[] = "old_password('".doSlash($password)."')";
-			}
+    $stay = (cs('txp_login') && !gps('logout') ? 1 : 0);
+    $reset = gps('reset');
+    $confirm = gps('confirm');
+    $activate = gps('activate');
 
-			$name = safe_field("name", "txp_users",
-				"name = '$safe_user' and (pass = ".join(' or pass = ', $passwords).") and privs > 0");
+    if (gps('logout')) {
+        $step = 'logout';
+    } elseif ($reset) {
+        $step = 'reset';
+    } elseif ($activate) {
+        $step = 'activate';
+    } elseif ($confirm) {
+        $step = 'confirm';
+    }
 
-			// old password is good: migrate password to phpass
-			if ($name !== FALSE) {
-				safe_update("txp_users", "pass = '".doSlash($phpass->HashPassword($password))."'", "name = '$safe_user'");
-			}
-		}
+    $name = join(',', array_slice(explode(',', cs('txp_login')), 0, -1));
+    $out = array();
 
-		if ($name !== FALSE && $log)
-		{
-			// update the last access time
-			safe_update("txp_users", "last_access = now()", "name = '$safe_user'");
-		}
-		return $name;
-	}
+    if ($reset) {
+        $pageTitle = gTxt('password_reset');
+        $out[] = hed(gTxt('password_reset'), 1, array('id' => 'txp-login-heading')).
+            inputLabel(
+                'login_name',
+                fInput('text', 'p_userid', $name, '', '', '', INPUT_REGULAR, '', 'login_name'),
+                'name', '', array('class' => 'txp-form-field login-name')
+            ).
+            graf(
+                fInput('submit', '', gTxt('password_reset_button'), 'publish')
+            ).
+            graf(
+                href(gTxt('back_to_login'), 'index.php'), array('class' => 'login-return')
+            ).
+            hInput('p_reset', 1);
+    } elseif ($confirm || $activate) {
+        $pageTitle = ($confirm) ? gTxt('change_password') : gTxt('set_password');
+        $label = ($confirm) ? 'change_password' : 'set_password';
+        $class = ($confirm) ? 'change-password' : 'set-password';
+        $out[] = hed($pageTitle, 1, array('id' => 'txp-'.$class.'-heading')).
+            inputLabel(
+                $label,
+                fInput('password', 'p_password', '', 'txp-maskable txp-strength-hint', '', '', INPUT_REGULAR, '', $label, false, true).
+                n.tag(null, 'div', array('class' => 'strength-meter')).
+                n.tag(
+                    checkbox('unmask', 1, false, 0, 'show_password').
+                    n.tag(gTxt('show_password'), 'label', array('for' => 'show_password')),
+                    'div', array('class' => 'show-password')),
+                'new_password', '', array('class' => 'txp-form-field '.$class)
+            ).
+            graf(
+                fInput('submit', '', gTxt('password_confirm_button'), 'publish')
+            ).
+            graf(
+                href(gTxt('back_to_login'), 'index.php'), array('class' => 'login-return')
+            ).
+            hInput('hash', gps('confirm').gps('activate')).
+            hInput(($confirm ? 'p_alter' : 'p_set'), 1);
+    } else {
+        $pageTitle = gTxt('login');
+        $out[] = hed(gTxt('login_to_textpattern'), 1, array('id' => 'txp-login-heading')).
+            inputLabel(
+                'login_name',
+                fInput('text', 'p_userid', $name, '', '', '', INPUT_REGULAR, '', 'login_name'),
+                'name', '', array('class' => 'txp-form-field login-name')
+            ).
+            inputLabel(
+                'login_password',
+                fInput('password', 'p_password', '', '', '', '', INPUT_REGULAR, '', 'login_password'),
+                'password', '', array('class' => 'txp-form-field login-password')
+            ).
+            graf(
+                checkbox('stay', 1, $stay, '', 'login_stay').n.
+                tag(gTxt('stay_logged_in'), 'label', array('for' => 'login_stay')).
+                popHelp('remember_login'), array('class' => 'login-stay')
+            ).
+            graf(
+                fInput('submit', '', gTxt('log_in_button'), 'publish')
+            ).
+            graf(
+                href(gTxt('password_forgotten'), '?reset=1'), array('class' => 'login-forgot')
+            );
 
-// -------------------------------------------------------------
-	function txp_hash_password($password)
-	{
-		static $phpass = NULL;
-		if (!$phpass) {
-			$phpass = new PasswordHash(PASSWORD_COMPLEXITY, PASSWORD_PORTABILITY);
-		}
-		return $phpass->HashPassword($password);
-	}
+        if (gps('event')) {
+            $out[] = eInput(gps('event'));
+        }
+    }
 
-// -------------------------------------------------------------
+    pagetop($pageTitle, $message);
 
-	function doLoginForm($message)
-	{
-		include txpath.'/lib/txplib_head.php';
+    gTxtScript(array(
+        'password_strength_0',
+        'password_strength_1',
+        'password_strength_2',
+        'password_strength_3',
+        'password_strength_4',
+        )
+    );
 
-		pagetop(gTxt('login'), $message);
+    echo form(
+        join('', $out), '', '', 'post', 'txp-login', '', 'login_form').
 
-		$stay  = (cs('txp_login') and !gps('logout') ? 1 : 0);
-		$reset = gps('reset');
+    script_js('vendors/dropbox/zxcvbn/zxcvbn.js', TEXTPATTERN_SCRIPT_URL).
+    script_js('textpattern.textarray = '.json_encode($textarray_script)).
+    n.'</main><!-- /txp-body -->'.n.'</body>'.n.'</html>';
 
-		$name = join(',', array_slice(explode(',', cs('txp_login')), 0, -1));
+    exit(0);
+}
 
-		echo n.'<div id="login_container" class="txp-container">';
-		echo form(
-			'<div class="txp-login">'.
-			n.hed(gTxt($reset ? 'password_reset' : 'login_to_textpattern'), 2).
+/**
+ * Validates the sent login form and creates a session.
+ *
+ * During the reset request procedure, it is conceivable to verify the
+ * token as soon as it's presented in the URL, but that would:
+ *  a) require refactoring code similarities in both p_confirm and p_alter branches
+ *  b) require some way (e.g. an Exception) to signal back to doLoginForm() that
+ *     the token is bogus so the 'change your password' form is not displayed.
+ *  c) leak information about the validity of a token, thus allowing rapid brute-force
+ *     attempts.
+ *
+ * The inconvenience of a real user following an expired token and being told so
+ * after they've set a password is a small price to pay for the improved security
+ * and reduction of attack surface that validating after submission affords.
+ *
+ * @todo  Could the checks be done via a (reusable) Validator()?
+ *
+ * @return string A localised feedback message
+ * @see    doLoginForm()
+ */
 
-			n.graf(
-				'<span class="login-label"><label for="login_name">'.gTxt('name').'</label></span>'.
-				n.'<span class="login-value">'.fInput('text', 'p_userid', $name, '', '', '', INPUT_REGULAR, '', 'login_name').'</span>'
-			, ' class="login-name"').
+function doTxpValidate()
+{
+    global $logout, $txp_user;
 
-			($reset
-				? ''
-				: n.graf(
-					'<span class="login-label"><label for="login_password">'.gTxt('password').'</label></span>'.
-					n.'<span class="login-value">'.fInput('password', 'p_password', '', '', '', '', INPUT_REGULAR, '', 'login_password').'</span>'
-				, ' class="login-password"')
-			).
+    $p_userid   = ps('p_userid');
+    $p_password = ps('p_password');
+    $p_reset    = ps('p_reset');
+    $p_alter    = ps('p_alter');
+    $p_set      = ps('p_set');
+    $stay       = ps('stay');
+    $p_confirm  = gps('confirm');
+    $logout     = gps('logout');
+    $message    = '';
+    $pub_path   = preg_replace('|//$|', '/', rhu.'/');
 
-			($reset
-				? ''
-				: graf(
-					checkbox('stay', 1, $stay, '', 'login_stay').n.'<label for="login_stay">'.gTxt('stay_logged_in').'</label>'.sp.popHelp('remember_login')
-					, ' class="login-stay"')
-			).
+    if (cs('txp_login') && strpos(cs('txp_login'), ',')) {
+        $txp_login = explode(',', cs('txp_login'));
+        $c_hash = end($txp_login);
+        $c_userid = join(',', array_slice($txp_login, 0, -1));
+    } else {
+        $c_hash   = '';
+        $c_userid = '';
+    }
 
-			($reset ? n.hInput('p_reset', 1) : '').
+    if ($logout) {
+        setcookie('txp_login', '', time() - 3600);
+        setcookie('txp_login_public', '', time() - 3600, $pub_path);
+    }
 
-			n.graf(
-				fInput('submit', '', gTxt($reset ? 'password_reset_button' : 'log_in_button'), 'publish')
-			).
-			n.(
-				($reset
-					? graf('<a href="index.php">'.gTxt('back_to_login').'</a>', ' class="login-return"')
-					: graf('<a href="?reset=1">'.gTxt('password_forgotten').'</a>', ' class="login-forgot"')
-				)
-			).
-			(gps('event') ? eInput(gps('event')) : '').
-			'</div>'
-		, '', '', 'post', '', '', 'login_form').'</div>'.
+    if ($c_userid && strlen($c_hash) === 32) {
+        // Cookie exists.
+        // @todo Improve security by using a better nonce/salt mechanism. md5 and uniqid are bad.
+        $r = safe_row(
+            "name, nonce",
+            'txp_users',
+            "name = '".doSlash($c_userid)."' AND last_access > DATE_SUB(NOW(), INTERVAL 30 DAY)"
+        );
 
+        if ($r && $r['nonce'] && $r['nonce'] === md5($c_userid.pack('H*', $c_hash))) {
+            // Cookie is good.
+            if ($logout) {
+                // Destroy nonce.
+                safe_update(
+                    'txp_users',
+                    "nonce = '".doSlash(md5(uniqid(mt_rand(), true)))."'",
+                    "name = '".doSlash($c_userid)."'"
+                );
+            } else {
+                // Create $txp_user.
+                $txp_user = $r['name'];
+            }
 
-		n.script_js(<<<EOSCR
-// Focus on either username or password when empty
-$(document).ready(
-	function() {
-		var has_name = $("#login_name").val().length;
-		var password_box = $("#login_password").val();
-		var has_password = (password_box) ? password_box.length : 0;
-		if (!has_name) {
-			$("#login_name").focus();
-		} else if (!has_password) {
-		 	$("#login_password").focus();
-		}
-	}
-);
-EOSCR
-		).
-		n.'</div><!-- /txp-body -->'.n.'</body>'.n.'</html>';
+            return $message;
+        } else {
+            txp_status_header('401 Your session has expired');
+            setcookie('txp_login', $c_userid, time() + 3600 * 24 * 365);
+            setcookie('txp_login_public', '', time() - 3600, $pub_path);
+            $message = array(gTxt('bad_cookie'), E_ERROR);
+        }
+    } elseif ($p_userid && $p_password) {
+        // Incoming login vars.
+        $name = txp_validate($p_userid, $p_password);
 
-		exit(0);
-	}
+        if ($name !== false) {
+            $c_hash = md5(uniqid(mt_rand(), true));
+            $nonce  = md5($name.pack('H*', $c_hash));
 
-// -------------------------------------------------------------
-	function doTxpValidate()
-	{
-		global $logout, $txp_user;
-		$p_userid   = ps('p_userid');
-		$p_password = ps('p_password');
-		$p_reset    = ps('p_reset');
-		$stay       = ps('stay');
-		$logout     = gps('logout');
-		$message    = '';
-		$pub_path   = preg_replace('|//$|','/', rhu.'/');
+            safe_update(
+                'txp_users',
+                "nonce = '".doSlash($nonce)."'",
+                "name = '".doSlash($name)."'"
+            );
 
-		if (cs('txp_login') and strpos(cs('txp_login'), ','))
-		{
-			$txp_login = explode(',', cs('txp_login'));
-			$c_hash = end($txp_login);
-			$c_userid = join(',', array_slice($txp_login, 0, -1));
-		}
-		else
-		{
-			$c_hash   = '';
-			$c_userid = '';
-		}
+            setcookie(
+                'txp_login',
+                $name.','.$c_hash,
+                ($stay ? time() + 3600 * 24 * 365 : 0),
+                null,
+                null,
+                null,
+                LOGIN_COOKIE_HTTP_ONLY
+            );
 
-		if ($logout)
-		{
-			setcookie('txp_login', '', time()-3600);
-			setcookie('txp_login_public', '', time()-3600, $pub_path);
-		}
+            setcookie(
+                'txp_login_public',
+                substr(md5($nonce), -10).$name,
+                ($stay ? time() + 3600 * 24 * 30 : 0),
+                $pub_path
+            );
 
-		if ($c_userid and strlen($c_hash) == 32) // cookie exists
-		{
-			$nonce = safe_field('nonce', 'txp_users', "name='".doSlash($c_userid)."' AND last_access > DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            // Login is good, create $txp_user.
+            $txp_user = $name;
 
-			if ($nonce and $nonce === md5($c_userid.pack('H*', $c_hash)))
-			{
-				// cookie is good
+            return '';
+        } else {
+            sleep(3);
+            txp_status_header('401 Could not log in with that username/password');
+            $message = array(gTxt('could_not_log_in'), E_ERROR);
+        }
+    } elseif ($p_reset) {
+        // Reset request.
+        sleep(3);
 
-				if ($logout)
-				{
-					// destroy nonce
-					safe_update(
-						'txp_users',
-						"nonce = '".doSlash(md5(uniqid(mt_rand(), TRUE)))."'",
-						"name = '".doSlash($c_userid)."'"
-					);
-				}
-				else
-				{
-					// create $txp_user
-					$txp_user = $c_userid;
-				}
-				return $message;
-			}
-			else
-			{
-				setcookie('txp_login', $c_userid, time()+3600*24*365);
-				setcookie('txp_login_public', '', time()-3600, $pub_path);
-				$message = array(gTxt('bad_cookie'), E_ERROR);
-			}
+        include_once txpath.'/lib/txplib_admin.php';
 
-		}
-		elseif ($p_userid and $p_password) // incoming login vars
-		{
-			$name = txp_validate($p_userid,$p_password);
+        $message = ($p_userid) ? send_reset_confirmation_request($p_userid) : '';
+    } elseif ($p_alter || $p_set) {
+        // Password change/set confirmation.
+        sleep(3);
+        global $sitename;
 
-			if ($name !== FALSE)
-			{
-				$c_hash = md5(uniqid(mt_rand(), TRUE));
-				$nonce  = md5($name.pack('H*',$c_hash));
+        $pass = ps('p_password');
+        $type = ($p_alter) ? 'password_reset' : 'account_activation';
 
-				safe_update(
-					'txp_users',
-					"nonce = '".doSlash($nonce)."'",
-					"name = '".doSlash($name)."'"
-				);
+        if (trim($pass) === '') {
+            $message = array(gTxt('password_required'), E_ERROR);
+        } else {
+            $hash = gps('hash');
+            $selector = substr($hash, SALT_LENGTH);
 
-				setcookie(
-					'txp_login',
-					$name.','.$c_hash,
-					($stay ? time()+3600*24*365 : 0),
-					null,
-					null,
-					null,
-					LOGIN_COOKIE_HTTP_ONLY
-				);
+            $tokenInfo = safe_row("reference_id, token, expires", 'txp_token', "selector = '".doSlash($selector)."' AND type='$type'");
 
-				setcookie(
-					'txp_login_public',
-					substr(md5($nonce), -10).$name,
-					($stay ? time()+3600*24*30 : 0),
-					$pub_path
-				);
+            if ($tokenInfo) {
+                if (strtotime($tokenInfo['expires']) <= time()) {
+                    $message = array(gTxt('token_expired'), E_ERROR);
+                } else {
+                    $uid = assert_int($tokenInfo['reference_id']);
+                    $row = safe_row("name, email, nonce, pass AS old_pass", 'txp_users', "user_id = $uid");
 
-				// login is good, create $txp_user
-				$txp_user = $name;
-				return '';
-			}
-			else
-			{
-				sleep(3);
-				$message = array(gTxt('could_not_log_in'), E_ERROR);
-			}
-		}
-		elseif ($p_reset) // reset request
-		{
-			sleep(3);
+                    if ($row && $row['nonce'] && ($hash === bin2hex(pack('H*', substr(hash(HASHING_ALGORITHM, $row['nonce'].$selector.$row['old_pass']), 0, SALT_LENGTH))).$selector)) {
+                        if (change_user_password($row['name'], $pass)) {
+                            $body = gTxt('salutation', array('{name}' => $row['name'])).
+                                n.n.($p_alter ? gTxt('password_change_confirmation') : gTxt('password_set_confirmation').n.n.gTxt('log_in_at').': '.hu.'textpattern/index.php');
+                            $message = ($p_alter) ? gTxt('password_changed') : gTxt('password_set');
+                            txpMail($row['email'], "[$sitename] ".$message, $body);
 
-			include_once txpath.'/lib/txplib_admin.php';
+                            // Invalidate all tokens in the wild for this user.
+                            safe_delete("txp_token", "reference_id = $uid AND type IN ('password_reset', 'account_activation')");
+                        }
+                    } else {
+                        $message = array(gTxt('invalid_token'), E_ERROR);
+                    }
+                }
+            } else {
+                $message = array(gTxt('invalid_token'), E_ERROR);
+            }
+        }
+    }
 
-			$message = ($p_userid) ? send_reset_confirmation_request($p_userid) : '';
-		}
-		elseif (gps('reset'))
-		{
-			$message = '';
-		}
-		elseif (gps('confirm'))
-		{
-			sleep(3);
+    $txp_user = '';
 
-			$confirm = pack('H*', gps('confirm'));
-			$name    = substr($confirm, 5);
-			$nonce   = safe_field('nonce', 'txp_users', "name = '".doSlash($name)."'");
-
-			if ($nonce and $confirm === pack('H*', substr(md5($nonce), 0, 10)).$name)
-			{
-				include_once txpath.'/lib/txplib_admin.php';
-
-				$message = reset_author_pass($name);
-			}
-		}
-
-		$txp_user = '';
-		return $message;
-	}
-?>
+    return $message;
+}
