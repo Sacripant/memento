@@ -2,7 +2,7 @@
 
 <txp:cbe_frontauth_if_logged level="1">
 	<txp:adi_gps type="post" />
-	<txp:variable name="now"><txp:smd_wrap_all transform="fordb"><txp:php>echo strftime("%F %R");</txp:php></txp:smd_wrap_all></txp:variable>
+	<txp:variable name="now"><txp:smd_wrap transform="fordb"><txp:php>echo strftime("%F %R");</txp:php></txp:smd_wrap></txp:variable>
 	
 	<txp:rah_repeat value='<txp:variable name="query" />' delimiter="&amp;" wraptag="" break="">
 		<txp:rah_repeat_value />
