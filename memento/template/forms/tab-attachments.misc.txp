@@ -36,17 +36,26 @@
 	<div class="attachments-content attachments-files-content">
 		<h1 class="block-title" data-this="Fichiers">Fichiers</h1>
 		
-		<txp:hide><!-- Liste ID des fichiers attachés au projet --></txp:hide>
-		<txp:variable name="attached-files-id">
+		<txp:hide>
+			<!-- 
+				Liste ID des fichiers attachés au projet 
+			-->
+		</txp:hide>
+
+		<txp:variable name="attached-files-id"><txp:smd_wrap>
 			<txp:smd_query 
 				column="id" 
 				table="txp_file" 
-				where='filename LIKE "<txp:article_id />\_%"' break=","
+				where='filename LIKE "<txp:article_id />\_%"' 
+				break=","
 			>{id}</txp:smd_query>
-		</txp:variable>
-		
-		<txp:variable name="attached-files-id" />
-		<txp:hide><!-- Liste Fichiers --></txp:hide>
+		</txp:smd_wrap></txp:variable>
+				
+		<txp:hide>
+			<!-- 
+				Liste Fichiers validés
+			-->
+		</txp:hide>
 		
 		<txp:variable name="live_file_download_list"><txp:file_download_list status="live" id='<txp:variable name="attached-files-id" />' wraptag="ul" class="nude">
 			<li class="clearfix">
@@ -65,13 +74,20 @@
 			</section>
 		</txp:if_variable>
 		
-		<txp:hide><!-- Fichiers en attente de validation --></txp:hide>
+		<txp:hide>
+			<!-- 
+				Fichiers en attente de validation 
+			-->
+		</txp:hide>
 		
+
 		<txp:variable name="pending_file_download_list"><txp:file_download_list status="pending" id='<txp:variable name="attached-files-id" />' wraptag="ul" break="li">
 			<txp:file_download_name />
 		</txp:file_download_list></txp:variable>
 		
 		<txp:if_variable name="pending_file_download_list" value="">
+			<h1 class="h4">Aucun fichier en attente de validation</h1>
+			<txp:variable name='attached-files-id' />
 		<txp:else />
 			<section class="pending_file_download_list notice small">
 				<h1 class="h4">fichiers en attente de validation</h1>
