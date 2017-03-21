@@ -49,13 +49,18 @@
 	<txp:if_variable name="file-titre" value="">
 		<txp:variable name="file-titre">NULL</txp:variable>	
 	<txp:else />
-		<txp:variable name="file-titre">'<txp:smd_wrap item='<txp:variable name="file-titre" />' transform="fordb" />'</txp:variable>
+		<txp:variable name="file-titre">'<txp:smd_wrap item="<txp:variable name='file-titre' />" transform="fordb" />'</txp:variable>
 	</txp:if_variable>
 	<txp:hide><!-- description --></txp:hide>
-	<txp:variable name="file-description">'<txp:smd_wrap item='<txp:variable name="file-description" />' transform="fordb" />'</txp:variable>
+	<txp:variable name="file-description">'<txp:smd_wrap item="<txp:variable name='file-description' />" transform="fordb" />'</txp:variable>
 
 	<txp:hide><!-- If Upload OK --></txp:hide>
 	<txp:if_variable name="import" value="1">
+
+		<script>
+			console.log("titre : <txp:variable name="file-titre" />");
+		</script>
+
 		<txp:smd_query query='INSERT INTO txp_file 
 		 	(filename, title, description, status, modified, created, size, author) 
 		VALUES
