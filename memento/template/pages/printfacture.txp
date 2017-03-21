@@ -20,24 +20,36 @@
 
 <body id="<txp:section />">
 	
-	<!-- VARIABLES -->
+	<!-- GET VARIABLES -->
 	<txp:adi_gps />
-	<txp:hide>	
-		<!-- ID projet -->
+	<txp:hide>
+
+		<!-- VAR ID projet -->
 		<txp:variable name="projetID"/><br />
-		<!-- Nb de tranches -->
+
+		<!-- VAR Nb de tranches -->
 		<txp:variable name="nbTranches" />
 	</txp:hide>
 	
 	
 	<txp:article_custom id='<txp:variable name="projetID"/>' time="any">
 	
-	<!-- Tranches de paiement -->
+	<!-- 
+		VAR
+		Tranches de paiement 
+	-->
 	<txp:variable name="tranches" value='<txp:custom_field name="repartition" />' />
-	<!-- N0 Devis -->
+	
+	<!-- 
+		VAR
+		N0 Devis 
+	-->
 	<txp:variable name="devisID"><txp:variable name="projetID"/>-<txp:smd_wrap transform="date|%g%m%d%H%M"><txp:custom_field name="num-date_Devis" /></txp:smd_wrap></txp:variable>	
 	
-	<!-- COMMANDITAIRE -->
+	<!-- 
+		VAR
+		COMMANDITAIRE 
+	-->
 	<txp:variable name="commanditaire">
 		<div id="" class="commanditaire-wrapper">
 			<h2>Commanditaire :</h2>
@@ -78,7 +90,10 @@
 	</txp:variable>
 
 	
-	<!-- NATURE DU TRAVAIL -->
+	<!-- 
+		VAR
+		NATURE DU TRAVAIL 
+	-->
 	<txp:variable name="chose_facturee">
 		<div>
 			<h3 class="projet-title"><txp:title />.</h3>
@@ -86,7 +101,10 @@
 		</div>	
 	</txp:variable>
 	
-	<!-- Détail de la prestation -->
+	<!-- 
+		VAR
+		Détail de la prestation 
+	-->
 	<txp:variable name="detail_prestation">
 
 		<!-- Liste détaillées des items de la facture par catégories -->
@@ -132,15 +150,16 @@
 	</txp:variable>
 	
 	
-		<!-- PAGE -->
+		<!-- 
+			PAGE 
+		-->
 		<div class="site_wrapper">
 			<!-- Print button -->
 			<txp:hide>			
 				<button type="button" id="print" title="Imprimer le devis et les factures">Print</button>
 			</txp:hide>
 			
-			
-		
+					
 			<txp:if_custom_field name='type_reglement' value="devis + factures">
 			<!-- 
 				DEVIS 
