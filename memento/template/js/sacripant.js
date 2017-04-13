@@ -162,7 +162,7 @@ $(function(){
 								}
 								else 
 								{
-									end.val( '0000-00-00 00:00:00' );	
+									end.val( ' ' );	
 								}
 							} 
 							else if ( reNoHour.test(endVal) ) 
@@ -172,7 +172,7 @@ $(function(){
 							}
 						},
 						success:    function(data) { 
-							location.reload(); 
+							// location.reload(); 
 						},
 						debug: 1
 					}); // end Ajaxform
@@ -262,7 +262,7 @@ $(function(){
 					console.log($('.memForm', line));
 					$('.memForm', line).ajaxForm({
 						success:    function() { 
-							location.reload(); 
+							// location.reload(); 
 						}
 					});
 				}

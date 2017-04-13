@@ -9,9 +9,6 @@
 
 	<txp:variable name="idProjet" value="{custom_1}" />
 	<txp:variable name="end" value="{Expires}" />
-	<txp:if_variable name="end" value="0000-00-00 00:00:00">
-		<txp:variable name="end" value="" />
-	</txp:if_variable>
 
 	<td colspan="8" class="inline-form-wrapper">
 		<txp:mem_simple_form table="textpattern" id_field="ID" id_insert="0">
@@ -36,7 +33,7 @@
 					<td class="edit-todo-cat"><txp:category name='{Category1}' title="1" /></td>
 					<td class="edit-todo-date inline">
 						<txp:mem_form_text name="string_Posted" label="Start" break="" class="date-input" default='{Posted}' />
-						<txp:mem_form_text name="string_expires" label="End" break="" class="date-input" default='<txp:variable name="end" />' />
+						<txp:mem_form_text name="string_expires" label="End" break="" class="date-input" default='<txp:variable name="end" />' required="0" />
 					</td>
 					<td class="edit-todo-temps"><span class="temps-prevu">{custom_3}</span>/<span class="temps-reel inline"><txp:mem_form_text name="string_custom_4" label="" break="" size="4" default='{custom_4}' required="0"/></span></td>
 					<td class="edit-todo-statut"><txp:mem_form_select name="string_custom_2" items='<txp:variable name="statut" />' values='<txp:variable name="statut" />' label="" break="" selected='{custom_2}' /></td>
@@ -45,7 +42,6 @@
 			</table>
 		</txp:mem_simple_form>	
 	</td>
-
 				
 	</txp:smd_query>
 </txp:cbe_frontauth_if_logged>		
