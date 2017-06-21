@@ -83,10 +83,10 @@
 // txp_image.id will be used as the key, txp_image.name as the value
 function mes_projets($custom_field, $custom_id, $custom_value) {
   $projets = array();
-  $query = safe_rows('id, title', 'textpattern', 'section="projet" ORDER BY title');
+  $query = safe_rows('id, title', 'textpattern', 'section="projet" ORDER BY id DESC');
 
   foreach ($query as $projet)
-    $projets[$projet['id']] = $projet['title'];
+    $projets[$projet['id']] = $projet['id'] . " " . $projet['title'];
 
   // because we can't set a {default} value from Extensions > Custom Fields, we're hard-coding it here
   return glz_selectInput($custom_field, $custom_id, $projets, $custom_value, "2");
