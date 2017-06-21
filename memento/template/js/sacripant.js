@@ -172,7 +172,7 @@ $(function(){
 							}
 						},
 						success:    function(data) { 
-							// location.reload(); 
+							location.reload(); 
 						},
 						debug: 1
 					}); // end Ajaxform
@@ -262,7 +262,7 @@ $(function(){
 					console.log($('.memForm', line));
 					$('.memForm', line).ajaxForm({
 						success:    function() { 
-							// location.reload(); 
+							location.reload(); 
 						}
 					});
 				}
