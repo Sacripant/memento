@@ -9,12 +9,11 @@ Affiche tous les projets filtrage par Etat
 <h1 class="block-title" data-this="Archives projets">Archives projets</h1>
 
 <txp:article_custom 
-	sort="title" 
+	sort="id asc" 
 	section="projet" 
 	wraptag="ul" 
 	class="nude" 
 	time="any"
-	author='<txp:variable name="article-filter" />'
 	limit='999'
 >
 
@@ -24,7 +23,7 @@ Affiche tous les projets filtrage par Etat
 		<!-- Title -->
 		<h2 class="h3">
 			<txp:permlink>
-				<txp:title />
+				<txp:article_id /> <txp:title />
 			</txp:permlink>
 		</h2>
 		<!-- Tabs Nav -->
