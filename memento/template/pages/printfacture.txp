@@ -379,9 +379,12 @@
 								
 
 								<txp:hide>
+									<!-- REF CLIENT SUP -->
+									<br/> <span class="ref-smile">
+									ref client: 
+									26784/11292/1 24928/1192/2 
+									</span>
 								</txp:hide>
-									<!-- REF SMILE SUP -->
-									<br/> <span class="ref-smile">ref Smile: 23458/11292/1</span>
 								
 							</span>
 
@@ -390,11 +393,6 @@
 				
 					
 					<article>
-
-						<script>
-							console.log('<txp:custom_field name="type_reglement" />');
-						</script>
-
 						
 						<txp:if_custom_field name='type_reglement' value='devis + factures'>
 							<section class="rappel-presta">
